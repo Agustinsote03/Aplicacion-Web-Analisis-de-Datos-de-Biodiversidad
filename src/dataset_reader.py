@@ -1,7 +1,10 @@
 import csv 
+from pathlib import Path
 
 def imprimir_primeras_filas(ruta_archivo, separador="\t"):
-    with open(ruta_archivo, encoding="utf-8") as archivo:
+    ruta = Path(ruta_archivo)
+
+    with ruta.open(encoding="utf-8") as archivo:
         lector = csv.reader(archivo, delimiter=separador)
         
         contador = 0
