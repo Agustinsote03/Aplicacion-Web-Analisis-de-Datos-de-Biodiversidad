@@ -162,3 +162,73 @@ def frecuencia_valores_columna(ruta_archivo, nombre_columna, separador="\t"):
                 frecuencias[valor] = 1
 
     return frecuencias
+
+#Calcula un resumen de una columna específica del dataset dependiendo de su tipo (numérico, coordenada o texto)
+def resumen_columna(ruta_archivo, nombre_columna, tipo, separador="\t"):
+    ruta = Path(ruta_archivo)
+
+    with ruta.open(encoding="utf-8", newline="") as archivo:
+        reader = csv.reader(archivo, delimiter=separador)
+
+        columnas = next(reader)
+
+        if nombre_columna not in columnas:
+            print("La columna no existe")
+            return None
+
+        indice = columnas.index(nombre_columna)
+        #Obtiene el índice de la columna
+
+        valores = []
+
+        for fila in reader:
+            if indice < len(fila) and fila[indice] != "":
+            #Filtra valores válidos, evita valores nulos o filas incompletas
+                valores.append(fila[indice])
+                #Arma una lista con todos los datos de la columna
+
+    if len(valores) == 0:
+        print("No hay datos en la columna")
+        return None
+
+    #Tipo numérico: calcula mínimo, máximo y promedio
+    if tipo == "numeric":
+        numeros = [float(v) for v in valores]
+
+        minimo = min(numeros)
+        maximo = max(numeros)
+        promedio = sum(numeros) / len(numeros)
+
+        return {
+            "min": minimo,
+            "max": maximo,
+            "promedio": promedio
+        }
+
+    #Tipo coordinate: calcula mínimo y máximo
+    elif tipo == "coordinate":
+        numeros = [float(v) for v in valores]
+
+        minimo = min(numeros)
+        maximo = max(numeros)
+
+        return {
+            "min": minimo,
+            "max": maximo
+        }
+
+    #Tipo text: calcula longitud mínima y máxima de los textos
+    elif tipo == "text":
+        longitudes = [len(v) for v in valores]
+
+        minimo = min(longitudes)
+        maximo = max(longitudes)
+
+        return {
+            "min_len": minimo,
+            "max_len": maximo
+        }
+
+    else:
+        print("Tipo no válido")
+        return None
