@@ -40,4 +40,20 @@ def posiciones_columnas(ruta_archivo):
         posiciones[col] = i
 
     return posiciones
+
+#Cuenta la cantidad de registros (filas) que tiene el dataset
+def cantidad_registros(ruta_archivo, separador="\t"):
+    ruta = Path(ruta_archivo)
+
+    with ruta.open(encoding="utf-8", newline="") as archivo:
+        reader = csv.reader(archivo, delimiter=separador)
+
+        next(reader)
+        #Saltea la primera fila (encabezados)
+
+        contador = 0
+        for fila in reader:
+            contador += 1
+       
+    return contador
  
