@@ -77,3 +77,36 @@ def columnas_con_nulos(ruta_archivo, separador="\t"):
                     #Guarda el nombre de la columna con valor nulo
 
     return list(columnas_con_nulo)
+
+#Calcula el porcentaje de registros nulos por cada columna del dataset
+def porcentaje_nulos_por_columna(ruta_archivo, separador="\t"):
+    ruta = Path(ruta_archivo)
+
+    with ruta.open(encoding="utf-8", newline="") as archivo:
+        reader = csv.reader(archivo, delimiter=separador)
+
+        columnas = next(reader)
+        #Nombres de columnas
+
+        n_cols = len(columnas)
+
+        conteo_nulos = [0] * n_cols
+        #Lista para contar nulos por columna
+
+        total_registros = 0
+        #Contador total de filas
+
+        for fila in reader:
+            total_registros += 1
+
+            for i in range(n_cols):
+                if fila[i] == "":
+                    conteo_nulos[i] += 1
+                #Detecta nulos y los cuenta por columna
+
+    porcentajes = {}
+    for i, col in enumerate(columnas):
+        porcentajes[col] = (conteo_nulos[i] / total_registros) * 100
+        #Calcula el porcentaje de nulos por columnas
+
+    return porcentajes
