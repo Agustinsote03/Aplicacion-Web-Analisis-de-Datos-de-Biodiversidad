@@ -110,3 +110,27 @@ def porcentaje_nulos_por_columna(ruta_archivo, separador="\t"):
         #Calcula el porcentaje de nulos por columnas
 
     return porcentajes
+
+#Devuelve la cantidad de valores distintos que tiene una columna específica del dataset
+def valores_distintos_columna(ruta_archivo, nombre_columna, separador="\t"):
+    ruta = Path(ruta_archivo)
+
+    with ruta.open(encoding="utf-8", newline="") as archivo:
+        reader = csv.reader(archivo, delimiter=separador)
+
+        columnas = next(reader)
+
+        if nombre_columna not in columnas:
+            print("La columna no existe")
+            return None
+
+        indice = columnas.index(nombre_columna)
+        #Encuentra el índice de la columna
+
+        valores = set()
+        #Uso un set para eliminar duplicados automáticamente
+
+        for fila in reader:
+            valores.add(fila[indice])
+
+    return len(valores)
