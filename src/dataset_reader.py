@@ -57,3 +57,23 @@ def cantidad_registros(ruta_archivo, separador="\t"):
        
     return contador
  
+#Cuenta la cantidad de registros que tienen al menos un valor nulo (vacío) en alguna de sus columnas
+def columnas_con_nulos(ruta_archivo, separador="\t"):
+    ruta = Path(ruta_archivo)
+
+    with ruta.open(encoding="utf-8", newline="") as archivo:
+        reader = csv.reader(archivo, delimiter=separador)
+
+        columnas = next(reader)
+        #Nombre de columnas
+
+        columnas_con_nulo = set()
+        #Uso set para evitar repetidos
+
+        for fila in reader:
+            for i, valor in enumerate(fila):
+                if valor == "":
+                    columnas_con_nulo.add(columnas[i])
+                    #Guarda el nombre de la columna con valor nulo
+
+    return list(columnas_con_nulo)
