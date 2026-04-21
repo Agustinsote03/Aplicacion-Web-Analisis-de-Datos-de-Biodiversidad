@@ -232,3 +232,30 @@ def resumen_columna(ruta_archivo, nombre_columna, tipo, separador="\t"):
     else:
         print("Tipo no válido")
         return None
+    
+#Retorna una lista con el nombre de las columnas que tienen todos sus valores nulos
+def columnas_totalmente_nulas(ruta_archivo, separador="\t"):
+    ruta = Path(ruta_archivo)
+
+    with ruta.open(encoding="utf-8", newline="") as archivo:
+        reader = csv.reader(archivo, delimiter=separador)
+
+        columnas = next(reader)
+        n_cols = len(columnas)
+
+        columnas_nulas = [True] * n_cols
+        #Arranca suponiendo que todas las columnas son nulas
+
+        for fila in reader:
+            for i in range(n_cols):
+                if i < len(fila) and fila[i] != "":
+                    columnas_nulas[i] = False
+                    #Si se encuentra un valor no nulo, marca la columna como no nula
+
+        resultado = []
+        for i, es_nula in enumerate(columnas_nulas):
+            if es_nula:
+                resultado.append(columnas[i])
+                #Devuelve las columnas que quedaron en True
+
+    return resultado
