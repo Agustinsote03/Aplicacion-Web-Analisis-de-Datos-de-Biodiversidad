@@ -100,7 +100,7 @@ def porcentaje_nulos_por_columna(ruta_archivo, separador="\t"):
             total_registros += 1
 
             for i in range(n_cols):
-                if fila[i] == "":
+                if i < len(fila) and fila[i] == "":
                     conteo_nulos[i] += 1
                 #Detecta nulos y los cuenta por columna
 
@@ -134,3 +134,31 @@ def valores_distintos_columna(ruta_archivo, nombre_columna, separador="\t"):
             valores.add(fila[indice])
 
     return len(valores)
+
+#Devuelve la frecuencia de cada valor distinto que tiene una columna específica del dataset
+def frecuencia_valores_columna(ruta_archivo, nombre_columna, separador="\t"):
+    ruta = Path(ruta_archivo)
+
+    with ruta.open(encoding="utf-8", newline="") as archivo:
+        reader = csv.reader(archivo, delimiter=separador)
+
+        columnas = next(reader)
+
+        if nombre_columna not in columnas:
+            print("La columna no existe")
+            return None
+
+        indice = columnas.index(nombre_columna)
+
+        frecuencias = {}
+        #Diccionario de conteo de frecuencias por valor
+
+        for fila in reader:
+            valor = fila[indice]
+
+            if valor in frecuencias:
+                frecuencias[valor] += 1
+            else:
+                frecuencias[valor] = 1
+
+    return frecuencias
