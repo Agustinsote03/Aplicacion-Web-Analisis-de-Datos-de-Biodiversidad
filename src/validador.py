@@ -1,5 +1,7 @@
 import csv
 
+#------------------------------------------Funciones auxiliares---------------------------------------#
+
 def es_coordenada_valida(valor, limite_min, limite_max):
     #Quitamos espacios en blanco
     valor = valor.strip()
@@ -11,6 +13,8 @@ def es_coordenada_valida(valor, limite_min, limite_max):
     es_valida = limite_min <= numero <= limite_max
 
     return es_valida
+
+#------------------------------------------Funciones principales---------------------------------------#
 
 def validar_coordenadas(ruta_archivo, separador):
 
@@ -35,3 +39,20 @@ def validar_coordenadas(ruta_archivo, separador):
                 registros_invalidos.append(fila)
         
         return len(registros_invalidos), registros_invalidos
+
+def detectar_coordenadas_incompletas(ruta_archivo, separador):
+        
+        registros = []
+        with open(ruta_archivo, "r", encoding = "utf-8", newline = "") as file_csv:
+             csv_reader = csv.DictReader(file_csv, delimiter=separador)
+
+             for fila in csv_reader:
+                # if not (fila.get("decimalLatitude", "")).strip() or not (fila.get("decimalLongitude", "")).strip(): registros.append(fila)
+                lon = (fila.get("decimalLongitude","")).strip()
+                lat = (fila.get("decimalLatitude","")).strip()
+
+                if (lat and not lon) or (lon and not lat):
+                    registros.append(fila)
+        return len(registros), registros
+                
+
