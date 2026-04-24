@@ -28,18 +28,19 @@ def es_fecha_valida(fecha_str, formato):
         return False, None
 
 def es_incertidumbre_valida(incertidumbre_str):
-    es_invalida = False
-
     try:
+        # Se intenta convertir a decimal
         incertidumbre_float = float(incertidumbre_str)
 
+        # Se evalúan rangos: si es negativo o mayor a 100, es inválida(retorna False)
         if incertidumbre_float < 0 or incertidumbre_float > 100:
-            es_invalido = True
+            return False
+            
+        return True
+        
     except ValueError:
-        #Si el valor no es número, entonces el registro también es inválido
-        es_invalido = True
-    
-    return es_invalido
+        # Si el valor no es numérico, también es inválido
+        return False
 #------------------------------------------Funciones principales---------------------------------------#
 
 def validar_coordenadas(ruta_archivo, separador):
@@ -148,7 +149,7 @@ def detectar_country_codes_invalidos(ruta_archivo, separador):
             
             return len(registros_invalidos), registros_invalidos
         
-def detectar_uncertidumbres_invalidas(ruta_archivo, separador):
+def detectar_incertidumbres_invalidas(ruta_archivo, separador):
         
     registros_invalidos = []
     with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
