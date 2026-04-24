@@ -27,7 +27,19 @@ def es_fecha_valida(fecha_str, formato):
     #Ocurre si el formato es incorrecto o la fecha es invalida
         return False, None
 
+def es_incertidumbre_valida(incertidumbre_str):
+    es_invalida = False
 
+    try:
+        incertidumbre_float = float(incertidumbre_str)
+
+        if incertidumbre_float < 0 or incertidumbre_float > 100:
+            es_invalido = True
+    except ValueError:
+        #Si el valor no es número, entonces el registro también es inválido
+        es_invalido = True
+    
+    return es_invalido
 #------------------------------------------Funciones principales---------------------------------------#
 
 def validar_coordenadas(ruta_archivo, separador):
@@ -117,10 +129,35 @@ def detectar_duplicados(ruta_archivo, nombre_columbna, separador="\t"):
                     ids_duplicados.add(registro_id)
                 else:
                     ids_totales.add(registro_id)
-                    
+
     return len(ids_duplicados), ids_duplicados
 
+def detectar_country_codes_invalidos(ruta_archivo, separador):
+        codigos_validos = {"AR", "CL", "BR", "UY", "PY", "BO", "PE", "EC", "CO", "VE"}
+        registros_invalidos = []
 
+        with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
+            csv_reader = csv.DictReader(archivo, delimiter=separador)
 
+            for fila in csv_reader:
+                #Se normaliza el código
+                codigo = fila.get("countryCode", "").strip().upper()
 
-                
+                if codigo not in codigos_validos:
+                    registros_invalidos.append(fila)
+            
+            return len(registros_invalidos), registros_invalidos
+        
+def detectar_uncertidumbres_invalidas(ruta_archivo, separador):
+        
+    registros_invalidos = []
+    with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
+        csv_reader = csv.DictReader(archivo, delimiter=separador)
+
+        for fila in csv_reader:
+            #Se normaliza el valor
+            incertidumbre_str = fila.get("coordinateUncertaintyInMeters", "").strip()
+            if not es_incertidumbre_valida(incertidumbre_str):
+                registros_invalidos.append(fila)
+
+    return len(registros_invalidos), registros_invalidos
