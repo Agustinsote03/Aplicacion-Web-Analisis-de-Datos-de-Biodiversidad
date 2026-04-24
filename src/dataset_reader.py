@@ -6,7 +6,7 @@ def imprimir_primeras_filas(ruta_archivo, separador="\t"):
     ruta = Path(ruta_archivo)
 
     with ruta.open(encoding="utf-8", newline="") as archivo:
-        lector = csv.reader(archivo, delimiter=separador)
+        lector = csv.DictReader(archivo, delimiter=separador)
         
         contador = 0
         for fila in lector:
@@ -21,8 +21,9 @@ def obtener_columnas(path_archivo):
     path = Path(path_archivo)
 
     with path.open(newline="", encoding="utf-8") as archivo:
-        reader = csv.reader(archivo)
-        columnas = next(reader) 
+        reader = csv.DictReader(archivo)
+
+        columnas = reader.fieldnames
         #Primera fila del CSV (encabezados)
 
     return columnas
@@ -32,8 +33,8 @@ def posiciones_columnas(ruta_archivo):
     ruta = Path(ruta_archivo)
 
     with ruta.open(encoding="utf-8", newline="") as archivo:
-        reader = csv.reader(archivo, delimiter="\t")
-        columnas = next(reader)
+        reader = csv.DictReader(archivo, delimiter="\t")
+        columnas = reader.fieldnames
 
     posiciones = {}
     for i, col in enumerate(columnas):
@@ -46,10 +47,7 @@ def cantidad_registros(ruta_archivo, separador="\t"):
     ruta = Path(ruta_archivo)
 
     with ruta.open(encoding="utf-8", newline="") as archivo:
-        reader = csv.reader(archivo, delimiter=separador)
-
-        next(reader)
-        #Saltea la primera fila (encabezados)
+        reader = csv.DictReader(archivo, delimiter=separador)
 
         contador = 0
         for fila in reader:
@@ -62,18 +60,15 @@ def columnas_con_nulos(ruta_archivo, separador="\t"):
     ruta = Path(ruta_archivo)
 
     with ruta.open(encoding="utf-8", newline="") as archivo:
-        reader = csv.reader(archivo, delimiter=separador)
-
-        columnas = next(reader)
-        #Nombre de columnas
+        reader = csv.DictReader(archivo, delimiter=separador)
 
         columnas_con_nulo = set()
         #Uso set para evitar repetidos
 
         for fila in reader:
-            for i, valor in enumerate(fila):
+            for col, valor in fila.items():
                 if valor == "":
-                    columnas_con_nulo.add(columnas[i])
+                    columnas_con_nulo.add(col)
                     #Guarda el nombre de la columna con valor nulo
 
     return list(columnas_con_nulo)
@@ -83,15 +78,13 @@ def porcentaje_nulos_por_columna(ruta_archivo, separador="\t"):
     ruta = Path(ruta_archivo)
 
     with ruta.open(encoding="utf-8", newline="") as archivo:
-        reader = csv.reader(archivo, delimiter=separador)
+        reader = csv.DictReader(archivo, delimiter=separador)
 
-        columnas = next(reader)
+        columnas = reader.fieldnames
         #Nombres de columnas
 
-        n_cols = len(columnas)
-
-        conteo_nulos = [0] * n_cols
-        #Lista para contar nulos por columna
+        conteo_nulos = {col: 0 for col in columnas}
+        #Diccionario para contar nulos por columna
 
         total_registros = 0
         #Contador total de filas
@@ -99,14 +92,18 @@ def porcentaje_nulos_por_columna(ruta_archivo, separador="\t"):
         for fila in reader:
             total_registros += 1
 
-            for i in range(n_cols):
-                if i < len(fila) and fila[i] == "":
-                    conteo_nulos[i] += 1
+            for col in columnas:
+                if fila[col] == "":
+                    conteo_nulos[col] += 1
                 #Detecta nulos y los cuenta por columna
 
+    if total_registros == 0:
+        return {}
+        #Evita la división por 0 si el dataset está vacío
+     
     porcentajes = {}
-    for i, col in enumerate(columnas):
-        porcentajes[col] = (conteo_nulos[i] / total_registros) * 100
+    for col in columnas:
+        porcentajes[col] = (conteo_nulos[col] / total_registros) * 100
         #Calcula el porcentaje de nulos por columnas
 
     return porcentajes
@@ -116,22 +113,16 @@ def valores_distintos_columna(ruta_archivo, nombre_columna, separador="\t"):
     ruta = Path(ruta_archivo)
 
     with ruta.open(encoding="utf-8", newline="") as archivo:
-        reader = csv.reader(archivo, delimiter=separador)
+        reader = csv.DictReader(archivo, delimiter=separador)
 
-        columnas = next(reader)
-
-        if nombre_columna not in columnas:
-            print("La columna no existe")
-            return None
-
-        indice = columnas.index(nombre_columna)
-        #Encuentra el índice de la columna
+        if nombre_columna not in reader.fieldnames:
+            raise KeyError (f"La columna {nombre_columna} no existe en el dataset")
 
         valores = set()
         #Uso un set para eliminar duplicados automáticamente
 
         for fila in reader:
-            valores.add(fila[indice])
+            valores.add(fila[nombre_columna])
 
     return len(valores)
 
@@ -140,21 +131,16 @@ def frecuencia_valores_columna(ruta_archivo, nombre_columna, separador="\t"):
     ruta = Path(ruta_archivo)
 
     with ruta.open(encoding="utf-8", newline="") as archivo:
-        reader = csv.reader(archivo, delimiter=separador)
+        reader = csv.DictReader(archivo, delimiter=separador)
 
-        columnas = next(reader)
-
-        if nombre_columna not in columnas:
-            print("La columna no existe")
-            return None
-
-        indice = columnas.index(nombre_columna)
+        if nombre_columna not in reader.fieldnames:
+            raise KeyError (f"La columna {nombre_columna} no existe en el dataset")
 
         frecuencias = {}
         #Diccionario de conteo de frecuencias por valor
 
         for fila in reader:
-            valor = fila[indice]
+            valor = fila[nombre_columna]
 
             if valor in frecuencias:
                 frecuencias[valor] += 1
@@ -168,24 +154,20 @@ def resumen_columna(ruta_archivo, nombre_columna, tipo, separador="\t"):
     ruta = Path(ruta_archivo)
 
     with ruta.open(encoding="utf-8", newline="") as archivo:
-        reader = csv.reader(archivo, delimiter=separador)
+        reader = csv.DictReader(archivo, delimiter=separador)
 
-        columnas = next(reader)
-
-        if nombre_columna not in columnas:
-            print("La columna no existe")
-            return None
-
-        indice = columnas.index(nombre_columna)
-        #Obtiene el índice de la columna
+        if nombre_columna not in reader.fieldnames:
+            raise KeyError (f"La columna {nombre_columna} no existe en el dataset")
+            #Verifica si la columna existe
 
         valores = []
 
         for fila in reader:
-            if indice < len(fila) and fila[indice] != "":
-            #Filtra valores válidos, evita valores nulos o filas incompletas
-                valores.append(fila[indice])
-                #Arma una lista con todos los datos de la columna
+            valor = fila[nombre_columna]
+
+            if valor != "":
+                valores.append(valor)
+            #Filtra valores válidos y arma una lista con todos los datos de la columna
 
     if len(valores) == 0:
         print("No hay datos en la columna")
@@ -225,8 +207,8 @@ def resumen_columna(ruta_archivo, nombre_columna, tipo, separador="\t"):
         maximo = max(longitudes)
 
         return {
-            "min_len": minimo,
-            "max_len": maximo
+            "min longitud": minimo,
+            "max longitud": maximo
         }
 
     else:
@@ -238,24 +220,24 @@ def columnas_totalmente_nulas(ruta_archivo, separador="\t"):
     ruta = Path(ruta_archivo)
 
     with ruta.open(encoding="utf-8", newline="") as archivo:
-        reader = csv.reader(archivo, delimiter=separador)
+        reader = csv.DictReader(archivo, delimiter=separador)
 
-        columnas = next(reader)
-        n_cols = len(columnas)
+        columnas = reader.fieldnames
+        #Lista de nombres de columnas
 
-        columnas_nulas = [True] * n_cols
+        columnas_nulas = {col: True for col in columnas}
         #Arranca suponiendo que todas las columnas son nulas
 
         for fila in reader:
-            for i in range(n_cols):
-                if i < len(fila) and fila[i] != "":
-                    columnas_nulas[i] = False
+            for col in columnas:
+                if fila[col] != "":
+                    columnas_nulas[col] = False
                     #Si se encuentra un valor no nulo, marca la columna como no nula
 
         resultado = []
-        for i, es_nula in enumerate(columnas_nulas):
+        for col, es_nula in columnas_nulas.items():
             if es_nula:
-                resultado.append(columnas[i])
+                resultado.append(col)
                 #Devuelve las columnas que quedaron en True
 
     return resultado
