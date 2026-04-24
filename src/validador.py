@@ -1,4 +1,5 @@
 import csv
+from datetime import datetime
 
 #------------------------------------------Funciones auxiliares---------------------------------------#
 
@@ -13,6 +14,19 @@ def es_coordenada_valida(valor, limite_min, limite_max):
     es_valida = limite_min <= numero <= limite_max
 
     return es_valida
+
+#Valida si un string puede convertirse a fecha segun el formato dado
+def es_fecha_valida(fecha_str, formato):
+    #Usa try/except porque datetime.strptime muestra ValueError si falla
+    try:
+        fecha = datetime.strptime(fecha_str, formato)
+        #Convierte el string a objeto datetime si el formato es correcto 
+        return True, fecha
+    
+    except ValueError:
+    #Ocurre si el formato es incorrecto o la fecha es invalida
+        return False, None
+
 
 #------------------------------------------Funciones principales---------------------------------------#
 
@@ -54,5 +68,36 @@ def detectar_coordenadas_incompletas(ruta_archivo, separador):
                 if (lat and not lon) or (lon and not lat):
                     registros.append(fila)
         return len(registros), registros
-                
 
+def validar_fechas(ruta_archivo, nombre_columna, separador="\t"):
+    
+    registros_invalidos = []
+    
+    formato = "%d/%m/%y"
+    #Defino el formato esperado de las fechas (dia/mes/año)
+
+    with open(ruta_archivo, encoding="utf-8", newline="") as archivo:
+        reader = csv.DictReader(archivo, delimiter=separador)
+
+        for fila in reader:
+            fecha_str = (fila.get(nombre_columna, "")).strip()
+            #Se usa get para evitar errores si la columna no existe
+
+            if not fecha_str:
+                registros_invalidos.append(fila)
+                continue
+                #Si el campo de fecha está vacío, se considera inválido
+
+            es_valida, fecha = es_fecha_valida(fecha_str, formato)
+            #Uso de la funcio¿ón auxiliar
+            
+            if not es_valida:
+                registros_invalidos.append(fila)
+                #Para los formatos inválidos o fechas imposibles
+
+            elif fecha > datetime.now():
+                registros_invalidos.append(fila)
+                #Si la fecha es futura, se considera inválida
+
+    return len(registros_invalidos), registros_invalidos
+                
