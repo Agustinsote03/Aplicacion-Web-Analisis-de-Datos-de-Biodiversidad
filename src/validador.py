@@ -100,4 +100,27 @@ def validar_fechas(ruta_archivo, nombre_columna, separador="\t"):
                 #Si la fecha es futura, se considera inválida
 
     return len(registros_invalidos), registros_invalidos
+
+def detectar_duplicados(ruta_archivo, nombre_columbna, separador="\t"):
+    ids_duplicados = set()
+    ids_totales = set()
+    with open(ruta_archivo, encoding="utf-8", newline="") as archivo:
+        reader = csv = csv.DictReader(archivo, delimiter=separador)
+
+        for fila in reader:
+            registro_id = fila.get("ocurrenceID","").strip()
+
+            #Si existe el id, se añade a uno de los dos conjuntos
+            if registro_id.exists():
+
+                if registro_id in ids_totales:
+                    ids_duplicados.add(registro_id)
+                else:
+                    ids_totales.add(registro_id)
+                    
+    return len(ids_duplicados), ids_duplicados
+
+
+
+
                 
