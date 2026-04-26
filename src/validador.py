@@ -121,7 +121,7 @@ def detectar_duplicados(ruta_archivo, nombre_columbna, separador="\t"):
         reader = csv.DictReader(archivo, delimiter=separador)
 
         for fila in reader:
-            registro_id = fila.get("ocurrenceID","").strip()
+            registro_id = fila.get("occurrenceID","").strip()
 
             #Si existe el id, se añade a uno de los dos conjuntos
             if registro_id:
