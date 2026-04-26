@@ -1,4 +1,5 @@
 import csv 
+from utils import cantidad_registros
 from pathlib import Path
 
 #Abre el archivo e imprime las primeras 10 filas
@@ -42,18 +43,6 @@ def posiciones_columnas(ruta_archivo):
 
     return posiciones
 
-#Cuenta la cantidad de registros (filas) que tiene el dataset
-def cantidad_registros(ruta_archivo, separador="\t"):
-    ruta = Path(ruta_archivo)
-
-    with ruta.open(encoding="utf-8", newline="") as archivo:
-        reader = csv.DictReader(archivo, delimiter=separador)
-
-        contador = 0
-        for fila in reader:
-            contador += 1
-       
-    return contador
  
 #Cuenta la cantidad de registros que tienen al menos un valor nulo (vacío) en alguna de sus columnas
 def columnas_con_nulos(ruta_archivo, separador="\t"):
