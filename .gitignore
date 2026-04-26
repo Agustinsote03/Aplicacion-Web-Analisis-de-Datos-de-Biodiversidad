@@ -6,3 +6,5 @@ raw_datasets/*
 processed_datasets/*
 # Excluyendo el .gitkeep 
 !processed_datasets/.gitkeep
+
+__pycache__
