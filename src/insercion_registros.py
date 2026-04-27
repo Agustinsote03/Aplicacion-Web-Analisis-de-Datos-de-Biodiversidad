@@ -67,3 +67,11 @@ def crear_estructura_registro(
         "vernacularName": vernacularName,
     }
 
+
+
+#Recibe una lista de columnas y devuelve un diccionario con esas columnas como claves y valores vacíos.
+def crear_registro_vacio(columnas):
+    return {col: "" for col in columnas if col != "id"}
+
+
+
