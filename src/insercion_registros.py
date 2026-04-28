@@ -76,7 +76,7 @@ def crear_registro_vacio(columnas):
 
 
 CODIGOS_PAIS_VALIDOS = {"AR","CL","BR","UY","PY","BO","PE","EC","CO","VE"}
-FORMATO_FECHA = "%d/%m/%y"
+FORMATO_FECHA = "%Y-%m-%d"
 
 def validar_registro(registro):
     errores = []
