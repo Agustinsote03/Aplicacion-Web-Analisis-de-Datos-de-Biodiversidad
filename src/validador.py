@@ -2,6 +2,11 @@ import csv
 from utils import cantidad_registros
 from datetime import datetime
 
+#Cotas aproximadas de América del Sur
+LAT_MIN= -56.0
+LAT_MAX= 13.0
+LON_MIN= -82.0
+LON_MAX = -35.0
 #------------------------------------------Funciones auxiliares---------------------------------------#
 
 def es_coordenada_valida(valor, limite_min, limite_max):
@@ -234,10 +239,7 @@ def ejecutar_analisis_calidad(ruta_archivo, separador):
 
 def esta_en_territorio(ruta_archivo, separador):
     registro_invalido = []
-    Lat_min = -56.0
-    Lat_max = 13.0
-    Lon_min = -82.0
-    Lon_max = -35.0
+
     with open(ruta_archivo, "r", encoding="utf-8",newline="") as archivo:
         csv_reader = csv.DictReader(archivo, delimiter=separador)
         for fila in csv_reader:
@@ -245,8 +247,8 @@ def esta_en_territorio(ruta_archivo, separador):
             lon = fila.get("decimalLongitude")
 
             if lat and lon:
-                es_lat_valida = es_coordenada_valida(lat,Lat_min,Lat_max)
-                es_lon_valida = es_coordenada_valida(lon, Lon_min,Lon_max)
+                es_lat_valida = es_coordenada_valida(lat,LAT_MIN,LAT_MAX)
+                es_lon_valida = es_coordenada_valida(lon, LON_MIN,LON_MAX)
                 if not(es_lat_valida and es_lon_valida):
                     registro_invalido.append(fila)
 
@@ -267,7 +269,7 @@ def validar_latitud(ruta_archivo, separador):
             if lat:
                 es_lat_valida = es_coordenada_valida(lat,-90,90)
                 if es_lat_valida:
-                    pertenece = es_coordenada_valida(lat,Lat_min,Lat_max)
+                    pertenece = es_coordenada_valida(lat,LAT_MIN,LAT_MAX)
                     if not pertenece:
                         registros_invalido.append(fila)
                 else:
