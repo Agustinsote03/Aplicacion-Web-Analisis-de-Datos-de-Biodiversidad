@@ -279,5 +279,30 @@ def validar_latitud(ruta_archivo, separador):
 
     return len(registros_invalido), registros_invalido
 
+def validar_longitud(ruta_archivo, separador):
+    """
+     Esta función recibe la latitud, y evalua:
+      -Que exista
+      -Que sea efectivamente una coordenada
+      -Que pertenezca al territorio de América del Sur
+    """
+    registros_invalido = []
+    with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
+        csv_reader = csv.DictReader(archivo, delimiter=separador)
+        for fila in csv_reader:
+            lon = fila.get("decimalLongitude","")
+            if lon:
+                es_lon_valida = es_coordenada_valida(lon,-90,90)
+                if es_lon_valida:
+                    pertenece = es_coordenada_valida(lon,LON_MIN,LON_MAX)
+                    if not pertenece:
+                        registros_invalido.append(fila)
+                else:
+                    registros_invalido.append(fila)
+            else:
+                registros_invalido.append(fila)
+
+    return len(registros_invalido), registros_invalido
+
 
 
