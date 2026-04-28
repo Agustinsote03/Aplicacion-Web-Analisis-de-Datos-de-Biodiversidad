@@ -134,3 +134,42 @@ def validar_registro(registro):
 
     es_valido = len(errores) == 0
     return es_valido, errores
+
+
+# Recorre el dataset y retorna el mayor catalogNumber encontrado
+def max_catalog_number(ruta_archivo):
+    max_num = 0
+    with open(ruta_archivo, "r", encoding = "utf-8", newline = "") as f:
+        reader = csv.DictReader(f, delimiter = "\t")
+        for fila in reader:
+            catalog = fila.get("catalogNumber", "").strip()
+            if catalog.isdigit():
+                num = int(catalog)
+                if num > max_num:
+                    max_num = num
+    return max_num
+
+
+# Recibe estructura del inciso 4.A y retorna un diccionario listo para añadir al CSV
+def preparar_estructura(registro, ruta_archivo, columnas):
+    max_num = max_catalog_number(ruta_archivo)
+    nuevo_num = max_num + 1
+    
+    # Se usa zfill para rellenar el número con ceros a la izquierda respetando el patrón de ocurrenceID
+    nuevo_catalog = str(nuevo_num).zfill(6) # Lo rellena hasta tener 6 dígitos
+    nuevo_occurrence_id = f"{"IADIZA:COI:"}{nuevo_catalog}"
+
+    # Se arma el registro completo con todas las columnas del dataset
+    registro_completo = {col: "" for col in columnas}    
+
+    # Se copian los campos del registro recibido
+    for campo, valor in registro.items():
+        if campo in registro_completo:
+            registro_completo[campo] = valor
+    
+    # Se setean los IDs
+    registro_completo["gbifID"] = "" # Asignado externamente por GBIF
+    registro_completo["occurrenceID"] = nuevo_occurrence_id
+    registro_completo["catalogNumber"] = nuevo_catalog
+
+    return registro_completo
