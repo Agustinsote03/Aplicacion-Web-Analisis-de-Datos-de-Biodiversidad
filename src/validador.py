@@ -232,3 +232,23 @@ def ejecutar_analisis_calidad(ruta_archivo, separador):
     
     return {"idDuplicado":ids_duplicados, "fechaInvalida":fecha_invalida,"taxonomiaInvalida":taxonomia_invalida,"coordenadaInvalida":coordenada_invalida}
 
+def esta_en_territorio(ruta_archivo, separador):
+    registro_invalido = []
+    Lat_min = -56.0
+    Lat_max = 13.0
+    Lon_min = -82.0
+    Lon_max = -35.0
+    with open(ruta_archivo, "r", encoding="utf-8",newline="") as archivo:
+        csv_reader = csv.DictReader(archivo, delimiter=separador)
+        for fila in csv_reader:
+            lat = fila.get("decimalLatitude")
+            lon = fila.get("decimalLongitude")
+
+            if lat and lon:
+                es_lat_valida = es_coordenada_valida(lat,Lat_min,Lat_max)
+                es_lon_valida = es_coordenada_valida(lon, Lon_min,Lon_max)
+                if not(es_lat_valida and es_lon_valida):
+                    registro_invalido.append(fila)
+                    
+    return len(registro_invalido), registro_invalido
+
