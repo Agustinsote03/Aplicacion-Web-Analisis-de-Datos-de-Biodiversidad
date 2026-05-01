@@ -258,3 +258,89 @@ def insertar_registro(ruta_origen, ruta_destino, registro):
             writer.writerow(registro_completo)
 
     print("Registro insertado correctamente")
+
+#Función para insertar múltiples registros ingresados por teclado
+def insertar_multiples_registros(ruta_origen, ruta_destino):
+
+    registros = []
+    #Lista donde se guardarán los registros válidos
+
+    print("Carga de múltiples registros (dejar vacío 'scientificName' para terminar)")
+
+    #Loop para ingresar varios registros por teclado
+    while True:
+        registro = ingresar_registro_por_teclado()
+        #Pide datos al usuario para crear un nuevo registro
+
+        #Condición de corte, si no se escribe scientificName se termina la carga de registros
+        if registro.get("License", "") == "":
+            break
+        
+        #Valida cada registro ingresado
+        es_valido, errores = validar_registro(registro)
+
+        if es_valido:
+            registros.append(registro)
+            print("Registro agregado\n")
+            #Si es válido se agrega a la lista de registros
+        else:
+            print("Registro inválido:")
+            for e in errores:
+                print("-", e)
+                #Si no es válido se muestran los errores y no se agrega a la lista
+            print()
+
+    #Si no se ingresó ningún registro válido se termina la función
+    if not registros:
+        print("No se ingresaron registros válidos")
+        return
+
+    #Abrimos dataset original
+    with open(ruta_origen, "r", encoding="utf-8", newline="") as f_in:
+
+        reader = csv.DictReader(f_in, delimiter="\t")
+        columnas = reader.fieldnames
+        #Nombre de las columnas del dataset
+
+        filas = list(reader)  
+        #Guardamos todas las filas originales en memoria
+
+    max_num = max_catalog_number(ruta_origen)
+    #Calculo el último catalogNumber una sola vez para luego asignar nuevos números a los registros ingresados, evitando recorrer el dataset repetidamente
+
+    #Creo el nuevo archivo
+    with open(ruta_destino, "w", encoding="utf-8", newline="") as f_out:
+
+        writer = csv.DictWriter(f_out, fieldnames=columnas, delimiter="\t")
+        writer.writeheader()
+        #Escribo los encabezados del dataset
+
+        for fila in filas:
+            writer.writerow(fila)
+            #Copio el dataset original al nuevo archivo
+
+        #Agrego los nuevos registros al final del archivo
+        for i, registro in enumerate(registros, start=1):
+
+            #Genero nuevos IDs para cada registro sin repetir
+            nuevo_num = max_num + i
+            nuevo_catalog = str(nuevo_num).zfill(6)
+            nuevo_occurrence_id = f"IADIZA:COI:{nuevo_catalog}"
+
+            registro_completo = {col: "" for col in columnas}
+            #Creo estructura completa con todas las columnas del dataset
+
+            for campo, valor in registro.items():
+                if campo in registro_completo:
+                    registro_completo[campo] = valor
+                #Copio los datos del usuario
+
+            registro_completo["gbifID"] = ""
+            registro_completo["occurrenceID"] = nuevo_occurrence_id
+            registro_completo["catalogNumber"] = nuevo_catalog
+            #Seteo los IDs para cada registro
+
+            writer.writerow(registro_completo)
+            #Escribo el registro en el nuevo archivo
+
+    print("Registros insertados correctamente")
