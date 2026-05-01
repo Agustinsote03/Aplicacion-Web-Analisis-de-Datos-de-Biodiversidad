@@ -2,6 +2,53 @@ import csv
 from pathlib import Path
 from validador import *
 
+#-----------------FUNCIONES AUXILIARES---------------------#
+#Se ingresa un nuevo registro por teclado solicitando al usuario los campos principales del dataset 
+def ingresar_registro_por_teclado():
+    print("Ingrese los datos del nuevo registro:")
+
+    #Pido los campos principales del dataset al usuario
+    license = input("License: ")
+    institutionCode = input("Institution Code: ")
+    collectionCode = input("Collection Code: ")
+    basisOfRecord = input("Basis of Record: ")
+    occurrenceStatus = input("Occurrence Status (PRESENT/ABSENT): ")
+    recordedBy = input("Recorded By: ")
+    eventDate = input("Event Date (YYYY-MM-DD): ")
+    year = input("Year: ")
+    month = input("Month: ")
+    day = input("Day: ")
+    countryCode = input("Country Code: ")
+    stateProvince = input("State/Province: ")
+    locality = input("Locality: ")
+    decimalLatitude = input("Latitude: ")
+    decimalLongitude = input("Longitude: ")
+    scientificName = input("Scientific Name: ")
+
+    #Uso la función de creación de estructura para generar un nuevo registro con los datos ingresados
+    registro = crear_estructura_registro(
+        license=license,
+        institutionCode=institutionCode,
+        collectionCode=collectionCode,
+        basisOfRecord=basisOfRecord,
+        occurrenceStatus=occurrenceStatus,
+        recordedBy=recordedBy,
+        eventDate=eventDate,
+        year=year,
+        month=month,
+        day=day,
+        countryCode=countryCode,
+        stateProvince=stateProvince,
+        locality=locality,
+        decimalLatitude=decimalLatitude,
+        decimalLongitude=decimalLongitude,
+        scientificName=scientificName
+    )
+
+    return registro
+
+#---------------------FUNCIONES PRINCIPALES---------------------#
+
 # Se crea estructura que representa un registro del dataset
 def crear_estructura_registro(
     license="",
@@ -173,3 +220,41 @@ def preparar_estructura(registro, ruta_archivo, columnas):
     registro_completo["catalogNumber"] = nuevo_catalog
 
     return registro_completo
+
+#Inserta un nuevo registro correctamente formateado al final del dataset conservando la estructura original 
+def insertar_registro(ruta_origen, ruta_destino, registro):
+
+    #Valida el registro antes de intentar insertarlo, mostrando los errores encontrados si no es válido
+    es_valido, errores = validar_registro(registro)
+
+    if not es_valido:
+        print("Registro inválido. No se insertó.")
+        for e in errores:
+            print("-", e)
+        return  #Corta la función si hay errores
+    
+    #Abre el dataset original en modo lectura
+    with open(ruta_origen, "r", encoding="utf-8", newline="") as f_in:
+
+        reader = csv.DictReader(f_in, delimiter="\t")
+        columnas = reader.fieldnames
+        #Guarda el nombre de las columnas
+
+        #Genera el registro listo para insertar, asignando un nuevo catalogNumber y occurrenceID
+        registro_completo = preparar_estructura(registro, ruta_origen, columnas)
+
+        #Abre el archivo destino en modo escritura y copia el contenido del original, luego agrega el nuevo registro
+        with open(ruta_destino, "w", encoding="utf-8", newline="") as f_out:
+            writer = csv.DictWriter(f_out, fieldnames=columnas, delimiter="\t")
+
+            writer.writeheader()
+            #Escribe la primera fila (nombre de columnas)
+
+            #Copia todas las filas del dataset original
+            for fila in reader:
+                writer.writerow(fila)
+
+            #Agrega el nuevo registro al final del archivo
+            writer.writerow(registro_completo)
+
+    print("Registro insertado correctamente")
