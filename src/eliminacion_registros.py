@@ -5,7 +5,6 @@ def eliminar_por_id(ruta_original, ruta_nueva, columna, valor, separador="\t"):
     eliminado = False
 
     with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
-         # Crea un archivo, no modifica el originla
          open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
 
         # Lee el dataset
