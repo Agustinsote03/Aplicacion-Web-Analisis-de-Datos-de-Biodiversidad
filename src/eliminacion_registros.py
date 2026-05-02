@@ -62,3 +62,60 @@ def eliminar_por_lista(ruta_original, ruta_nueva, columna, valores_a_eliminar, s
 
     return eliminados
 
+import csv
+
+def eliminar_por_condicion(ruta_original, ruta_nueva, columna, operador, valor, separador="\t"):
+    eliminados = 0
+
+    # Abrimos archivo original (lectura) y nuevo (escritura)
+    with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
+         open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
+
+        lector = csv.DictReader(archivo_original, delimiter=separador)
+        escritor = csv.DictWriter(archivo_nuevo, fieldnames=lector.fieldnames, delimiter=separador)
+
+        escritor.writeheader()
+
+        # Recorremos todas las filas del dataset
+        for fila in lector:
+            # Obtenemos el valor de la columna indicada
+            dato = fila.get(columna, "").strip()
+
+            # Intentamos convertir a número (por si es year, cantidad, etc.)
+            try:
+                dato_val = float(dato)
+                valor_val = float(valor)
+            except:
+                # Si no se puede convertir, lo tratamos como texto
+                dato_val = dato
+                valor_val = valor
+
+            cumple = False # Asumimos que NO cumple la condicion
+
+            # Evaluamos la condicion segun el operador
+            if operador == "==":
+                cumple = dato_val == valor_val
+            elif operador == "!=":
+                cumple = dato_val != valor_val
+            elif operador == ">":
+                cumple = dato_val > valor_val
+            elif operador == ">=":
+                cumple = dato_val >= valor_val
+            elif operador == "<":
+                cumple = dato_val < valor_val
+            elif operador == "<=":
+                cumple = dato_val <= valor_val
+
+            # Si cumple eliminamos la fila 
+            if cumple:
+                eliminados += 1
+                continue
+            
+            #Si no se elimino nada aviso: 
+            escritor.writerow(fila)
+
+    if eliminados == 0:
+        print("No se eliminaron registros")
+
+    return eliminados
+
