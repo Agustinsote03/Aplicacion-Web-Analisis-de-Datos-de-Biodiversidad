@@ -95,15 +95,15 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
 
         #Recorremos todos los registros
         for fila in lector:
-            
+            print(fila.get("occurrenceID"), id_registro)
             # Buscamos el registro por occurrenceID
-            if fila.get("occurrenceID", "").strip() == str(id_registro).strip():
+            if str(fila.get("occurrenceID", "")).strip() == str(id_registro).strip():
 
                 # Validar antes de cambiar
                 for columna, nuevo_valor in modificaciones.items():
                     # Validamos campos de texto
                     if columna in ["country", "stateProvince"]:
-                        if not isinstance[nuevo_valor, str] or nuevo_valor.strip() == "":
+                        if not isinstance(nuevo_valor, str) or nuevo_valor.strip() == "":
                             errores.append(f"{columna} invalido")
 
                     # Validamos ID (debe ser numerico)
