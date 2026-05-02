@@ -80,7 +80,6 @@ def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modifica
 
 def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro, modificaciones, separador="\t"):
     registro_actualizado = False
-    errores = [] #Lista para guardar errores de validacion
 
     # Abrimos archivo original(lectura) y nuevo(escritura)
     with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
@@ -95,22 +94,19 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
 
         #Recorremos todos los registros
         for fila in lector:
-            print(fila.get("occurrenceID"), id_registro)
+            errores = [] #Lista para guardar errores de validacion
+            
             # Buscamos el registro por occurrenceID
             if str(fila.get("occurrenceID", "")).strip() == str(id_registro).strip():
 
                 # Validar antes de cambiar
                 for columna, nuevo_valor in modificaciones.items():
                     # Validamos campos de texto
-                    if columna in ["country", "stateProvince"]:
+                    if columna in ["countryCode", "stateProvince"]:
                         if not isinstance(nuevo_valor, str) or nuevo_valor.strip() == "":
                             errores.append(f"{columna} invalido")
 
-                    # Validamos ID (debe ser numerico)
-                    if columna == "occurrenceID":
-                        if not str(nuevo_valor).isdigit():
-                            errores.append("occurrenceID invalido")
-                
+                    
                 # Actualizar si no hay errores
                 if not errores:
                     for columna, nuevo_valor in modificaciones.items():
