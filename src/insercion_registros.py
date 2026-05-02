@@ -145,7 +145,7 @@ def validar_registro(registro):
         if not es_valida:
             errores.append(
                 f"eventDate inválida: '{event_date}' "
-                f"Formato esperado: {FORMATO_FECHA} (ej: 15/03/85)"
+                f"Formato esperado: {FORMATO_FECHA} (ej: 2024-03-15)"
             )
         elif fecha is not None:
             from datetime import datetime
@@ -171,7 +171,7 @@ def validar_registro(registro):
         )
 
     #Validar que occurrenceStatus tenga un valor conocido si está presente
-    status = registro.get("ocurrenceStatus", "").strip()
+    status = registro.get("occurrenceStatus", "").strip()
     valores_validos_status = {"PRESENT", "ABSENT"}
     if status != "" and status.upper() not in valores_validos_status:
         errores.append(
