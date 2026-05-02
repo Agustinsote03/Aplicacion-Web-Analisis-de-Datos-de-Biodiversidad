@@ -2,7 +2,9 @@ import csv
 from pathlib import Path
 
 def buscar_registros(ruta_archivo, filtros, separador="\t"):
-
+    """
+        Busca y retorna registros de un dataset que cumplan con los criterios de filtrado
+    """
     registros_encontrados = []  
     #Lista donde voy a guardar resultados
 
