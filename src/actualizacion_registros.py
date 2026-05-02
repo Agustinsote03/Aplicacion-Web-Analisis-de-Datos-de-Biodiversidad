@@ -78,3 +78,62 @@ def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modifica
     return registro_actualizado
 
 
+def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro, modificaciones, separador="\t"):
+    registro_actualizado = False
+    errores = [] #Lista para guardar errores de validacion
+
+    # Abrimos archivo original(lectura) y nuevo(escritura)
+    with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
+        open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
+
+        # Leemos el CSV como diccionarios
+        lector = csv.DictReader(archivo_original, delimiter=separador)
+        #Preparamos el archivo de salida con las mismas columnas
+        escritor = csv.DictWriter(archivo_nuevo, fieldnames=lector.fieldnames, delimiter=separador)
+
+        escritor.writeheader() #Escribimos encabezado
+
+        #Recorremos todos los registros
+        for fila in lector:
+            
+            # Buscamos el registro por occurrenceID
+            if fila.get("occurrenceID", "").strip() == str(id_registro).strip():
+
+                # Validar antes de cambiar
+                for columna, nuevo_valor in modificaciones.items():
+                    # Validamos campos de texto
+                    if columna in ["country", "stateProvince"]:
+                        if not isinstance[nuevo_valor, str] or nuevo_valor.strip() == "":
+                            errores.append(f"{columna} invalido")
+
+                    # Validamos ID (debe ser numerico)
+                    if columna == "occurrenceID":
+                        if not str(nuevo_valor).isdigit():
+                            errores.append("occurrenceID invalido")
+                
+                # Actualizar si no hay errores
+                if not errores:
+                    for columna, nuevo_valor in modificaciones.items():
+                        if columna in fila:
+                            fila[columna] = nuevo_valor
+                    registro_actualizado = True
+                else:   
+                    # Si hay errores no se modifica
+                    print("Errores:", errores)
+            
+            # Escribimos la fila (modificada o  no) en el nuevo archivo
+            escritor.writerow(fila)
+    
+    # Si no se actualizo nada
+    if not registro_actualizado:
+        print("No se realizaron cambios")
+
+    return registro_actualizado
+
+
+def actualizar_un_campo_validando(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor, separador="\t"):
+    modificaciones = {columna: nuevo_valor}
+
+    return actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro, modificaciones, separador)
+
+
