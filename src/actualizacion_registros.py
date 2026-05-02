@@ -29,3 +29,26 @@ def buscar_registros(ruta_archivo, filtros, separador="\t"):
                 #Si cumple todas las condiciones, guardo el registro en la lista de resultados
 
     return registros_encontrados
+
+def actualizar_un_campo(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor, separador="\t"):
+    """
+        Actualiza un campo especifico de un registro basado en su ID y genera un nuevo archivo con la actualización
+    """
+    registro_actualizado = False
+
+    with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
+        open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
+        
+        lector = csv.DictReader(archivo_original, delimiter=separador)
+
+        escritor = csv.DictWriter((archivo_nuevo), fieldnames=lector.fieldnames, delimiter=separador)
+
+        escritor.writeheader()
+
+        for fila in lector:
+            if fila.get("ocurrenceID","").strip() == str(id_registro).strip():
+                fila[columna] = nuevo_valor
+                registro_actualizado = True
+        
+        escritor.writerow(fila)
+    return registro_actualizado
