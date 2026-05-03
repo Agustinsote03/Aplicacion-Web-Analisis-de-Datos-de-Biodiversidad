@@ -2,7 +2,7 @@ import csv
 from utils import cantidad_registros
 from datetime import datetime
 
-#Cotas aproximadas de América del Sur
+# Cotas aproximadas de América del Sur
 LAT_MIN= -56.0
 LAT_MAX= 13.0
 LON_MIN= -82.0
@@ -10,27 +10,27 @@ LON_MAX = -35.0
 #------------------------------------------Funciones auxiliares---------------------------------------#
 
 def es_coordenada_valida(valor, limite_min, limite_max):
-    #Quitamos espacios en blanco
+    # Quitamos espacios en blanco
     valor = valor.strip()
-    #Si está vacío se retorna False directamente
+    # Si está vacío se retorna False directamente
     if not valor:
         return False   
-    #Se convierte  en float() para comparar
+    # Se convierte  en float() para comparar
     numero = float(valor)
     es_valida = limite_min <= numero <= limite_max
 
     return es_valida
 
-#Valida si un string puede convertirse a fecha segun el formato dado
+# Valida si un string puede convertirse a fecha segun el formato dado
 def es_fecha_valida(fecha_str, formato):
-    #Usa try/except porque datetime.strptime muestra ValueError si falla
+    # Usa try/except porque datetime.strptime muestra ValueError si falla
     try:
         fecha = datetime.strptime(fecha_str, formato)
-        #Convierte el string a objeto datetime si el formato es correcto 
+        # Convierte el string a objeto datetime si el formato es correcto 
         return True, fecha
     
     except ValueError:
-    #Ocurre si el formato es incorrecto o la fecha es invalida
+    # Ocurre si el formato es incorrecto o la fecha es invalida
         return False, None
 
 def es_incertidumbre_valida(incertidumbre_str):
@@ -51,24 +51,24 @@ def es_incertidumbre_valida(incertidumbre_str):
 
 def validar_coordenadas(ruta_archivo, separador):
 
-    #Se inicializa una lista que contendrá los registros inválidos
+    # Se inicializa una lista que contendrá los registros inválidos
     registros_invalidos = []
     cont = 0
     with open(ruta_archivo, "r", encoding = "utf-8", newline= "") as file_csv:
         csv_reader = csv.DictReader(file_csv, delimiter=separador)
         
-        #Se recorre cada fila del archivo
+        # Se recorre cada fila del archivo
 
         for fila in csv_reader:
-            #Extreamos la latitud y longitud
+            # Extreamos la latitud y longitud
             lat = fila.get("decimalLatitude", " ")
             lon = fila.get("decimalLongitude", " ")
             
-            #Validación de coordenadas
+            # Validación de coordenadas
             lat_valida = es_coordenada_valida(lat, -90, 90)
             lon_valida = es_coordenada_valida(lon, -180, 180)
 
-            #Si 'es_coordenada_valida' devuelve false, se agrega a 'registros_invalidos'
+            # Si 'es_coordenada_valida' devuelve false, se agrega a 'registros_invalidos'
             if not lat_valida or not lon_valida:
                 registros_invalidos.append(fila)
         
@@ -94,30 +94,30 @@ def validar_fechas(ruta_archivo, nombre_columna, separador="\t"):
     registros_invalidos = []
     
     formato = "%d/%m/%y"
-    #Defino el formato esperado de las fechas (dia/mes/año)
+    # Defino el formato esperado de las fechas (dia/mes/año)
 
     with open(ruta_archivo, encoding="utf-8", newline="") as archivo:
         reader = csv.DictReader(archivo, delimiter=separador)
 
         for fila in reader:
             fecha_str = (fila.get(nombre_columna, "")).strip()
-            #Se usa get para evitar errores si la columna no existe
+            # Se usa get para evitar errores si la columna no existe
 
             if not fecha_str:
                 registros_invalidos.append(fila)
                 continue
-                #Si el campo de fecha está vacío, se considera inválido
+                # Si el campo de fecha está vacío, se considera inválido
 
             es_valida, fecha = es_fecha_valida(fecha_str, formato)
-            #Uso de la funcio¿ón auxiliar
+            # Uso de la funcio¿ón auxiliar
             
             if not es_valida:
                 registros_invalidos.append(fila)
-                #Para los formatos inválidos o fechas imposibles
+                # Para los formatos inválidos o fechas imposibles
 
             elif fecha > datetime.now():
                 registros_invalidos.append(fila)
-                #Si la fecha es futura, se considera inválida
+                # Si la fecha es futura, se considera inválida
 
     return len(registros_invalidos), registros_invalidos
 
@@ -130,7 +130,7 @@ def detectar_duplicados(ruta_archivo, nombre_columbna, separador="\t"):
         for fila in reader:
             registro_id = fila.get("occurrenceID","").strip()
 
-            #Si existe el id, se añade a uno de los dos conjuntos
+            # Si existe el id, se añade a uno de los dos conjuntos
             if registro_id:
 
                 if registro_id in ids_totales:
@@ -148,7 +148,7 @@ def detectar_country_codes_invalidos(ruta_archivo, separador):
             csv_reader = csv.DictReader(archivo, delimiter=separador)
 
             for fila in csv_reader:
-                #Se normaliza el código
+                # Se normaliza el código
                 codigo = fila.get("countryCode", "").strip().upper()
 
                 if codigo not in codigos_validos:
@@ -163,7 +163,7 @@ def detectar_incertidumbres_invalidas(ruta_archivo, separador):
         csv_reader = csv.DictReader(archivo, delimiter=separador)
 
         for fila in csv_reader:
-            #Se normaliza el valor
+            # Se normaliza el valor
             incertidumbre_str = fila.get("coordinateUncertaintyInMeters", "").strip()
             if not es_incertidumbre_valida(incertidumbre_str):
                 registros_invalidos.append(fila)
@@ -173,7 +173,7 @@ def detectar_incertidumbres_invalidas(ruta_archivo, separador):
 
 def ejecutar_analisis_calidad(ruta_archivo, separador):
 
-    #Se inicializan los registros
+    # Se inicializan los registros
     coordenada_invalida = []
     coordenada_incompleta = []
     fecha_invalida = []
@@ -181,9 +181,9 @@ def ejecutar_analisis_calidad(ruta_archivo, separador):
     ids_duplicados = set()
     ids_totales = set()
 
-    #Se incializa contador de filas
+    # Se incializa contador de filas
     cont = 0
-    #Formato esperado de las fechas
+    # Formato esperado de las fechas
     formato = "%Y-%m-%d"
 
     with open(ruta_archivo, "r", encoding = "utf-8", newline="") as archivo:
@@ -191,15 +191,15 @@ def ejecutar_analisis_calidad(ruta_archivo, separador):
 
         for fila in csv_reader:
 
-            #Se inicializa el conteo de filas
+            # Se inicializa el conteo de filas
             cont += 1
 
-            #Se valida por taxonomia:
+            # Se valida por taxonomia:
             taxonomia = fila.get("scientificName","").strip()
             if not taxonomia:
                 taxonomia_invalida.append(fila)
 
-            #Se evaluan las coordenadas
+            # Se evaluan las coordenadas
             lon = (fila.get("decimalLongitude","")).strip()
             lat = (fila.get("decimalLatitude","")).strip()
             if (lat and lon):
@@ -210,7 +210,7 @@ def ejecutar_analisis_calidad(ruta_archivo, separador):
             elif (lat and not lon) or (lon and not lat):
                 coordenada_incompleta.append(fila)
                 
-            #Se evaluan las fechas(deltipo "2015-06-23T00:00:00Z")
+            # Se evaluan las fechas(deltipo "2015-06-23T00:00:00Z")
             fecha_str = (fila.get("eventDate","")).strip()[:10]
             if fecha_str:
                 es_valida, fecha = es_fecha_valida(fecha_str, formato)
@@ -219,7 +219,7 @@ def ejecutar_analisis_calidad(ruta_archivo, separador):
                 elif datetime.now() < fecha: 
                     fecha_invalida.append(fila)
             
-            #Se evalua la duplicidad de los IDs
+            # Se evalua la duplicidad de los IDs
             registro_id = fila.get("occurrenceID","").strip()
             if registro_id: # Evita procesar IDs vacíos
                 if registro_id in ids_totales:
@@ -227,7 +227,7 @@ def ejecutar_analisis_calidad(ruta_archivo, separador):
                 else:
                     ids_totales.add(registro_id)
 
-    #Este bloque imprime los resultados
+    # Este bloque imprime los resultados
     print(f"Total de filas: ", cont)
     print(f"Cantidad de IDs duplicados: ", len(ids_duplicados))
     print(f"Cantidad de filas con fecha inválida: ", len(fecha_invalida))

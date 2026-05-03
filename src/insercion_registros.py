@@ -4,11 +4,11 @@ from validador import *
 from logger import registrar_operacion
 
 #-----------------FUNCIONES AUXILIARES---------------------#
-#Se ingresa un nuevo registro por teclado solicitando al usuario los campos principales del dataset 
+# Se ingresa un nuevo registro por teclado solicitando al usuario los campos principales del dataset 
 def ingresar_registro_por_teclado():
     print("Ingrese los datos del nuevo registro:")
 
-    #Pido los campos principales del dataset al usuario
+    # Pido los campos principales del dataset al usuario
     license = input("License: ")
     institutionCode = input("Institution Code: ")
     collectionCode = input("Collection Code: ")
@@ -26,7 +26,7 @@ def ingresar_registro_por_teclado():
     decimalLongitude = input("Longitude: ")
     scientificName = input("Scientific Name: ")
 
-    #Uso la función de creación de estructura para generar un nuevo registro con los datos ingresados
+    # Uso la función de creación de estructura para generar un nuevo registro con los datos ingresados
     registro = crear_estructura_registro(
         license=license,
         institutionCode=institutionCode,
@@ -118,7 +118,7 @@ def crear_estructura_registro(
 
 
 
-#Recibe una lista de columnas y devuelve un diccionario con esas columnas como claves y valores vacíos.
+# Recibe una lista de columnas y devuelve un diccionario con esas columnas como claves y valores vacíos.
 def crear_registro_vacio(columnas):
     return {col: "" for col in columnas if col != "id"}
 
@@ -129,7 +129,7 @@ FORMATO_FECHA = "%Y-%m-%d"
 def validar_registro(registro):
     errores = []
 
-    #Validación de coordenadas
+    # Validación de coordenadas
     lat = registro.get("decimalLatitude", "")
     lon = registro.get("decimalLongitude", "")
 
@@ -139,7 +139,7 @@ def validar_registro(registro):
     if lon != "" and not es_coordenada_valida(lon, -180, 180):
         errores.append(f"decimalLongitude inválida: '{lon}'. Debe estar entre -180 y 180")
 
-    #Validación de fecha
+    # Validación de fecha
     event_date = registro.get("eventDate", "").strip()
     if event_date != "":
         es_valida, fecha = es_fecha_valida(event_date, FORMATO_FECHA)
@@ -155,7 +155,7 @@ def validar_registro(registro):
                     f"eventDate inválida: '{event_date}'. La fecha no puede ser futura"
                 )
 
-    #Validación de countryCode
+    # Validación de countryCode
     country_code = registro.get("countryCode", "").strip().upper()
     if country_code != "" and country_code not in CODIGOS_PAIS_VALIDOS:
         errores.append(
@@ -163,7 +163,7 @@ def validar_registro(registro):
             f"Valores permitidos: {CODIGOS_PAIS_VALIDOS} "
         )
     
-    #Validación de incertidumbre de coordenada
+    # Validación de incertidumbre de coordenada
     incertidumbre = registro.get("coordinateUncertaintyInMeters", "").strip()
     if incertidumbre != "" and not es_incertidumbre_valida(incertidumbre):
         errores.append(
@@ -171,7 +171,7 @@ def validar_registro(registro):
             "Debe ser un número entre 0 y 100"
         )
 
-    #Validar que occurrenceStatus tenga un valor conocido si está presente
+    # Validar que occurrenceStatus tenga un valor conocido si está presente
     status = registro.get("occurrenceStatus", "").strip()
     valores_validos_status = {"PRESENT", "ABSENT"}
     if status != "" and status.upper() not in valores_validos_status:
@@ -222,70 +222,70 @@ def preparar_estructura(registro, ruta_archivo, columnas, nombre_dataset):
 
     return registro_completo
 
-#Inserta un nuevo registro correctamente formateado al final del dataset conservando la estructura original 
+# Inserta un nuevo registro correctamente formateado al final del dataset conservando la estructura original 
 def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset):
 
-    #Valida el registro antes de intentar insertarlo, mostrando los errores encontrados si no es válido
+    # Valida el registro antes de intentar insertarlo, mostrando los errores encontrados si no es válido
     es_valido, errores = validar_registro(registro)
 
     if not es_valido:
         print("Registro inválido. No se insertó.")
         for e in errores:
             print("-", e)
-        return  #Corta la función si hay errores
+        return  # Corta la función si hay errores
     
-    #Abre el dataset original en modo lectura
+    # Abre el dataset original en modo lectura
     with open(ruta_origen, "r", encoding="utf-8", newline="") as f_in:
 
         reader = csv.DictReader(f_in, delimiter="\t")
         columnas = reader.fieldnames
-        #Guarda el nombre de las columnas
+        # Guarda el nombre de las columnas
 
-        #Genera el registro listo para insertar, asignando un nuevo catalogNumber y occurrenceID
+        # Genera el registro listo para insertar, asignando un nuevo catalogNumber y occurrenceID
         registro_completo = preparar_estructura(registro, ruta_origen, columnas, nombre_dataset)
 
         if not es_valido:
             registrar_operacion(nombre_dataset, "INSERT", 0, error=True)
             return
-            #Si el registro no es válido se registra la operación con error y se corta la función 
+            # Si el registro no es válido se registra la operación con error y se corta la función 
 
-        #Abre el archivo destino en modo escritura y copia el contenido del original, luego agrega el nuevo registro
+        # Abre el archivo destino en modo escritura y copia el contenido del original, luego agrega el nuevo registro
         with open(ruta_destino, "w", encoding="utf-8", newline="") as f_out:
             writer = csv.DictWriter(f_out, fieldnames=columnas, delimiter="\t")
 
             writer.writeheader()
-            #Escribe la primera fila (nombre de columnas)
+            # Escribe la primera fila (nombre de columnas)
 
-            #Copia todas las filas del dataset original
+            # Copia todas las filas del dataset original
             for fila in reader:
                 writer.writerow(fila)
 
-            #Agrega el nuevo registro al final del archivo
+            # Agrega el nuevo registro al final del archivo
             writer.writerow(registro_completo)
 
     print("Registro insertado correctamente")
 
     registrar_operacion(nombre_dataset, "INSERT", 1)
-    #Si el registro es válido se registra la operación con éxito indicando que se insertó 1 registro
+    # Si el registro es válido se registra la operación con éxito indicando que se insertó 1 registro
 
-#Función para insertar múltiples registros ingresados por teclado
+# Función para insertar múltiples registros ingresados por teclado
 def insertar_multiples_registros(ruta_origen, ruta_destino, nombre_dataset):
 
     registros = []
-    #Lista donde se guardarán los registros válidos
+    # Lista donde se guardarán los registros válidos
 
     print("Carga de múltiples registros (dejar vacío 'scientificName' para terminar)")
 
-    #Loop para ingresar varios registros por teclado
+    # Loop para ingresar varios registros por teclado
     while True:
         registro = ingresar_registro_por_teclado()
-        #Pide datos al usuario para crear un nuevo registro
+        # Pide datos al usuario para crear un nuevo registro
 
-        #Condición de corte, si no se escribe scientificName se termina la carga de registros
+        # Condición de corte, si no se escribe scientificName se termina la carga de registros
         if registro.get("license", "") == "":
             break
         
-        #Valida cada registro ingresado
+        # Valida cada registro ingresado
         es_valido, errores = validar_registro(registro)
 
         if es_valido:
@@ -296,44 +296,44 @@ def insertar_multiples_registros(ruta_origen, ruta_destino, nombre_dataset):
             print("Registro inválido:")
             for e in errores:
                 print("-", e)
-                #Si no es válido se muestran los errores y no se agrega a la lista
+                # Si no es válido se muestran los errores y no se agrega a la lista
             print()
 
-    #Si no se ingresó ningún registro válido se termina la función
+    # Si no se ingresó ningún registro válido se termina la función
     if not registros:
         print("No se ingresaron registros válidos")
         registrar_operacion(nombre_dataset, "INSERT", 0, error=True)
         return
-        #Si no se ingresó ningún registro válido se registra la operación con error y se corta la función   
+        # Si no se ingresó ningún registro válido se registra la operación con error y se corta la función   
 
-    #Abrimos dataset original
+    # Abrimos dataset original
     with open(ruta_origen, "r", encoding="utf-8", newline="") as f_in:
 
         reader = csv.DictReader(f_in, delimiter="\t")
         columnas = reader.fieldnames
-        #Nombre de las columnas del dataset
+        # Nombre de las columnas del dataset
 
         filas = list(reader)  
-        #Guardamos todas las filas originales en memoria
+        # Guardamos todas las filas originales en memoria
 
     max_num = max_catalog_number(ruta_origen)
-    #Calculo el último catalogNumber una sola vez para luego asignar nuevos números a los registros ingresados, evitando recorrer el dataset repetidamente
+    # Calculo el último catalogNumber una sola vez para luego asignar nuevos números a los registros ingresados, evitando recorrer el dataset repetidamente
 
-    #Creo el nuevo archivo
+    # Creo el nuevo archivo
     with open(ruta_destino, "w", encoding="utf-8", newline="") as f_out:
 
         writer = csv.DictWriter(f_out, fieldnames=columnas, delimiter="\t")
         writer.writeheader()
-        #Escribo los encabezados del dataset
+        # Escribo los encabezados del dataset
 
         for fila in filas:
             writer.writerow(fila)
-            #Copio el dataset original al nuevo archivo
+            # Copio el dataset original al nuevo archivo
 
-        #Agrego los nuevos registros al final del archivo
+        # Agrego los nuevos registros al final del archivo
         for i, registro in enumerate(registros, start=1):
 
-            #Genero nuevos IDs para cada registro sin repetir
+            # Genero nuevos IDs para cada registro sin repetir
             nuevo_num = max_num + i
             nuevo_catalog = str(nuevo_num).zfill(6)
             nuevo_occurrence_id = f"{nombre_dataset}:COI:{nuevo_catalog}"
@@ -344,17 +344,17 @@ def insertar_multiples_registros(ruta_origen, ruta_destino, nombre_dataset):
             for campo, valor in registro.items():
                 if campo in registro_completo:
                     registro_completo[campo] = valor
-                #Copio los datos del usuario
+                # Copio los datos del usuario
 
             registro_completo["gbifID"] = ""
             registro_completo["occurrenceID"] = nuevo_occurrence_id
             registro_completo["catalogNumber"] = nuevo_catalog
-            #Seteo los IDs para cada registro
+            # Seteo los IDs para cada registro
 
             writer.writerow(registro_completo)
-            #Escribo el registro en el nuevo archivo
+            # Escribo el registro en el nuevo archivo
 
     print("Registros insertados correctamente")
 
     registrar_operacion(nombre_dataset, "INSERT", len(registros))
-    #Si se ingresaron registros válidos se registra la operación con éxito indicando la cantidad de registros insertados
+    # Si se ingresaron registros válidos se registra la operación con éxito indicando la cantidad de registros insertados

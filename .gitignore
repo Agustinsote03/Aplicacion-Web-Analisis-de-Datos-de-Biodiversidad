@@ -1,6 +1,6 @@
-#Ignorando las bases de datos raw
+# Ignorando las bases de datos raw
 raw_datasets/*
-#Excluyendo de gitkeep
+# Excluyendo de gitkeep
 !raw_datasets/.gitkeep
 # Ignorando las bases de datos procesadas
 processed_datasets/*
