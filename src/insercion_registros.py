@@ -244,6 +244,11 @@ def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset):
         #Genera el registro listo para insertar, asignando un nuevo catalogNumber y occurrenceID
         registro_completo = preparar_estructura(registro, ruta_origen, columnas, nombre_dataset)
 
+        if not es_valido:
+            registrar_operacion(nombre_dataset, "INSERT", 0, error=True)
+            return
+            #Si el registro no es válido se registra la operación con error y se corta la función 
+
         #Abre el archivo destino en modo escritura y copia el contenido del original, luego agrega el nuevo registro
         with open(ruta_destino, "w", encoding="utf-8", newline="") as f_out:
             writer = csv.DictWriter(f_out, fieldnames=columnas, delimiter="\t")
@@ -259,11 +264,6 @@ def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset):
             writer.writerow(registro_completo)
 
     print("Registro insertado correctamente")
-
-    if not es_valido:
-        registrar_operacion(nombre_dataset, "INSERT", 0, error=True)
-        return
-        #Si el registro no es válido se registra la operación con error y se corta la función 
 
     registrar_operacion(nombre_dataset, "INSERT", 1)
     #Si el registro es válido se registra la operación con éxito indicando que se insertó 1 registro
@@ -302,7 +302,9 @@ def insertar_multiples_registros(ruta_origen, ruta_destino, nombre_dataset):
     #Si no se ingresó ningún registro válido se termina la función
     if not registros:
         print("No se ingresaron registros válidos")
+        registrar_operacion(nombre_dataset, "INSERT", 0, error=True)
         return
+        #Si no se ingresó ningún registro válido se registra la operación con error y se corta la función   
 
     #Abrimos dataset original
     with open(ruta_origen, "r", encoding="utf-8", newline="") as f_in:
@@ -353,11 +355,6 @@ def insertar_multiples_registros(ruta_origen, ruta_destino, nombre_dataset):
             #Escribo el registro en el nuevo archivo
 
     print("Registros insertados correctamente")
-
-    if not registros:
-        registrar_operacion(nombre_dataset, "INSERT", 0, error=True)
-        return
-        #Si no se ingresó ningún registro válido se registra la operación con error y se corta la función   
 
     registrar_operacion(nombre_dataset, "INSERT", len(registros))
     #Si se ingresaron registros válidos se registra la operación con éxito indicando la cantidad de registros insertados
