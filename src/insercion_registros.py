@@ -260,7 +260,13 @@ def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset):
 
     print("Registro insertado correctamente")
 
+    if not es_valido:
+        registrar_operacion(nombre_dataset, "INSERT", 0, error=True)
+        return
+        #Si el registro no es válido se registra la operación con error y se corta la función 
+
     registrar_operacion(nombre_dataset, "INSERT", 1)
+    #Si el registro es válido se registra la operación con éxito indicando que se insertó 1 registro
 
 #Función para insertar múltiples registros ingresados por teclado
 def insertar_multiples_registros(ruta_origen, ruta_destino, nombre_dataset):
@@ -348,4 +354,10 @@ def insertar_multiples_registros(ruta_origen, ruta_destino, nombre_dataset):
 
     print("Registros insertados correctamente")
 
+    if not registros:
+        registrar_operacion(nombre_dataset, "INSERT", 0, error=True)
+        return
+        #Si no se ingresó ningún registro válido se registra la operación con error y se corta la función   
+
     registrar_operacion(nombre_dataset, "INSERT", len(registros))
+    #Si se ingresaron registros válidos se registra la operación con éxito indicando la cantidad de registros insertados
