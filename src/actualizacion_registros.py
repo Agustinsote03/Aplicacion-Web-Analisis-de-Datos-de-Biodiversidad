@@ -48,11 +48,11 @@ def actualizar_un_campo(ruta_original, ruta_nueva, id_registro, columna, nuevo_v
         escritor.writeheader()
 
         for fila in lector:
-            if fila.get("ocurrenceID","").strip() == str(id_registro).strip():
+            if fila.get("occurrenceID","").strip() == str(id_registro).strip():
                 fila[columna] = nuevo_valor
                 registro_actualizado = True
         
-        escritor.writerow(fila)
+            escritor.writerow(fila)
     return registro_actualizado
 
 def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modificaciones, separador="\t"):
