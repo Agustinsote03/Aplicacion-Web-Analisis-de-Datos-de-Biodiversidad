@@ -201,3 +201,53 @@ def sanitizar_dataset(ruta_original, ruta_nueva, separador="\t"):
         "motivos": motivos_conteo,
     }
 
+
+def sanitizar_dataset_evolucionada(ruta_original, ruta_nueva, separador="\t"):
+    eliminados = 0
+    total = 0
+    reporte_detallado = []
+    motivos_conteo = {}
+
+    Path(ruta_nueva).parent.mkdir(parents=True, exist_ok=True)
+
+    with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
+         open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
+ 
+        lector = csv.DictReader(archivo_original, delimiter=separador)
+        escritor = csv.DictWriter(archivo_nuevo, fieldnames=lector.fieldnames, delimiter=separador)
+ 
+        escritor.writeheader()
+
+        for fila in lector:
+            total += 1
+            motivos = validar_fila(fila)
+
+            if motivos:
+                eliminados += 1
+                for motivo in motivos:
+                    motivos_conteo[motivo] = motivos_conteo.get(motivo, 0) + 1
+                reporte_detallado.append({
+                    "occurrenceID": fila.get("occurrenceID", ""),
+                    "motivos": motivos,
+                })
+                continue
+
+            escritor.writerow(fila)
+
+    porcentaje = (eliminados / total * 100) if total > 0 else 0
+
+    print(f"\n----Reporte de sanitización----")
+    print(f"Total de registros: {total}")
+    print(f"Registros eliminados: {eliminados}")
+    print(f"Porcentaje eliminado: {porcentaje:.2f}%") #porcentaje:.2f solo muestra dos decimales
+    print(f"\nMotivos de eliminación:")
+    for motivo, cantidad in motivos_conteo.items():
+        print(f"  - {motivo}: {cantidad} registros")
+
+    return {
+        "total": total,
+        "eliminados": eliminados,
+        "porcentaje": round(porcentaje, 2),
+        "motivos_conteo": motivos_conteo,
+        "detalle": reporte_detallado,
+    }
