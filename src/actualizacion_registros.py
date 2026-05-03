@@ -1,5 +1,6 @@
 import csv
 from pathlib import Path
+from logger import registrar_operacion
 
 def buscar_registros(ruta_archivo, filtros, separador="\t"):
     """
@@ -32,7 +33,7 @@ def buscar_registros(ruta_archivo, filtros, separador="\t"):
 
     return registros_encontrados
 
-def actualizar_un_campo(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor, separador="\t"):
+def actualizar_un_campo(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor, nombre_dataset, separador="\t"):
     """
         Actualiza un campo especifico de un registro basado en su ID y genera un nuevo archivo con la actualización
     """
@@ -53,9 +54,15 @@ def actualizar_un_campo(ruta_original, ruta_nueva, id_registro, columna, nuevo_v
                 registro_actualizado = True
         
             escritor.writerow(fila)
+
+        if registro_actualizado:
+            registrar_operacion(nombre_dataset, "UPDATE", 1)
+        else:
+            registrar_operacion(nombre_dataset, "UPDATE", 0)
+
     return registro_actualizado
 
-def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modificaciones, separador="\t"):
+def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modificaciones, nombre_dataset,separador="\t"):
     registro_actualizado = False
 
     with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
@@ -74,11 +81,16 @@ def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modifica
                         fila[columna] = nuevo_valor
                 registro_actualizado = True
             escritor.writerow(fila)
-    
+
+        if registro_actualizado:
+            registrar_operacion(nombre_dataset, "UPDATE", 1)
+        else:
+            registrar_operacion(nombre_dataset, "UPDATE", 0)
+
     return registro_actualizado
 
 
-def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro, modificaciones, separador="\t"):
+def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro, modificaciones, nombre_dataset,separador="\t"):
     registro_actualizado = False
 
     # Abrimos archivo original(lectura) y nuevo(escritura)
@@ -124,12 +136,17 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
     if not registro_actualizado:
         print("No se realizaron cambios")
 
+    if registro_actualizado:
+        registrar_operacion(nombre_dataset, "UPDATE", 1)
+    else:
+        registrar_operacion(nombre_dataset, "UPDATE", 0)
+
     return registro_actualizado
 
 
-def actualizar_un_campo_validando(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor, separador="\t"):
+def actualizar_un_campo_validando(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor, nombre_dataset,separador="\t"):
     modificaciones = {columna: nuevo_valor}
 
-    return actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro, modificaciones, separador)
+    return actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro, modificaciones, nombre_dataset, separador)
 
 
