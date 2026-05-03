@@ -1,6 +1,7 @@
 import csv
 from pathlib import Path
 from validador import *
+from logger import registrar_operacion
 
 #-----------------FUNCIONES AUXILIARES---------------------#
 #Se ingresa un nuevo registro por teclado solicitando al usuario los campos principales del dataset 
@@ -198,13 +199,13 @@ def max_catalog_number(ruta_archivo):
 
 
 # Recibe estructura del inciso 4.A y retorna un diccionario listo para añadir al CSV
-def preparar_estructura(registro, ruta_archivo, columnas):
+def preparar_estructura(registro, ruta_archivo, columnas, nombre_dataset):
     max_num = max_catalog_number(ruta_archivo)
     nuevo_num = max_num + 1
     
     # Se usa zfill para rellenar el número con ceros a la izquierda respetando el patrón de ocurrenceID
     nuevo_catalog = str(nuevo_num).zfill(6) # Lo rellena hasta tener 6 dígitos
-    nuevo_occurrence_id = f"{"IADIZA:COI:"}{nuevo_catalog}"
+    nuevo_occurrence_id = f"{nombre_dataset}:COI:{nuevo_catalog}"
 
     # Se arma el registro completo con todas las columnas del dataset
     registro_completo = {col: "" for col in columnas}    
@@ -222,7 +223,7 @@ def preparar_estructura(registro, ruta_archivo, columnas):
     return registro_completo
 
 #Inserta un nuevo registro correctamente formateado al final del dataset conservando la estructura original 
-def insertar_registro(ruta_origen, ruta_destino, registro):
+def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset):
 
     #Valida el registro antes de intentar insertarlo, mostrando los errores encontrados si no es válido
     es_valido, errores = validar_registro(registro)
@@ -241,7 +242,7 @@ def insertar_registro(ruta_origen, ruta_destino, registro):
         #Guarda el nombre de las columnas
 
         #Genera el registro listo para insertar, asignando un nuevo catalogNumber y occurrenceID
-        registro_completo = preparar_estructura(registro, ruta_origen, columnas)
+        registro_completo = preparar_estructura(registro, ruta_origen, columnas, nombre_dataset)
 
         #Abre el archivo destino en modo escritura y copia el contenido del original, luego agrega el nuevo registro
         with open(ruta_destino, "w", encoding="utf-8", newline="") as f_out:
@@ -259,8 +260,10 @@ def insertar_registro(ruta_origen, ruta_destino, registro):
 
     print("Registro insertado correctamente")
 
+    registrar_operacion(nombre_dataset, "INSERT", 1)
+
 #Función para insertar múltiples registros ingresados por teclado
-def insertar_multiples_registros(ruta_origen, ruta_destino):
+def insertar_multiples_registros(ruta_origen, ruta_destino, nombre_dataset):
 
     registros = []
     #Lista donde se guardarán los registros válidos
@@ -273,7 +276,7 @@ def insertar_multiples_registros(ruta_origen, ruta_destino):
         #Pide datos al usuario para crear un nuevo registro
 
         #Condición de corte, si no se escribe scientificName se termina la carga de registros
-        if registro.get("License", "") == "":
+        if registro.get("license", "") == "":
             break
         
         #Valida cada registro ingresado
@@ -325,7 +328,7 @@ def insertar_multiples_registros(ruta_origen, ruta_destino):
             #Genero nuevos IDs para cada registro sin repetir
             nuevo_num = max_num + i
             nuevo_catalog = str(nuevo_num).zfill(6)
-            nuevo_occurrence_id = f"IADIZA:COI:{nuevo_catalog}"
+            nuevo_occurrence_id = f"{nombre_dataset}:COI:{nuevo_catalog}"
 
             registro_completo = {col: "" for col in columnas}
             #Creo estructura completa con todas las columnas del dataset
@@ -344,3 +347,5 @@ def insertar_multiples_registros(ruta_origen, ruta_destino):
             #Escribo el registro en el nuevo archivo
 
     print("Registros insertados correctamente")
+
+    registrar_operacion(nombre_dataset, "INSERT", len(registros))
