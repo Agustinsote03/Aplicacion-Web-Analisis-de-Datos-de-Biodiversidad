@@ -6,43 +6,37 @@ En esta sección se muestran los registros de operaciones realizadas por el sist
 Esto permite visualizar el historial de acciones sobre los datasets de biodiversidad.
 """)
 
-# Ruta del archivo de logs
-log_path = "logs/operations.log"
+def leer_logs():
+    registros = []
 
-try:
-    # Abrimos el archivo en modo lectura
-    with open(log_path, "r", encoding="utf-8") as file:
-        # Leemos todas las líneas del archivo y las guardamos en una lista
-        lines = file.readlines()
+    try:
+        with open("logs/operations.log", "r", encoding="utf-8") as f:
+            for linea in f:
+                partes = [p.strip() for p in linea.split("|")]
 
-    # Lista donde vamos a guardar los datos ya ordenados
-    datos = []
+                estado = "OK"
+                if "ERROR" in linea:
+                    estado = "ERROR"
 
-    # Recorremos cada línea del archivo
-    for line in lines:
+                registros.append({
+                    "Fecha": partes[0],
+                    "Dataset": partes[1],
+                    "Operación": partes[2],
+                    "Registros": partes[3],
+                    "Estado": estado
+                })
 
-        # Eliminamos espacios/saltos de línea y separamos por comas
-        partes = line.strip().split(",")
+    except FileNotFoundError:
+        st.error("No encuentra el archivo logs/operations.log")
 
-        # Verificamos que la línea tenga al menos 5 campos
-        if len(partes) >= 5:
+    return registros
 
-            # Asignamos cada parte a una variable con significado
-            fecha = partes[0]        
-            dataset = partes[1]      
-            operacion = partes[2]    
-            registros = partes[3]    
-            estado = partes[4]       
 
-            # Agregamos la fila completa a la lista de datos
-            datos.append([fecha, dataset, operacion, registros, estado])
+st.title("📊 Estado del sistema")
 
-    # Título de la tabla
-    st.subheader("Logs de operaciones")
+logs = leer_logs()
 
-    # Mostramos los datos como tabla en Streamlit
-    st.table(datos)
-
-# Si el archivo no existe, mostramos un error en pantalla
-except FileNotFoundError:
-    st.error("No se encontró el archivo logs/operations.log")
+if len(logs) == 0:
+    st.warning("El log está vacío")
+else:
+    st.table(logs)
