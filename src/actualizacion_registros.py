@@ -58,7 +58,7 @@ def actualizar_un_campo(ruta_original, ruta_nueva, id_registro, columna, nuevo_v
         if registro_actualizado:
             registrar_operacion(nombre_dataset, "UPDATE", 1)
         else:
-            registrar_operacion(nombre_dataset, "UPDATE", 0)
+            registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
 
     return registro_actualizado
 
@@ -85,7 +85,7 @@ def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modifica
         if registro_actualizado:
             registrar_operacion(nombre_dataset, "UPDATE", 1)
         else:
-            registrar_operacion(nombre_dataset, "UPDATE", 0)
+            registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
 
     return registro_actualizado
 
@@ -139,7 +139,7 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
     if registro_actualizado:
         registrar_operacion(nombre_dataset, "UPDATE", 1)
     else:
-        registrar_operacion(nombre_dataset, "UPDATE", 0)
+        registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
 
     return registro_actualizado
 
