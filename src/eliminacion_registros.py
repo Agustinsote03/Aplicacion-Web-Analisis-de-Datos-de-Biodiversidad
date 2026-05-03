@@ -33,7 +33,8 @@ def eliminar_por_id(ruta_original, ruta_nueva, columna, valor, nombre_dataset, s
     if eliminado:
         registrar_operacion(nombre_dataset, "DELETE", 1)
     else:
-        registrar_operacion(nombre_dataset, "DELETE", 0)
+        registrar_operacion(nombre_dataset, "DELETE", 0, error=True)
+    #Si se elimino algun registro se registra la operacion, sino se registra un error
 
     return eliminado
 
@@ -65,8 +66,10 @@ def eliminar_por_lista(ruta_original, ruta_nueva, columna, valores_a_eliminar, n
 
     if eliminados == 0:
         print("No se eliminaron registros")
-
-    registrar_operacion(nombre_dataset, "DELETE", eliminados)
+        registrar_operacion(nombre_dataset, "DELETE", 0, error=True)
+    else:
+        registrar_operacion(nombre_dataset, "DELETE", eliminados)
+    #Si se elimino algun registro se registra la operación, sino se registra un error
     
     return eliminados
 
@@ -124,9 +127,11 @@ def eliminar_por_condicion(ruta_original, ruta_nueva, columna, operador, valor, 
 
     if eliminados == 0:
         print("No se eliminaron registros")
+        registrar_operacion(nombre_dataset, "DELETE", 0, error=True)
+    else:
+        registrar_operacion(nombre_dataset, "DELETE", eliminados)
+    #Si se eliminó algún registro se registra la operación, sino se registra un error
 
-    registrar_operacion(nombre_dataset, "DELETE", eliminados)
-    
     return eliminados
 
 
