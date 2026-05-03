@@ -2,8 +2,9 @@ import csv
 from pathlib import Path
 from datetime import datetime
 from validador import (es_coordenada_valida, es_fecha_valida, es_incertidumbre_valida)
+from logger import registrar_operacion
 
-def eliminar_por_id(ruta_original, ruta_nueva, columna, valor, separador="\t"):
+def eliminar_por_id(ruta_original, ruta_nueva, columna, valor, nombre_dataset, separador="\t"):
     eliminado = False
 
     with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
@@ -29,12 +30,15 @@ def eliminar_por_id(ruta_original, ruta_nueva, columna, valor, separador="\t"):
     if not eliminado:
         print("Error: no se encontró el registro")
 
+    if eliminado:
+        registrar_operacion(nombre_dataset, "DELETE", 1)
+    else:
+        registrar_operacion(nombre_dataset, "DELETE", 0)
+
     return eliminado
 
 
-import csv
-
-def eliminar_por_lista(ruta_original, ruta_nueva, columna, valores_a_eliminar, separador="\t"):
+def eliminar_por_lista(ruta_original, ruta_nueva, columna, valores_a_eliminar, nombre_dataset, separador="\t"):
     eliminados = 0
 
     # normalizo la lista (por si viene con espacios)
@@ -62,11 +66,13 @@ def eliminar_por_lista(ruta_original, ruta_nueva, columna, valores_a_eliminar, s
     if eliminados == 0:
         print("No se eliminaron registros")
 
+    registrar_operacion(nombre_dataset, "DELETE", eliminados)
+    
     return eliminados
 
 import csv
 
-def eliminar_por_condicion(ruta_original, ruta_nueva, columna, operador, valor, separador="\t"):
+def eliminar_por_condicion(ruta_original, ruta_nueva, columna, operador, valor, nombre_dataset, separador="\t"):
     eliminados = 0
 
     # Abrimos archivo original (lectura) y nuevo (escritura)
@@ -119,6 +125,8 @@ def eliminar_por_condicion(ruta_original, ruta_nueva, columna, operador, valor, 
     if eliminados == 0:
         print("No se eliminaron registros")
 
+    registrar_operacion(nombre_dataset, "DELETE", eliminados)
+    
     return eliminados
 
 
