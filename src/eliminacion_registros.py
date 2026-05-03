@@ -1,5 +1,7 @@
 import csv
 from pathlib import Path
+from datetime import datetime
+from validador import (es_coordenada_valida, es_fecha_valida, es_incertidumbre_valida)
 
 def eliminar_por_id(ruta_original, ruta_nueva, columna, valor, separador="\t"):
     eliminado = False
@@ -118,4 +120,84 @@ def eliminar_por_condicion(ruta_original, ruta_nueva, columna, operador, valor, 
         print("No se eliminaron registros")
 
     return eliminados
+
+
+def validar_fila(fila):
+    codigos_pais_validos = {"AR","CL","BR","UY","PY","BO","PE","EC","CO","VE"}
+    formato_fecha = "%Y-%m-%d"
+    
+    motivos = []
+
+    #Validar latitud
+    lat = fila.get("decimalLatitude", "").strip()
+    if lat and not es_coordenada_valida(lat, -90, 90):
+        motivos.append("latitud inválida")
+
+    #Validar longitud
+    lon = fila.get("decimalLongitude", "").strip()
+    if lon and not es_coordenada_valida(lon, -180, 180):
+        motivos.append("longitud inválida")
+
+    #Validar que no haya coordenada incompleta
+    if (lat and not lon) or (lon and not lat):
+        motivos.append("coordenada incompleta")
+
+    #Validar fecha
+    fecha_str = fila.get("eventDate", "").strip()[:10]
+    if fecha_str:
+        es_valida, fecha = es_fecha_valida(fecha_str, formato_fecha)
+        if not es_valida:
+            motivos.append("fecha inválida")
+        elif fecha and fecha > datetime.now():
+            motivos.append("fecha futura")
+
+    #Validar countryCode
+    country_code = fila.get("countryCode", "").strip().upper()
+    if country_code and country_code not in codigos_pais_validos:
+        motivos.append(f"countryCode inválido: {country_code}")
+
+    #Validar incertidumbre de coordenada
+    incertidumbre = fila.get("coordinateUncertaintyInMeters", "").strip()
+    if incertidumbre and not es_incertidumbre_valida(incertidumbre):
+        motivos.append("coordinateUncertaintyInMeters inválida")
+
+    #Validar nombre científico
+    if not fila.get("scientificName", "").strip():
+        motivos.append("scientificName vacío")
+
+    return motivos
+
+
+def sanitizar_dataset(ruta_original, ruta_nueva, separador="\t"):
+    eliminados = 0
+    total = 0
+    motivos_conteo = {}
+
+    Path(ruta_nueva).parent.mkdir(parents=True, exist_ok=True)
+
+    with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
+         open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
+ 
+        lector = csv.DictReader(archivo_original, delimiter=separador)
+        escritor = csv.DictWriter(archivo_nuevo, fieldnames=lector.fieldnames, delimiter=separador)
+ 
+        escritor.writeheader()
+
+        for fila in lector:
+            total += 1
+            motivos = validar_fila(fila)
+
+            if motivos:
+                eliminados += 1
+                for motivo in motivos:
+                    motivos_conteo[motivo] = motivos_conteo.get(motivo, 0) + 1
+                continue
+
+            escritor.writerow(fila)
+
+    return {
+        "total": total,
+        "eliminados": eliminados,
+        "motivos": motivos_conteo,
+    }
 
