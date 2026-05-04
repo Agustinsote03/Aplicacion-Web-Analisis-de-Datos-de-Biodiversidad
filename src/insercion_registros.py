@@ -120,7 +120,7 @@ def crear_estructura_registro(
 
 # Recibe una lista de columnas y devuelve un diccionario con esas columnas como claves y valores vacíos.
 def crear_registro_vacio(columnas):
-    return {col: "" for col in columnas if col != "id"}
+    return{col: "" for col in columnas}
 
 
 CODIGOS_PAIS_VALIDOS = {"AR","CL","BR","UY","PY","BO","PE","EC","CO","VE"}
@@ -232,7 +232,11 @@ def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset):
         print("Registro inválido. No se insertó.")
         for e in errores:
             print("-", e)
-        return  # Corta la función si hay errores
+        registrar_operacion(nombre_dataset, "INSERT", 0, error=True)
+        return  
+    #Corta la función si hay errores
+    #Si el registro no es válido se registra la operación con error y se corta la función 
+
     
     # Abre el dataset original en modo lectura
     with open(ruta_origen, "r", encoding="utf-8", newline="") as f_in:
@@ -243,11 +247,6 @@ def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset):
 
         # Genera el registro listo para insertar, asignando un nuevo catalogNumber y occurrenceID
         registro_completo = preparar_estructura(registro, ruta_origen, columnas, nombre_dataset)
-
-        if not es_valido:
-            registrar_operacion(nombre_dataset, "INSERT", 0, error=True)
-            return
-            # Si el registro no es válido se registra la operación con error y se corta la función 
 
         # Abre el archivo destino en modo escritura y copia el contenido del original, luego agrega el nuevo registro
         with open(ruta_destino, "w", encoding="utf-8", newline="") as f_out:
@@ -274,14 +273,14 @@ def insertar_multiples_registros(ruta_origen, ruta_destino, nombre_dataset):
     registros = []
     # Lista donde se guardarán los registros válidos
 
-    print("Carga de múltiples registros (dejar vacío 'scientificName' para terminar)")
+    print("Carga de múltiples registros (dejar vacío 'license' para terminar)")
 
     # Loop para ingresar varios registros por teclado
     while True:
         registro = ingresar_registro_por_teclado()
         # Pide datos al usuario para crear un nuevo registro
 
-        # Condición de corte, si no se escribe scientificName se termina la carga de registros
+        # Condición de corte, si no se escribe license se termina la carga de registros
         if registro.get("license", "") == "":
             break
         
