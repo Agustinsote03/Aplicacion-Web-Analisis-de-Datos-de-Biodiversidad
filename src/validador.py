@@ -10,6 +10,9 @@ LON_MAX = -35.0
 #------------------------------------------Funciones auxiliares---------------------------------------#
 
 def es_coordenada_valida(valor, limite_min, limite_max):
+    """
+    Retorna True si el valor puede convertirse a número y está dentro del rango dado.
+    """
     # Quitamos espacios en blanco
     valor = valor.strip()
     # Si está vacío se retorna False directamente
@@ -21,8 +24,11 @@ def es_coordenada_valida(valor, limite_min, limite_max):
 
     return es_valida
 
-# Valida si un string puede convertirse a fecha segun el formato dado
 def es_fecha_valida(fecha_str, formato):
+    """
+    Valida si un string puede convertirse a fecha segun el formato dado
+    """
+
     # Usa try/except porque datetime.strptime muestra ValueError si falla
     try:
         fecha = datetime.strptime(fecha_str, formato)
@@ -34,6 +40,9 @@ def es_fecha_valida(fecha_str, formato):
         return False, None
 
 def es_incertidumbre_valida(incertidumbre_str):
+    """
+    Retorna True si el valor es un número entre 0 y 100.
+    """
     try:
         # Se intenta convertir a decimal
         incertidumbre_float = float(incertidumbre_str)
@@ -50,7 +59,9 @@ def es_incertidumbre_valida(incertidumbre_str):
 #------------------------------------------Funciones principales---------------------------------------#
 
 def validar_coordenadas(ruta_archivo, separador,  col_lat="decimalLatitude", col_lon="decimalLongitude"):
-
+    """
+    Recorre el dataset y retorna la cantidad y lista de registros con coordenadas inválidas.
+    """
     # Se inicializa una lista que contendrá los registros inválidos
     registros_invalidos = []
     cont = 0
@@ -75,9 +86,11 @@ def validar_coordenadas(ruta_archivo, separador,  col_lat="decimalLatitude", col
         return len(registros_invalidos), registros_invalidos
 
 def detectar_coordenadas_incompletas(ruta_archivo, separador, col_lat="decimalLatitude", col_lon="decimalLongitude"):
-        
-        registros = []
-        with open(ruta_archivo, "r", encoding = "utf-8", newline = "") as file_csv:
+    """
+    Retorna la cantidad y lista de registros que tienen solo latitud o solo longitud, pero no ambas.
+    """
+    registros = []
+    with open(ruta_archivo, "r", encoding = "utf-8", newline = "") as file_csv:
              csv_reader = csv.DictReader(file_csv, delimiter=separador)
 
              for fila in csv_reader:
@@ -87,10 +100,12 @@ def detectar_coordenadas_incompletas(ruta_archivo, separador, col_lat="decimalLa
 
                 if (lat and not lon) or (lon and not lat):
                     registros.append(fila)
-        return len(registros), registros
+    return len(registros), registros
 
 def validar_fechas(ruta_archivo, nombre_columna, separador="\t"):
-    
+    """
+    Retorna la cantidad y lista de registros con fechas vacías, con formato inválido o futuras.
+    """
     registros_invalidos = []
     
     formato = "%d/%m/%y"
@@ -122,6 +137,9 @@ def validar_fechas(ruta_archivo, nombre_columna, separador="\t"):
     return len(registros_invalidos), registros_invalidos
 
 def detectar_duplicados(ruta_archivo, separador="\t", col_id="occurrenceID"):
+    """
+    Retorna la cantidad y conjunto de IDs que aparecen más de una vez en el dataset.
+    """
     ids_duplicados = set()
     ids_totales = set()
     with open(ruta_archivo, encoding="utf-8", newline="") as archivo:
@@ -141,10 +159,13 @@ def detectar_duplicados(ruta_archivo, separador="\t", col_id="occurrenceID"):
     return len(ids_duplicados), ids_duplicados
 
 def detectar_country_codes_invalidos(ruta_archivo, separador):
-        codigos_validos = {"AR", "CL", "BR", "UY", "PY", "BO", "PE", "EC", "CO", "VE"}
-        registros_invalidos = []
+    """
+    Retorna la cantidad y lista de registros cuyo countryCode no pertenece a la lista de códigos válidos.
+    """
+    codigos_validos = {"AR", "CL", "BR", "UY", "PY", "BO", "PE", "EC", "CO", "VE"}
+    registros_invalidos = []
 
-        with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
+    with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
             csv_reader = csv.DictReader(archivo, delimiter=separador)
 
             for fila in csv_reader:
@@ -157,7 +178,9 @@ def detectar_country_codes_invalidos(ruta_archivo, separador):
             return len(registros_invalidos), registros_invalidos
         
 def detectar_incertidumbres_invalidas(ruta_archivo, separador):
-        
+    """
+    Retorna la cantidad y lista de registros con coordinateUncertaintyInMeters inválida.
+    """
     registros_invalidos = []
     with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
         csv_reader = csv.DictReader(archivo, delimiter=separador)
@@ -172,7 +195,10 @@ def detectar_incertidumbres_invalidas(ruta_archivo, separador):
 
 
 def ejecutar_analisis_calidad(ruta_archivo, separador, col_lat="decimalLatitude", col_lon="decimalLongitude"):
-
+    """
+    Recorre el dataset una sola vez y detecta todos los problemas de calidad: coordenadas inválidas o incompletas, fechas inválidas, taxonomía vacía e IDs duplicados.
+    Imprime un resumen por pantalla y retorna un diccionario con los registros problemáticos por categoría.
+    """
     # Se inicializan los registros
     coordenada_invalida = []
     coordenada_incompleta = []
@@ -238,6 +264,9 @@ def ejecutar_analisis_calidad(ruta_archivo, separador, col_lat="decimalLatitude"
     return {"idDuplicado":ids_duplicados, "fechaInvalida":fecha_invalida,"taxonomiaInvalida":taxonomia_invalida,"coordenadaInvalida":coordenada_invalida}
 
 def esta_en_territorio(ruta_archivo, separador, col_lat="decimalLatitude", col_lon="decimalLongitude"):
+    """
+    Retorna la cantidad y lista de registros cuyas coordenadas están fuera del territorio definido por las constantes LAT_MIN, LAT_MAX, LON_MIN, LON_MAX.
+    """
     registro_invalido = []
 
     with open(ruta_archivo, "r", encoding="utf-8",newline="") as archivo:

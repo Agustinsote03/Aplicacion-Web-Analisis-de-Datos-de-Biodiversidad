@@ -5,6 +5,9 @@ from validador import (es_coordenada_valida, es_fecha_valida, es_incertidumbre_v
 from logger import registrar_operacion
 
 def eliminar_por_id(ruta_original, ruta_nueva, columna, valor, nombre_dataset, separador="\t"):
+    """
+    Elimina del dataset el registro que coincida con el valor indicado en la columna dada.
+    """
     eliminado = False
 
     with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
@@ -40,6 +43,9 @@ def eliminar_por_id(ruta_original, ruta_nueva, columna, valor, nombre_dataset, s
 
 
 def eliminar_por_lista(ruta_original, ruta_nueva, columna, valores_a_eliminar, nombre_dataset, separador="\t"):
+    """
+    Elimina todos los registros cuyo valor en la columna indicada pertenezca a la lista dada.
+    """
     eliminados = 0
 
     # normalizo la lista (por si viene con espacios)
@@ -75,6 +81,10 @@ def eliminar_por_lista(ruta_original, ruta_nueva, columna, valores_a_eliminar, n
 
 
 def eliminar_por_condicion(ruta_original, ruta_nueva, columna, operador, valor, nombre_dataset, separador="\t"):
+    """
+    Elimina todos los registros que cumplan la condición indicada sobre una columna.
+    Soporta los operadores ==, !=, >, >=, <, <=.
+    """
     eliminados = 0
 
     # Abrimos archivo original (lectura) y nuevo (escritura)
@@ -134,6 +144,10 @@ def eliminar_por_condicion(ruta_original, ruta_nueva, columna, operador, valor, 
 
 
 def validar_fila(fila):
+    """
+    Valida los campos de una fila del dataset y retorna una lista con los motivos de invalidez.
+    Si la lista está vacía, la fila es válida.
+    """
     codigos_pais_validos = {"AR","CL","BR","UY","PY","BO","PE","EC","CO","VE"}
     formato_fecha = "%Y-%m-%d"
     
@@ -180,6 +194,10 @@ def validar_fila(fila):
 
 
 def sanitizar_dataset(ruta_original, ruta_nueva, separador="\t"):
+    """
+    Recorre el dataset, elimina las filas inválidas y guarda el resultado en un nuevo archivo.
+    Retorna un resumen con el total de registros, los eliminados y los motivos.
+    """
     eliminados = 0
     total = 0
     motivos_conteo = {}
@@ -214,6 +232,10 @@ def sanitizar_dataset(ruta_original, ruta_nueva, separador="\t"):
 
 
 def sanitizar_dataset_evolucionada(ruta_original, ruta_nueva, separador="\t"):
+    """
+    Igual que sanitizar_dataset pero además muestra un reporte detallado por pantalla
+    e incluye el ID de cada registro eliminado y sus motivos en el resultado.
+    """
     eliminados = 0
     total = 0
     reporte_detallado = []

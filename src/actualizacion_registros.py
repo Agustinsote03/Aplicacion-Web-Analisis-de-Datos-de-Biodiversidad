@@ -66,6 +66,9 @@ def actualizar_un_campo(ruta_original, ruta_nueva, id_registro, columna, nuevo_v
     return registro_actualizado
 
 def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modificaciones, nombre_dataset,separador="\t", columna_id="occurrenceID"):
+    """
+    Actualiza múltiples campos de un registro identificado por su ID, sin validar los nuevos valores.
+    """
     registro_actualizado = False
 
     with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
@@ -94,7 +97,11 @@ def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modifica
 
 
 def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro, modificaciones, nombre_dataset, separador="\t", columna_id="occurrenceID"):
-    registro_actualizado = False
+    """
+    Actualiza múltiples campos de un registro identificado por su ID, validando los nuevos valores antes de aplicar los cambios.
+    Si algún valor es inválido no se realiza ninguna modificación y se muestran los errores.
+    """
+    registro_actualizado = False    
 
     # Abrimos archivo original(lectura) y nuevo(escritura)
     with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
@@ -166,6 +173,10 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
 
 
 def actualizar_un_campo_validando(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor, nombre_dataset,separador="\t"):
+    """
+    Actualiza un único campo de un registro identificado por su ID, validando el nuevo valor.
+    Es un caso particular de actualizar_multiples_campos_validando.
+    """
     modificaciones = {columna: nuevo_valor}
 
     return actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro, modificaciones, nombre_dataset, separador)

@@ -6,6 +6,9 @@ from logger import registrar_operacion
 #-----------------FUNCIONES AUXILIARES---------------------#
 # Se ingresa un nuevo registro por teclado solicitando al usuario los campos principales del dataset 
 def ingresar_registro_por_teclado():
+    """
+    Solicita al usuario los campos principales de un registro por teclado y retorna el registro creado.
+    """
     print("Ingrese los datos del nuevo registro:")
 
     # Pido los campos principales del dataset al usuario
@@ -82,6 +85,11 @@ def crear_estructura_registro(
     taxonRank="",
     vernacularName=""
 ):
+    """
+    Crea y retorna un diccionario con los campos del dataset inicializados con los valores recibidos.
+    Los campos no indicados quedan vacíos por defecto.
+    """
+    
   
     # Devuelve un diccionario con los campos principales del dataset
     return {
@@ -120,6 +128,9 @@ def crear_estructura_registro(
 
 # Recibe una lista de columnas y devuelve un diccionario con esas columnas como claves y valores vacíos.
 def crear_registro_vacio(columnas):
+    """
+    Retorna un diccionario con las columnas dadas como claves y valores vacíos.
+    """
     return{col: "" for col in columnas}
 
 
@@ -127,6 +138,10 @@ CODIGOS_PAIS_VALIDOS = {"AR","CL","BR","UY","PY","BO","PE","EC","CO","VE"}
 FORMATO_FECHA = "%Y-%m-%d"
 
 def validar_registro(registro):
+    """
+    Valida los campos de un registro y retorna una tupla (es_valido, errores).
+    Si es_valido es False, errores contiene la lista de problemas encontrados.
+    """
     errores = []
 
     # Validación de coordenadas
@@ -186,6 +201,9 @@ def validar_registro(registro):
 
 # Recorre el dataset y retorna el mayor catalogNumber encontrado
 def max_catalog_number(ruta_archivo, separador="\t"):
+    """
+    Recorre el dataset y retorna el mayor catalogNumber encontrado.
+    """
     max_num = 0
     with open(ruta_archivo, "r", encoding = "utf-8", newline = "") as f:
         reader = csv.DictReader(f, delimiter = separador)
@@ -200,6 +218,9 @@ def max_catalog_number(ruta_archivo, separador="\t"):
 
 # Recibe estructura del inciso 4.A y retorna un diccionario listo para añadir al CSV
 def preparar_estructura(registro, ruta_archivo, columnas, nombre_dataset):
+    """
+    Toma un registro y lo completa con todas las columnas del dataset, asignando un nuevo catalogNumber y occurrenceID correlativos.
+    """
     max_num = max_catalog_number(ruta_archivo)
     nuevo_num = max_num + 1
     
@@ -224,7 +245,10 @@ def preparar_estructura(registro, ruta_archivo, columnas, nombre_dataset):
 
 # Inserta un nuevo registro correctamente formateado al final del dataset conservando la estructura original 
 def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset, separador="\t"):
-
+    """
+    Valida e inserta un único registro al final del dataset, guardando el resultado en un nuevo archivo.
+    Si el registro es inválido no se realiza ninguna inserción.
+    """
     # Valida el registro antes de intentar insertarlo, mostrando los errores encontrados si no es válido
     es_valido, errores = validar_registro(registro)
 
@@ -269,7 +293,10 @@ def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset, separ
 
 # Función para insertar múltiples registros ingresados por teclado
 def insertar_multiples_registros(ruta_origen, ruta_destino, nombre_dataset, separador="\t"):
-
+    """
+    Solicita registros por teclado en un loop, valida cada uno y los inserta al final del dataset.
+    La carga termina cuando el usuario deja el campo license vacío.
+    """
     registros = []
     # Lista donde se guardarán los registros válidos
 
