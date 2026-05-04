@@ -185,10 +185,10 @@ def validar_registro(registro):
 
 
 # Recorre el dataset y retorna el mayor catalogNumber encontrado
-def max_catalog_number(ruta_archivo):
+def max_catalog_number(ruta_archivo, separador="\t"):
     max_num = 0
     with open(ruta_archivo, "r", encoding = "utf-8", newline = "") as f:
-        reader = csv.DictReader(f, delimiter = "\t")
+        reader = csv.DictReader(f, delimiter = separador)
         for fila in reader:
             catalog = fila.get("catalogNumber", "").strip()
             if catalog.isdigit():
@@ -223,7 +223,7 @@ def preparar_estructura(registro, ruta_archivo, columnas, nombre_dataset):
     return registro_completo
 
 # Inserta un nuevo registro correctamente formateado al final del dataset conservando la estructura original 
-def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset):
+def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset, separador="\t"):
 
     # Valida el registro antes de intentar insertarlo, mostrando los errores encontrados si no es válido
     es_valido, errores = validar_registro(registro)
@@ -234,14 +234,14 @@ def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset):
             print("-", e)
         registrar_operacion(nombre_dataset, "INSERT", 0, error=True)
         return  
-    #Corta la función si hay errores
-    #Si el registro no es válido se registra la operación con error y se corta la función 
+    # Corta la función si hay errores
+    # Si el registro no es válido se registra la operación con error y se corta la función 
 
     
     # Abre el dataset original en modo lectura
     with open(ruta_origen, "r", encoding="utf-8", newline="") as f_in:
 
-        reader = csv.DictReader(f_in, delimiter="\t")
+        reader = csv.DictReader(f_in, delimiter=separador)
         columnas = reader.fieldnames
         # Guarda el nombre de las columnas
 
@@ -250,7 +250,7 @@ def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset):
 
         # Abre el archivo destino en modo escritura y copia el contenido del original, luego agrega el nuevo registro
         with open(ruta_destino, "w", encoding="utf-8", newline="") as f_out:
-            writer = csv.DictWriter(f_out, fieldnames=columnas, delimiter="\t")
+            writer = csv.DictWriter(f_out, fieldnames=columnas, delimiter=separador)
 
             writer.writeheader()
             # Escribe la primera fila (nombre de columnas)
@@ -268,7 +268,7 @@ def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset):
     # Si el registro es válido se registra la operación con éxito indicando que se insertó 1 registro
 
 # Función para insertar múltiples registros ingresados por teclado
-def insertar_multiples_registros(ruta_origen, ruta_destino, nombre_dataset):
+def insertar_multiples_registros(ruta_origen, ruta_destino, nombre_dataset, separador="\t"):
 
     registros = []
     # Lista donde se guardarán los registros válidos
@@ -308,20 +308,20 @@ def insertar_multiples_registros(ruta_origen, ruta_destino, nombre_dataset):
     # Abrimos dataset original
     with open(ruta_origen, "r", encoding="utf-8", newline="") as f_in:
 
-        reader = csv.DictReader(f_in, delimiter="\t")
+        reader = csv.DictReader(f_in, delimiter=separador)
         columnas = reader.fieldnames
         # Nombre de las columnas del dataset
 
         filas = list(reader)  
         # Guardamos todas las filas originales en memoria
 
-    max_num = max_catalog_number(ruta_origen)
+    max_num = max_catalog_number(ruta_origen, separador)
     # Calculo el último catalogNumber una sola vez para luego asignar nuevos números a los registros ingresados, evitando recorrer el dataset repetidamente
 
     # Creo el nuevo archivo
     with open(ruta_destino, "w", encoding="utf-8", newline="") as f_out:
 
-        writer = csv.DictWriter(f_out, fieldnames=columnas, delimiter="\t")
+        writer = csv.DictWriter(f_out, fieldnames=columnas, delimiter=separador)
         writer.writeheader()
         # Escribo los encabezados del dataset
 

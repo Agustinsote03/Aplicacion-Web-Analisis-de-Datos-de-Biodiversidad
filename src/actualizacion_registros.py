@@ -74,7 +74,7 @@ def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modifica
         escritor.writeheader()
 
         for fila in lector:
-            if fila.get("occurrenceID", "").strip() == str(id_registro).strip():
+            if fila.get(columna_id, "").strip() == str(id_registro).strip():
                 for columna, nuevo_valor in modificaciones.items():
 
                     if columna in fila:
@@ -90,7 +90,7 @@ def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modifica
     return registro_actualizado
 
 
-def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro, modificaciones, nombre_dataset,separador="\t"):
+def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro, modificaciones, nombre_dataset, separador="\t", columna_id="occurrenceID"):
     registro_actualizado = False
 
     # Abrimos archivo original(lectura) y nuevo(escritura)
@@ -109,7 +109,7 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
             errores = [] # Lista para guardar errores de validacion
             
             # Buscamos el registro por occurrenceID
-            if str(fila.get("occurrenceID", "")).strip() == str(id_registro).strip():
+            if str(fila.get(columna_id, "")).strip() == str(id_registro).strip():
 
                 # Validar antes de cambiar
                 for columna, nuevo_valor in modificaciones.items():
