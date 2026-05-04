@@ -1,6 +1,9 @@
 import csv
 from pathlib import Path
 from logger import registrar_operacion
+from validador import es_coordenada_valida, es_fecha_valida, es_incertidumbre_valida
+from datetime import datetime
+FORMATO_FECHA = "%Y-%m-%d"
 
 def buscar_registros(ruta_archivo, filtros, separador="\t"):
     """
@@ -118,7 +121,25 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
                         if not isinstance(nuevo_valor, str) or nuevo_valor.strip() == "":
                             errores.append(f"{columna} invalido")
 
-                    
+                    elif columna == "decimalLatitude":
+                        if not es_coordenada_valida(str(nuevo_valor), -90, 90):
+                            errores.append(f"decimalLatitude inválida: '{nuevo_valor}'")
+
+                    elif columna == "decimalLongitude":
+                        if not es_coordenada_valida(str(nuevo_valor), -180, 180):
+                            errores.append(f"decimalLongitude inválida: '{nuevo_valor}'")
+
+                    elif columna == "eventDate":
+                        es_valida, fecha = es_fecha_valida(str(nuevo_valor), FORMATO_FECHA)
+                        if not es_valida:
+                            errores.append(f"eventDate inválida: '{nuevo_valor}'")
+                        elif fecha and fecha > datetime.now():
+                            errores.append(f"eventDate futura: '{nuevo_valor}'")
+
+                    elif columna == "coordinateUncertaintyInMeters":
+                        if not es_incertidumbre_valida(str(nuevo_valor)):
+                            errores.append(f"coordinateUncertaintyInMeters inválida: '{nuevo_valor}'")
+
                 # Actualizar si no hay errores
                 if not errores:
                     for columna, nuevo_valor in modificaciones.items():

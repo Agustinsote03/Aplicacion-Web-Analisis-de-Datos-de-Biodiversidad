@@ -1,7 +1,6 @@
 from pathlib import Path
 
-ruta_raiz = Path(__file__).parent.parent.parent
-
+ruta_raiz = Path(__file__).parent.parent
 ruta_de_datasets = ruta_raiz / "raw_datasets"
 
 CONFIGURACION_DATASETS = {
