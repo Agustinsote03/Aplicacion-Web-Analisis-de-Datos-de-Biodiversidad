@@ -18,11 +18,11 @@ def imprimir_primeras_filas(ruta_archivo, separador="\t"):
                 return
             
 #Retorna una lista completa de columnas del dataset
-def obtener_columnas(path_archivo):
+def obtener_columnas(path_archivo, separador="\t"):
     path = Path(path_archivo)
 
     with path.open(newline="", encoding="utf-8") as archivo:
-        reader = csv.DictReader(archivo)
+        reader = csv.DictReader(archivo, delimiter=separador)
 
         columnas = reader.fieldnames
         #Primera fila del CSV (encabezados)
@@ -30,11 +30,11 @@ def obtener_columnas(path_archivo):
     return columnas
 
 #Retorna la posición (índice) de cada columna dentro del dataset
-def posiciones_columnas(ruta_archivo):
+def posiciones_columnas(ruta_archivo, separador="\t"):
     ruta = Path(ruta_archivo)
 
     with ruta.open(encoding="utf-8", newline="") as archivo:
-        reader = csv.DictReader(archivo, delimiter="\t")
+        reader = csv.DictReader(archivo, delimiter=separador)
         columnas = reader.fieldnames
 
     posiciones = {}
@@ -164,7 +164,14 @@ def resumen_columna(ruta_archivo, nombre_columna, tipo, separador="\t"):
 
     #Tipo numérico: calcula mínimo, máximo y promedio
     if tipo == "numeric":
-        numeros = [float(v) for v in valores]
+        numeros = []
+        for v in valores:
+            try:
+                numeros.append(float(v))
+            except ValueError:
+                print(f"Valor no numérico encontrado: {v}")
+                continue
+            #Se usa try/except para evitar errores si algún valor no puede convertirse a float
 
         minimo = min(numeros)
         maximo = max(numeros)
@@ -178,7 +185,14 @@ def resumen_columna(ruta_archivo, nombre_columna, tipo, separador="\t"):
 
     #Tipo coordinate: calcula mínimo y máximo
     elif tipo == "coordinate":
-        numeros = [float(v) for v in valores]
+        numeros = []
+        for v in valores:
+            try:
+                numeros.append(float(v))
+            except ValueError:
+                print(f"Valor no numérico encontrado: {v}")
+                continue
+            #Se usa try/except para evitar errores si algún valor no puede convertirse a float
 
         minimo = min(numeros)
         maximo = max(numeros)
