@@ -19,7 +19,7 @@ def imprimir_primeras_filas(ruta_archivo, separador="\t"):
             if contador == 10:
                 return
             
-def obtener_columnas(path_archivo):
+def obtener_columnas(path_archivo, separador="\t"):
     """
     Retorna una lista completa de columnas del dataset
     """
@@ -33,14 +33,14 @@ def obtener_columnas(path_archivo):
 
     return columnas
 
-def posiciones_columnas(ruta_archivo):
+def posiciones_columnas(ruta_archivo, separador="\t"):
     """
     Retorna la posición (índice) de cada columna dentro del dataset
     """
     ruta = Path(ruta_archivo)
 
     with ruta.open(encoding="utf-8", newline="") as archivo:
-        reader = csv.DictReader(archivo, delimiter="\t")
+        reader = csv.DictReader(archivo, delimiter=separador)
         columnas = reader.fieldnames
 
     posiciones = {}
