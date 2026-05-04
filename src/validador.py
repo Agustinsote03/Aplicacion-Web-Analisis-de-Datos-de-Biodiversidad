@@ -49,7 +49,7 @@ def es_incertidumbre_valida(incertidumbre_str):
         return False
 #------------------------------------------Funciones principales---------------------------------------#
 
-def validar_coordenadas(ruta_archivo, separador):
+def validar_coordenadas(ruta_archivo, separador,  col_lat="decimalLatitude", col_lon="decimalLongitude"):
 
     # Se inicializa una lista que contendrá los registros inválidos
     registros_invalidos = []
@@ -61,8 +61,8 @@ def validar_coordenadas(ruta_archivo, separador):
 
         for fila in csv_reader:
             # Extreamos la latitud y longitud
-            lat = fila.get("decimalLatitude", " ")
-            lon = fila.get("decimalLongitude", " ")
+            lat = fila.get(col_lat, " ")
+            lon = fila.get(col_lon, " ")
             
             # Validación de coordenadas
             lat_valida = es_coordenada_valida(lat, -90, 90)
@@ -74,7 +74,7 @@ def validar_coordenadas(ruta_archivo, separador):
         
         return len(registros_invalidos), registros_invalidos
 
-def detectar_coordenadas_incompletas(ruta_archivo, separador):
+def detectar_coordenadas_incompletas(ruta_archivo, separador, col_lat="decimalLatitude", col_lon="decimalLongitude"):
         
         registros = []
         with open(ruta_archivo, "r", encoding = "utf-8", newline = "") as file_csv:
@@ -82,8 +82,8 @@ def detectar_coordenadas_incompletas(ruta_archivo, separador):
 
              for fila in csv_reader:
                 # if not (fila.get("decimalLatitude", "")).strip() or not (fila.get("decimalLongitude", "")).strip(): registros.append(fila)
-                lon = (fila.get("decimalLongitude","")).strip()
-                lat = (fila.get("decimalLatitude","")).strip()
+                lon = (fila.get(col_lon,"")).strip()
+                lat = (fila.get(col_lat,"")).strip()
 
                 if (lat and not lon) or (lon and not lat):
                     registros.append(fila)
@@ -121,14 +121,14 @@ def validar_fechas(ruta_archivo, nombre_columna, separador="\t"):
 
     return len(registros_invalidos), registros_invalidos
 
-def detectar_duplicados(ruta_archivo, nombre_columbna, separador="\t"):
+def detectar_duplicados(ruta_archivo, separador="\t", col_id="occurrenceID"):
     ids_duplicados = set()
     ids_totales = set()
     with open(ruta_archivo, encoding="utf-8", newline="") as archivo:
         reader = csv.DictReader(archivo, delimiter=separador)
 
         for fila in reader:
-            registro_id = fila.get("occurrenceID","").strip()
+            registro_id = fila.get(col_id,"").strip()
 
             # Si existe el id, se añade a uno de los dos conjuntos
             if registro_id:
@@ -171,7 +171,7 @@ def detectar_incertidumbres_invalidas(ruta_archivo, separador):
     return len(registros_invalidos), registros_invalidos
 
 
-def ejecutar_analisis_calidad(ruta_archivo, separador):
+def ejecutar_analisis_calidad(ruta_archivo, separador, col_lat="decimalLatitude", col_lon="decimalLongitude"):
 
     # Se inicializan los registros
     coordenada_invalida = []
@@ -200,8 +200,8 @@ def ejecutar_analisis_calidad(ruta_archivo, separador):
                 taxonomia_invalida.append(fila)
 
             # Se evaluan las coordenadas
-            lon = (fila.get("decimalLongitude","")).strip()
-            lat = (fila.get("decimalLatitude","")).strip()
+            lon = (fila.get(col_lon,"")).strip()
+            lat = (fila.get(col_lat,"")).strip()
             if (lat and lon):
                 lat_valida = es_coordenada_valida(lat, -90, 90)
                 lon_valida = es_coordenada_valida(lon, -180, 180)
@@ -237,14 +237,14 @@ def ejecutar_analisis_calidad(ruta_archivo, separador):
     
     return {"idDuplicado":ids_duplicados, "fechaInvalida":fecha_invalida,"taxonomiaInvalida":taxonomia_invalida,"coordenadaInvalida":coordenada_invalida}
 
-def esta_en_territorio(ruta_archivo, separador):
+def esta_en_territorio(ruta_archivo, separador, col_lat="decimalLatitude", col_lon="decimalLongitude"):
     registro_invalido = []
 
     with open(ruta_archivo, "r", encoding="utf-8",newline="") as archivo:
         csv_reader = csv.DictReader(archivo, delimiter=separador)
         for fila in csv_reader:
-            lat = fila.get("decimalLatitude")
-            lon = fila.get("decimalLongitude")
+            lat = fila.get(col_lat, "")
+            lon = fila.get(col_lon, "")
 
             if lat and lon:
                 es_lat_valida = es_coordenada_valida(lat,LAT_MIN,LAT_MAX)
@@ -254,7 +254,7 @@ def esta_en_territorio(ruta_archivo, separador):
 
     return len(registro_invalido), registro_invalido
 
-def validar_latitud(ruta_archivo, separador):
+def validar_latitud(ruta_archivo, separador, col_lat="decimalLatitude"):
     """
      Esta función recibe la latitud, y evalua:
       -Que exista
@@ -265,7 +265,7 @@ def validar_latitud(ruta_archivo, separador):
     with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
         csv_reader = csv.DictReader(archivo, delimiter=separador)
         for fila in csv_reader:
-            lat = fila.get("decimalLatitude","")
+            lat = fila.get(col_lat,"")
             if lat:
                 es_lat_valida = es_coordenada_valida(lat,-90,90)
                 if es_lat_valida:
@@ -279,7 +279,7 @@ def validar_latitud(ruta_archivo, separador):
 
     return len(registros_invalido), registros_invalido
 
-def validar_longitud(ruta_archivo, separador):
+def validar_longitud(ruta_archivo, separador, col_lon="decimalLongitude"):
     """
      Esta función recibe la latitud, y evalua:
       -Que exista
@@ -290,9 +290,9 @@ def validar_longitud(ruta_archivo, separador):
     with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
         csv_reader = csv.DictReader(archivo, delimiter=separador)
         for fila in csv_reader:
-            lon = fila.get("decimalLongitude","")
+            lon = fila.get(col_lon,"")
             if lon:
-                es_lon_valida = es_coordenada_valida(lon,-90,90)
+                es_lon_valida = es_coordenada_valida(lon,-180,180)
                 if es_lon_valida:
                     pertenece = es_coordenada_valida(lon,LON_MIN,LON_MAX)
                     if not pertenece:
