@@ -73,7 +73,6 @@ def eliminar_por_lista(ruta_original, ruta_nueva, columna, valores_a_eliminar, n
     
     return eliminados
 
-import csv
 
 def eliminar_por_condicion(ruta_original, ruta_nueva, columna, operador, valor, nombre_dataset, separador="\t"):
     eliminados = 0
@@ -122,7 +121,7 @@ def eliminar_por_condicion(ruta_original, ruta_nueva, columna, operador, valor, 
                 eliminados += 1
                 continue
             
-            #Si no se elimino nada aviso: 
+            # Si no cumple la condicion, conservamos la fila
             escritor.writerow(fila)
 
     if eliminados == 0:
@@ -130,7 +129,6 @@ def eliminar_por_condicion(ruta_original, ruta_nueva, columna, operador, valor, 
         registrar_operacion(nombre_dataset, "DELETE", 0, error=True)
     else:
         registrar_operacion(nombre_dataset, "DELETE", eliminados)
-    #Si se eliminó algún registro se registra la operación, sino se registra un error
 
     return eliminados
 
