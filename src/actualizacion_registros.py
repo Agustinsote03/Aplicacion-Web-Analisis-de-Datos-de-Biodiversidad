@@ -7,29 +7,29 @@ def buscar_registros(ruta_archivo, filtros, separador="\t"):
         Busca y retorna registros de un dataset que cumplan con los criterios de filtrado
     """
     registros_encontrados = []  
-    #Lista donde voy a guardar resultados
+    # Lista donde voy a guardar resultados
 
     with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
         lector = csv.DictReader(archivo, delimiter=separador)
 
         for fila in lector:  
-        #Recorro todo el dataset
+        # Recorro todo el dataset
 
             cumple_condicion = True  
-            #Asumo que cumple
+            # Asumo que cumple
 
-            #Recorro los filtros que se pasaron por parámetro
+            # Recorro los filtros que se pasaron por parámetro
             for columna, valor in filtros.items():
 
-                #Comparo valor del CSV con el filtro
+                # Comparo valor del CSV con el filtro
                 if fila.get(columna, "").strip() != str(valor).strip():
                     cumple_condicion = False
                     break  
-                    #Si no cumple, corto el bucle
+                    # Si no cumple, corto el bucle
 
             if cumple_condicion:
                 registros_encontrados.append(fila)
-                #Si cumple todas las condiciones, guardo el registro en la lista de resultados
+                # Si cumple todas las condiciones, guardo el registro en la lista de resultados
 
     return registros_encontrados
 
@@ -62,7 +62,7 @@ def actualizar_un_campo(ruta_original, ruta_nueva, id_registro, columna, nuevo_v
 
     return registro_actualizado
 
-def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modificaciones, nombre_dataset,separador="\t"):
+def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modificaciones, nombre_dataset,separador="\t", columna_id="occurrenceID"):
     registro_actualizado = False
 
     with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
@@ -104,9 +104,9 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
 
         escritor.writeheader() #Escribimos encabezado
 
-        #Recorremos todos los registros
+        # Recorremos todos los registros
         for fila in lector:
-            errores = [] #Lista para guardar errores de validacion
+            errores = [] # Lista para guardar errores de validacion
             
             # Buscamos el registro por occurrenceID
             if str(fila.get("occurrenceID", "")).strip() == str(id_registro).strip():
