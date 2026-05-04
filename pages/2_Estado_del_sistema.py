@@ -32,7 +32,7 @@ def leer_logs():
     return registros
 
 
-st.title("📊 Estado del sistema")
+st.title("Estado del sistema")
 
 logs = leer_logs()
 
