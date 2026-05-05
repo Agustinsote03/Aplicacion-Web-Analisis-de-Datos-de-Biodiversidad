@@ -239,7 +239,7 @@ def ejecutar_analisis_calidad(ruta_archivo, separador):
         print(f"Cantidad de filas con coordenadas incompletas: ", len(coordenada_incompleta))
     except FileNotFoundError:
         print(f"Error: El archivo '{ruta_archivo}' no se encontró.")
-        return None
+        return {}
     
     return {"idDuplicado":ids_duplicados, "fechaInvalida":fecha_invalida,"taxonomiaInvalida":taxonomia_invalida,"coordenadaInvalida":coordenada_invalida}
 
