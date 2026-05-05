@@ -11,28 +11,31 @@ def buscar_registros(ruta_archivo, filtros, separador="\t"):
     """
     registros_encontrados = []  
     # Lista donde voy a guardar resultados
+    try:
+        with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
+            lector = csv.DictReader(archivo, delimiter=separador)
 
-    with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
-        lector = csv.DictReader(archivo, delimiter=separador)
+            for fila in lector:  
+            # Recorro todo el dataset
 
-        for fila in lector:  
-        # Recorro todo el dataset
+                cumple_condicion = True  
+                # Asumo que cumple
 
-            cumple_condicion = True  
-            # Asumo que cumple
+                # Recorro los filtros que se pasaron por parámetro
+                for columna, valor in filtros.items():
 
-            # Recorro los filtros que se pasaron por parámetro
-            for columna, valor in filtros.items():
+                    # Comparo valor del CSV con el filtro
+                    if fila.get(columna, "").strip() != str(valor).strip():
+                        cumple_condicion = False
+                        break  
+                        # Si no cumple, corto el bucle
 
-                # Comparo valor del CSV con el filtro
-                if fila.get(columna, "").strip() != str(valor).strip():
-                    cumple_condicion = False
-                    break  
-                    # Si no cumple, corto el bucle
-
-            if cumple_condicion:
-                registros_encontrados.append(fila)
-                # Si cumple todas las condiciones, guardo el registro en la lista de resultados
+                if cumple_condicion:
+                    registros_encontrados.append(fila)
+                    # Si cumple todas las condiciones, guardo el registro en la lista de resultados
+    except FileNotFoundError:
+        print(f"Error: El archivo '{ruta_archivo}' no se encontró.")
+        return []
 
     return registros_encontrados
 
@@ -41,27 +44,30 @@ def actualizar_un_campo(ruta_original, ruta_nueva, id_registro, columna, nuevo_v
         Actualiza un campo especifico de un registro basado en su ID y genera un nuevo archivo con la actualización
     """
     registro_actualizado = False
+    try:
+        with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
+            open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
+            
+            lector = csv.DictReader(archivo_original, delimiter=separador)
 
-    with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
-        open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
-        
-        lector = csv.DictReader(archivo_original, delimiter=separador)
+            escritor = csv.DictWriter((archivo_nuevo), fieldnames=lector.fieldnames, delimiter=separador)
 
-        escritor = csv.DictWriter((archivo_nuevo), fieldnames=lector.fieldnames, delimiter=separador)
+            escritor.writeheader()
 
-        escritor.writeheader()
+            for fila in lector:
+                if fila.get("occurrenceID","").strip() == str(id_registro).strip():
+                    fila[columna] = nuevo_valor
+                    registro_actualizado = True
+            
+                escritor.writerow(fila)
 
-        for fila in lector:
-            if fila.get("occurrenceID","").strip() == str(id_registro).strip():
-                fila[columna] = nuevo_valor
-                registro_actualizado = True
-        
-            escritor.writerow(fila)
-
-        if registro_actualizado:
-            registrar_operacion(nombre_dataset, "UPDATE", 1)
-        else:
-            registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
+            if registro_actualizado:
+                registrar_operacion(nombre_dataset, "UPDATE", 1)
+            else:
+                registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
+    except FileNotFoundError:
+        print(f"Error: El archivo '{ruta_original}' no se encontró.")
+        return False
 
     return registro_actualizado
 
@@ -70,28 +76,31 @@ def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modifica
     Actualiza múltiples campos de un registro identificado por su ID, sin validar los nuevos valores.
     """
     registro_actualizado = False
+    try:
+        with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
+            open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
 
-    with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
-        open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
+            lector = csv.DictReader(archivo_original, delimiter=separador)
+            escritor = csv.DictWriter(archivo_nuevo, fieldnames=lector.fieldnames, delimiter=separador)
 
-        lector = csv.DictReader(archivo_original, delimiter=separador)
-        escritor = csv.DictWriter(archivo_nuevo, fieldnames=lector.fieldnames, delimiter=separador)
+            escritor.writeheader()
 
-        escritor.writeheader()
+            for fila in lector:
+                if fila.get(columna_id, "").strip() == str(id_registro).strip():
+                    for columna, nuevo_valor in modificaciones.items():
 
-        for fila in lector:
-            if fila.get(columna_id, "").strip() == str(id_registro).strip():
-                for columna, nuevo_valor in modificaciones.items():
+                        if columna in fila:
+                            fila[columna] = nuevo_valor
+                    registro_actualizado = True
+                escritor.writerow(fila)
 
-                    if columna in fila:
-                        fila[columna] = nuevo_valor
-                registro_actualizado = True
-            escritor.writerow(fila)
-
-        if registro_actualizado:
-            registrar_operacion(nombre_dataset, "UPDATE", 1)
-        else:
-            registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
+            if registro_actualizado:
+                registrar_operacion(nombre_dataset, "UPDATE", 1)
+            else:
+                registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
+    except FileNotFoundError:
+        print(f"Error: El archivo '{ruta_original}' no se encontró.")
+        return False
 
     return registro_actualizado
 
