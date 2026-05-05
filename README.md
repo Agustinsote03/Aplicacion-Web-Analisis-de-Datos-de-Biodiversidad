@@ -47,6 +47,7 @@ Aplicación de análisis y visualización de datos de biodiversidad basada en el
 │   └── operations.log
 ├── pages/                      # Páginas de la app Streamlit
 ├── app.py                      # Archivo principal de Streamlit
+├── LICENSE                     # Licencia del código
 ├── requirements.txt            # Dependencias del proyecto
 └── README.md
 ```
