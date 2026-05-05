@@ -75,7 +75,7 @@ def validar_coordenadas(ruta_archivo, separador):
             if not lat_valida or not lon_valida:
                 registros_invalidos.append(fila)
         
-        return len(registros_invalidos), registros_invalidos
+    return len(registros_invalidos), registros_invalidos
 
 def detectar_coordenadas_incompletas(ruta_archivo, separador):
         
