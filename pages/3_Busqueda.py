@@ -51,15 +51,98 @@ st.markdown("Seleccioná una columna e ingresá el texto que querés buscar.")
 col_busqueda = st.selectbox("Seleccioná la columna", columnas)
 texto_busqueda = st.text_input("Texto a buscar")
 
+
+#-------EJERICIO 2.B: FILTROS ADICIONALES-------#
+st.subheader("Filtros adicionales")
+st.markdown("Podés combinar uno o más filtros. El resultado mostrará solo los registros que cumplan todas las condiciones activas.")
+
+# Nombre científico
+especies_sel = []
+if "scientificName" in df.columns:
+    especies = sorted(df["scientificName"].dropna().unique().tolist())
+    especies_sel = st.multiselect("Nombre científico", especies)
+
+# Observador
+observador = ""
+if "recordedBy" in df.columns:
+    observador = st.text_input("Observador")
+
+# País (puede llamarse countryCode o country según el dataset)
+col_pais = None
+paises_sel = []
+if "countryCode" in df.columns:
+    col_pais = "countryCode"
+elif "country" in df.columns:
+    col_pais = "country"
+if col_pais:
+    paises = sorted(df[col_pais].dropna().unique().tolist())
+    paises_sel = st.multiselect("País", paises)
+
+# Provincia
+col_provincia = None
+provincias_sel = []
+if "stateProvince" in df.columns:
+    col_provincia = "stateProvince"
+if col_provincia:
+    provincias = sorted(df[col_provincia].dropna().unique().tolist())
+    provincias_sel = st.multiselect("Provincia", provincias)
+
+# Rango de fechas
+fechas_sel = None
+if "eventDate" in df.columns:
+    fechas_validas = pd.to_datetime(df["eventDate"], errors="coerce").dropna()
+    if not fechas_validas.empty:
+        fecha_min = fechas_validas.min().date()
+        fecha_max = fechas_validas.max().date()
+        usar_fechas = st.checkbox("Filtrar por rango de fechas")
+        if usar_fechas:
+            fechas_sel = st.date_input("Rango de fechas", value=(fecha_min, fecha_max))
+
+st.markdown("---")
+
+# --- Botón de búsqueda ---
 if st.button("Buscar"):
+    resultados = df.copy()
+
+    # Filtro de texto libre (2.A)
     if texto_busqueda.strip():
-        # Búsqueda case-insensitive como subcadena en la columna seleccionada
-        resultados = df[
-            df[col_busqueda].astype(str).str.contains(
+        resultados = resultados[
+            resultados[col_busqueda].astype(str).str.contains(
                 texto_busqueda.strip(), case=False, na=False
             )
         ]
-        st.write(f"Resultados encontrados: {len(resultados)}")
-        st.dataframe(resultados, use_container_width=True)
-    else:
-        st.warning("Ingresá un texto para buscar.")
+
+    # Filtro por nombre científico
+    if especies_sel:
+        resultados = resultados[resultados["scientificName"].isin(especies_sel)]
+
+    # Filtro por observador
+    if observador.strip():
+        resultados = resultados[
+            resultados["recordedBy"].astype(str).str.contains(
+                observador.strip(), case=False, na=False
+            )
+        ]
+
+    # Filtro por país
+    if paises_sel and col_pais:
+        resultados = resultados[resultados[col_pais].isin(paises_sel)]
+
+    # Filtro por provincia
+    if provincias_sel and col_provincia:
+        resultados = resultados[resultados[col_provincia].isin(provincias_sel)]
+
+    # Filtro por rango de fechas
+    if fechas_sel and len(fechas_sel) == 2:
+        resultados["eventDate_parsed"] = pd.to_datetime(resultados["eventDate"], errors="coerce")
+        resultados = resultados[
+            (resultados["eventDate_parsed"] >= pd.Timestamp(fechas_sel[0])) &
+            (resultados["eventDate_parsed"] <= pd.Timestamp(fechas_sel[1]))
+        ]
+        resultados = resultados.drop(columns=["eventDate_parsed"])
+
+    # Guardar resultados en session_state para usar en otras páginas
+    st.session_state["resultados_busqueda"] = resultados
+
+    st.write(f"Resultados encontrados: {len(resultados)}")
+    st.dataframe(resultados, use_container_width=True)
