@@ -31,3 +31,15 @@ def seleccionar_dataset():
         st.session_state["nombre_dataset"] = seleccion
         st.session_state["dataset_actual"] = cargar_dataset(seleccion)
         st.session_state["fecha_seleccion"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+def mostrar_info_dataset():
+    """
+    Muestra en el sidebar el nombre del dataset seleccionado, 
+    la cantidad de registros y la fecha y hora de seleccion.
+    """
+    if "dataset_actual" in st.session_state:
+        st.sidebar.markdown("---")
+        st.sidebar.write(f" **Dataset:** {st.session_state['nombre_dataset']}")
+        st.sidebar.write(f" **Registros:** {len(st.session_state['dataset_actual'])}")
+        st.sidebar.write(f" **Cargado:** {st.session_state['fecha_seleccion']}")
+        

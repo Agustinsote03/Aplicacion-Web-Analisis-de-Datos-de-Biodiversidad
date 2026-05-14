@@ -6,12 +6,13 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent / "src"))
 
-from dataset_loader import cargar_dataset, seleccionar_dataset
+from dataset_loader import cargar_dataset, seleccionar_dataset, mostrar_info_dataset
 from config import CONFIGURACION_DATASETS
 
 st.set_page_config(page_title="App Biodiversidad", layout="wide")
 
 seleccionar_dataset()
+mostrar_info_dataset()
 
 st.title("Aplicacion de Biodiversidad")
 st.write("Selecciona una pagina desde el menu lateral")
