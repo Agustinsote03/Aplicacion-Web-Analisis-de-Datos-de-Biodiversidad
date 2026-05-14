@@ -2,6 +2,7 @@ import streamlit as st
 import sys
 import pandas as pd
 from pathlib import Path
+from datetime import datetime
 
 ruta_raiz = Path.cwd().parent
 print(f"Ruta del directorio raiz: ", ruta_raiz)
@@ -100,7 +101,7 @@ if "eventDate" in df.columns:
 
 st.markdown("---")
 
-# --- Botón de búsqueda ---
+#---Botón de búsqueda---#
 if st.button("Buscar", key="buscar_btn"):
     resultados = df.copy()
 
@@ -174,3 +175,16 @@ if "resultados_busqueda" in st.session_state:
         st.markdown("#### Ver detalle de un registro")
         indice = st.number_input("Número de fila", min_value=0, max_value=len(resultados_ordenados)-1, value=0, step=1, key="detalle_idx")
         st.dataframe(resultados_ordenados.iloc[[indice]][columnas_relevantes], use_container_width=True)
+
+        #--------EJERCICIO 2.D: EXPORTAR CSV--------#
+        st.markdown("---")
+        
+        nombre_archivo = f"{st.session_state['nombre_dataset']}_{datetime.now().strftime('%Y%m%d')}.csv"
+        csv = resultados_ordenados[columnas_relevantes].to_csv(index=False).encode("utf-8")
+        st.download_button(
+            label="Exportar resultados",
+            data=csv,
+            file_name=nombre_archivo,
+            mime="text/csv",
+            key="exportar_btn"
+        )
