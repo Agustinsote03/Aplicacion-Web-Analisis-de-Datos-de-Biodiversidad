@@ -3,27 +3,7 @@ import sys
 import pandas as pd
 from pathlib import Path
 from datetime import datetime
-
-ruta_raiz = Path.cwd().parent
-print(f"Ruta del directorio raiz: ", ruta_raiz)
-
-ruta_de_src = Path(ruta_raiz / "src")
-print(f"Ruta src: ", ruta_de_src)
-
-# Se añade la ruta raíz al sys.path para poder importar módulos
-sys.path.append(str(ruta_de_src))
-from dataset_loader import seleccionar_dataset, mostrar_info_dataset
-
-ruta_de_datasets = ruta_raiz / "processed_datasets"
-#Ruta de los datasets procesados
-print(f"Ruta de archivos: ", ruta_de_datasets)
-
-ruta_raiz = Path(__file__).parent.parent
-RUTAS_PROCESADOS = {
-    "iadiza": ruta_raiz / "processed_datasets" / "IADIZA" / "occurrence.txt",
-    "xeno_canto": ruta_raiz / "processed_datasets" / "Xeno-canto" / "occurrence.txt",
-    "inaturalist": ruta_raiz / "processed_datasets" / "iNaturalist" / "occurrence.txt",
-}
+from dataset_loader import seleccionar_dataset, mostrar_info_dataset, cargar_dataset
 
 #Sidebar: selector e información de datasets
 seleccionar_dataset()
