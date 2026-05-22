@@ -52,7 +52,7 @@ def es_incertidumbre_valida(incertidumbre_str):
         return False
 #------------------------------------------Funciones principales---------------------------------------#
 
-def validar_coordenadas(ruta_archivo, separador):
+def validar_coordenadas(ruta_archivo, separador, col_lat="decimalLatitude", col_lon="decimalLongitude"):
 
     #Se inicializa una lista que contendrá los registros inválidos
     registros_invalidos = []
@@ -64,8 +64,8 @@ def validar_coordenadas(ruta_archivo, separador):
 
         for fila in csv_reader:
             #Extreamos la latitud y longitud
-            lat = fila.get("decimalLatitude", " ")
-            lon = fila.get("decimalLongitude", " ")
+            lat = fila.get(col_lat, "")
+            lon = fila.get(col_lon, "")
             
             #Validación de coordenadas
             lat_valida = es_coordenada_valida(lat, -90, 90)
@@ -77,7 +77,7 @@ def validar_coordenadas(ruta_archivo, separador):
         
     return len(registros_invalidos), registros_invalidos
 
-def detectar_coordenadas_incompletas(ruta_archivo, separador):
+def detectar_coordenadas_incompletas(ruta_archivo, separador, col_lat="decimalLatitude", col_lon="decimalLongitude"):
         
         registros = []
         with open(ruta_archivo, "r", encoding = "utf-8", newline = "") as file_csv:
@@ -85,8 +85,8 @@ def detectar_coordenadas_incompletas(ruta_archivo, separador):
 
              for fila in csv_reader:
                 # if not (fila.get("decimalLatitude", "")).strip() or not (fila.get("decimalLongitude", "")).strip(): registros.append(fila)
-                lon = (fila.get("decimalLongitude","")).strip()
-                lat = (fila.get("decimalLatitude","")).strip()
+                lon = (fila.get(col_lon,"")).strip()
+                lat = (fila.get(col_lat,"")).strip()
 
                 if (lat and not lon) or (lon and not lat):
                     registros.append(fila)
@@ -124,14 +124,14 @@ def validar_fechas(ruta_archivo, nombre_columna, separador="\t"):
 
     return len(registros_invalidos), registros_invalidos
 
-def detectar_duplicados(ruta_archivo, nombre_columbna, separador="\t"):
+def detectar_duplicados(ruta_archivo, nombre_columna, separador="\t"):
     ids_duplicados = set()
     ids_totales = set()
     with open(ruta_archivo, encoding="utf-8", newline="") as archivo:
         reader = csv.DictReader(archivo, delimiter=separador)
 
         for fila in reader:
-            registro_id = fila.get("occurrenceID","").strip()
+            registro_id = fila.get(nombre_columna,"").strip()
 
             #Si existe el id, se añade a uno de los dos conjuntos
             if registro_id:
