@@ -1,8 +1,19 @@
 import streamlit as st 
+from datetime import datetime
+import pandas as pd
+import sys
+from pathlib import Path
 
-st.set_page_config(page_title="App Biodiversidad", # Nombre que aparece en la pestaña del navegador
-                    layout="wide") # Usa todo el ancho de la pantalla
+sys.path.append(str(Path(__file__).parent / "src"))
 
-# Contenido que se ve en la pagina principal
-st.title("Aplicacion de Biodiversidad") # Titulo grande
-st.write("Selecciona una pagina desde el menu lateral") # Texto normal
+from dataset_loader import cargar_dataset, seleccionar_dataset, mostrar_info_dataset
+from config import CONFIGURACION_DATASETS
+
+st.set_page_config(page_title="App Biodiversidad", layout="wide")
+
+seleccionar_dataset()
+mostrar_info_dataset()
+
+st.title("Aplicacion de Biodiversidad")
+st.write("Selecciona una pagina desde el menu lateral")
+
