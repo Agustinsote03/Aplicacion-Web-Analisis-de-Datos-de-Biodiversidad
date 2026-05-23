@@ -192,3 +192,26 @@ if "resultados_busqueda" in st.session_state:
             mime="text/csv",
             key="exportar_btn"
         )
+    
+    #--------EJERCICIO 2.E: RESUMEN ESTADÍSTICO--------#
+        st.markdown("---")
+        st.subheader("Resumen estadístico")
+        st.markdown("Información sobre el subconjunto de registros encontrados.")
+
+        col1, col2, col3, col4 = st.columns(4)
+
+        with col1:
+            especies_unicas = resultados["scientificName"].nunique() if "scientificName" in resultados.columns else 0
+            st.metric("Especies únicas", especies_unicas)
+
+        with col2:
+            paises_repr = resultados[col_pais].nunique() if col_pais and col_pais in resultados.columns else 0
+            st.metric("Países representados", paises_repr)
+
+        with col3:
+            provincias_repr = resultados[col_provincia].nunique() if col_provincia and col_provincia in resultados.columns else 0
+            st.metric("Provincias representadas", provincias_repr)
+
+        with col4:
+            observadores = resultados["recordedBy"].nunique() if "recordedBy" in resultados.columns else 0
+            st.metric("Observadores", observadores)
