@@ -25,17 +25,45 @@ if "nombre_dataset" not in st.session_state:
 df = st.session_state["dataset_actual"]
 columnas = list(df.columns)
 
+#Detectar columnas de país y provincia antes de los filtros
+col_pais = None
+if "countryCode" in df.columns:
+    col_pais = "countryCode"
+elif "country" in df.columns:
+    col_pais = "country"
+
+col_provincia = "stateProvince" if "stateProvince" in df.columns else None
+
 #--------EJERCICIO 2.A: BÚSQUEDA POR TEXTO LIBRE--------#
 st.subheader("Búsqueda por texto libre")
 st.markdown("Seleccioná una columna e ingresá el texto que querés buscar.")
 
+#Detectar si hay filtros adicionales activos para deshabilitar este campo
+hay_filtros = st.session_state.get("hay_filtros_activos", False)
+
 col_busqueda = st.selectbox("Seleccioná la columna", columnas)
 texto_busqueda = st.text_input("Texto a buscar")
 
+if hay_filtros:
+    st.info("Desactivá los filtros adicionales para usar la búsqueda por texto libre.")
+
+#Botón del 2.A
+if st.button("Buscar por texto", key="buscar_texto_btn", disabled=hay_filtros):
+    st.session_state["hay_filtros_activos"] = False
+    resultados = df[
+        df[col_busqueda].astype(str).str.contains(
+            texto_busqueda.strip(), case=False, na=False
+        )
+    ] if texto_busqueda.strip() else df.copy()
+    st.session_state["resultados_busqueda"] = resultados
+
+st.markdown("---")
 
 #-------EJERICIO 2.B: FILTROS ADICIONALES-------#
-st.subheader("Filtros adicionales")
-st.markdown("Podés combinar uno o más filtros. El resultado mostrará solo los registros que cumplan todas las condiciones activas.")
+hay_texto = bool(texto_busqueda.strip())
+
+with st.expander("Filtros adicionales", expanded=False):
+    st.markdown("Podés combinar uno o más filtros. El resultado mostrará solo los registros que cumplan todas las condiciones activas.")
 
 # Nombre científico
 especies_sel = []
@@ -79,45 +107,41 @@ if "eventDate" in df.columns:
         if usar_fechas:
             fechas_sel = st.date_input("Rango de fechas", value=(fecha_min, fecha_max))
 
+if hay_texto:
+        st.info("Borrá el texto de la búsqueda libre para usar los filtros adicionales.")
+
+    # Botón del 2.B
+        if st.button("Buscar por filtros", key="buscar_filtros_btn", disabled=hay_texto):
+            st.session_state["hay_filtros_activos"] = True
+            resultados = df.copy()
+
+        if especies_sel:
+            resultados = resultados[resultados["scientificName"].isin(especies_sel)]
+
+        if observador.strip():
+            resultados = resultados[
+                resultados["recordedBy"].astype(str).str.contains(
+                    observador.strip(), case=False, na=False
+                )
+            ]
+
+        if paises_sel and col_pais:
+            resultados = resultados[resultados[col_pais].isin(paises_sel)]
+
+        if provincias_sel and col_provincia:
+            resultados = resultados[resultados[col_provincia].isin(provincias_sel)]
+
+        if fechas_sel and len(fechas_sel) == 2:
+            resultados["eventDate_parsed"] = pd.to_datetime(resultados["eventDate"], errors="coerce")
+            resultados = resultados[
+                (resultados["eventDate_parsed"] >= pd.Timestamp(fechas_sel[0])) &
+                (resultados["eventDate_parsed"] <= pd.Timestamp(fechas_sel[1]))
+            ]
+            resultados = resultados.drop(columns=["eventDate_parsed"])
+
+            st.session_state["resultados_busqueda"] = resultados
+
 st.markdown("---")
-
-#---Botón de búsqueda---#
-if st.button("Buscar", key="buscar_btn"):
-    resultados = df.copy()
-
-    if texto_busqueda.strip():
-        resultados = resultados[
-            resultados[col_busqueda].astype(str).str.contains(
-                texto_busqueda.strip(), case=False, na=False
-            )
-        ]
-
-    if especies_sel:
-        resultados = resultados[resultados["scientificName"].isin(especies_sel)]
-
-    if observador.strip():
-        resultados = resultados[
-            resultados["recordedBy"].astype(str).str.contains(
-                observador.strip(), case=False, na=False
-            )
-        ]
-
-    if paises_sel and col_pais:
-        resultados = resultados[resultados[col_pais].isin(paises_sel)]
-
-    if provincias_sel and col_provincia:
-        resultados = resultados[resultados[col_provincia].isin(provincias_sel)]
-
-    if fechas_sel and len(fechas_sel) == 2:
-        resultados["eventDate_parsed"] = pd.to_datetime(resultados["eventDate"], errors="coerce")
-        resultados = resultados[
-            (resultados["eventDate_parsed"] >= pd.Timestamp(fechas_sel[0])) &
-            (resultados["eventDate_parsed"] <= pd.Timestamp(fechas_sel[1]))
-        ]
-        resultados = resultados.drop(columns=["eventDate_parsed"])
-
-    # Guardar en session_state
-    st.session_state["resultados_busqueda"] = resultados
 
 #--------EJERCICIO 2.C: MOSTRAR RESULTADOS--------#
 if "resultados_busqueda" in st.session_state:
