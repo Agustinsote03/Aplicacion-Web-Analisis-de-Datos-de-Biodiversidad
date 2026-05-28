@@ -4,6 +4,8 @@ from pathlib import Path
 from datetime import datetime
 from dataset_loader import seleccionar_dataset, mostrar_info_dataset, cargar_dataset
 from config import CONFIGURACION_DATASETS
+from dataset_reader import porcentaje_nulos_por_columna
+from validador import es_coordenada_valida, es_fecha_valida
 
 # EJERCICIO 5.4
 def obtener_info_archivo(nombre, cfg):
@@ -60,18 +62,18 @@ def mostrar_tabla_datasets():
 def calcular_nulos_por_columna(df):
     """
     Calcula el porcentaje y cantidad de valores nulos por columna de un DataFrame.
+    Considera como nulo tanto NaN como strings vacíos.
     """
-    nulos_pct = df.isnull().mean() * 100
-    nulos_abs = df.isnull().sum()
-    validos = df.notnull().sum()
- 
+    nulos_abs = df.apply(lambda col: col.isna() | (col.astype(str).str.strip() == "")).sum()
+    validos = len(df) - nulos_abs
+    nulos_pct = (nulos_abs / len(df)) * 100
+
     df_nulos = pd.DataFrame({
-        "Columna": nulos_pct.index,
+        "Columna": df.columns,
         "% Nulos": nulos_pct.round(2).values,
         "Registros nulos": nulos_abs.values,
         "Registros válidos": validos.values
     })
- 
     return df_nulos.sort_values("% Nulos", ascending=False).reset_index(drop=True)
 
 def obtener_datasets_disponibles():
@@ -121,6 +123,106 @@ def mostrar_detalle_dataset(datasets_disponibles):
     st.dataframe(df_nulos, use_container_width=True)
  
     st.markdown("---")
+
+# Ejercicio 5.C
+def calcular_pct_coordenadas_validas(df, nombre):
+    cfg = CONFIGURACION_DATASETS[nombre]
+    col_lat = cfg.get("col_lat", "decimalLatitude")
+    col_lon = cfg.get("col_lon", "decimalLongitude")
+
+    if col_lat not in df.columns or col_lon not in df.columns:
+        return 0.0
+
+    lat = pd.to_numeric(df[col_lat], errors="coerce")
+    lon = pd.to_numeric(df[col_lon], errors="coerce")
+
+    validas = (
+        lat.notna() & lon.notna() &
+        lat.between(-90, 90) &
+        lon.between(-180, 180)
+    ).sum()
+
+    return round(validas / len(df) * 100, 2)
+
+
+def calcular_pct_fechas_validas(df):
+    if "eventDate" not in df.columns:
+        return 0.0
+
+    fechas = pd.to_datetime(
+        df["eventDate"].astype(str).str[:10],
+        format="%Y-%m-%d",
+        errors="coerce"
+    )
+    hoy = pd.Timestamp(datetime.now().date())
+    validas = (fechas.notna() & (fechas <= hoy)).sum()
+
+    return round(validas / len(df) * 100, 2)
+
+def calcular_metricas_dataset(nombre):
+    """
+    Carga un dataset y calcula sus métricas de calidad de datos.
+    """
+    ruta = Path(CONFIGURACION_DATASETS[nombre]["ruta"])
+    if not ruta.exists():
+        return None
+
+    df = cargar_dataset(nombre)
+    total = len(df)
+
+    if total == 0:
+        return {"Dataset": nombre, "Registros": 0,
+                "% Coords válidas": 0.0, "% Fechas válidas": 0.0,
+                "% Campos completos (prom.)": 0.0}
+
+    return {
+        "Dataset": nombre,
+        "Registros": total,
+        "% Coords válidas": calcular_pct_coordenadas_validas(df, nombre),  # ← pasa nombre
+        "% Fechas válidas": calcular_pct_fechas_validas(df),
+        "% Campos completos (prom.)": round(df.notnull().mean().mean() * 100, 2),
+    }
+ 
+def construir_tabla_comparativa(datasets_disponibles):
+    """
+    Genera un DataFrame comparativo con métricas de calidad para todos
+    los datasets disponibles.
+    """
+    filas = []
+    for nombre in datasets_disponibles:
+        metricas = calcular_metricas_dataset(nombre)
+        if metricas:
+            filas.append(metricas)
+ 
+    if not filas:
+        return None
+ 
+    return pd.DataFrame(filas).set_index("Dataset")
+ 
+def mostrar_tabla_comparativa(datasets_disponibles):
+    """
+    Muestra una tabla comparativa de todos los datasets disponibles con
+        la cantidad de registros, % de registros con coordenadas válidas,
+        % de registros con fecha válida,
+        % de campos completados en promedio.
+    """
+    st.header("Tabla comparativa")
+    st.markdown("Comparación de calidad de datos entre todos los datasets disponibles.")
+ 
+    if not datasets_disponibles:
+        st.info("No hay datasets disponibles para comparar.")
+        st.markdown("---")
+        return
+ 
+    with st.spinner("Calculando métricas de calidad..."):
+        df_comp = construir_tabla_comparativa(datasets_disponibles)
+ 
+    if df_comp is not None:
+        st.dataframe(df_comp, use_container_width=True)
+    else:
+        st.warning("No se pudieron calcular métricas para los datasets disponibles.")
+ 
+    st.markdown("---")
  
  
 def main():
@@ -141,6 +243,7 @@ def main():
     
     mostrar_tabla_datasets()    # Ejercicio 5.A
     mostrar_detalle_dataset(datasets_disponibles)   # Ejercicio 5.B
+    mostrar_tabla_comparativa(datasets_disponibles) # Ejercicio 5.C
 
 
 main()
