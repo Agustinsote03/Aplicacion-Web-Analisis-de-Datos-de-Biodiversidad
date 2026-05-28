@@ -224,6 +224,47 @@ def mostrar_tabla_comparativa(datasets_disponibles):
  
     st.markdown("---")
  
+ # Ejercicio 5.D
+def obtener_archivos_documentacion():
+    """
+    Busca archivos Markdown (.md) dentro de la carpeta 'documentation/'.
+    Retorna lista de objetos Path ordenados alfabéticamente,
+    o lista vacía si la carpeta no existe o no tiene archivos .md.
+    """
+    carpeta = Path("documentation")
+    if not carpeta.exists():
+        return []
+    return sorted(carpeta.glob("*.md"))
+
+
+def leer_archivo_markdown(ruta_archivo):
+    """
+    Lee y retorna el contenido de un archivo Markdown como string.
+    """
+    return Path(ruta_archivo).read_text(encoding="utf-8")
+
+
+def mostrar_documentacion():
+    """
+    Busca archivos .md en la carpeta documentation/ y muestra un selector.
+    Al elegir uno renderiza su contenido con st.markdown.
+    Si no hay archivos informa al usuario.
+    """
+    st.header("Documentación del proyecto")
+    st.markdown("Documentos generados durante la primera etapa del trabajo.")
+
+    archivos = obtener_archivos_documentacion()
+
+    if not archivos:
+        st.info("No se encontraron archivos en la carpeta `documentation/`.")
+        return
+
+    nombres = [f.name for f in archivos]
+    doc_elegida = st.selectbox("Elegí un documento para visualizar", nombres, key="selector_doc")
+
+    ruta_doc = next(f for f in archivos if f.name == doc_elegida)
+    contenido = leer_archivo_markdown(ruta_doc)
+    st.markdown(contenido)
  
 def main():
     """
@@ -244,7 +285,7 @@ def main():
     mostrar_tabla_datasets()    # Ejercicio 5.A
     mostrar_detalle_dataset(datasets_disponibles)   # Ejercicio 5.B
     mostrar_tabla_comparativa(datasets_disponibles) # Ejercicio 5.C
-
+    mostrar_documentacion() # Ejercicio 5.D
 
 main()
 
