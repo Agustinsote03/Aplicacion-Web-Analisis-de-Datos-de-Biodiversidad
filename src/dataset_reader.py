@@ -1,7 +1,8 @@
 import csv 
-from utils import cantidad_registros
+from utils import cantidad_registros, manejar_archivo_no_encontrado
 from pathlib import Path
 
+@manejar_archivo_no_encontrado
 def imprimir_primeras_filas(ruta_archivo, separador="\t"):
     """
     Abre el archivo e imprime las primeras 10 filas
@@ -18,7 +19,8 @@ def imprimir_primeras_filas(ruta_archivo, separador="\t"):
             
             if contador == 10:
                 return
-            
+
+@manejar_archivo_no_encontrado   
 def obtener_columnas(path_archivo, separador="\t"):
     """
     Retorna una lista completa de columnas del dataset
@@ -33,6 +35,7 @@ def obtener_columnas(path_archivo, separador="\t"):
 
     return columnas
 
+@manejar_archivo_no_encontrado
 def posiciones_columnas(ruta_archivo, separador="\t"):
     """
     Retorna la posición (índice) de cada columna dentro del dataset
@@ -49,7 +52,7 @@ def posiciones_columnas(ruta_archivo, separador="\t"):
 
     return posiciones
 
- 
+@manejar_archivo_no_encontrado
 def columnas_con_nulos(ruta_archivo, separador="\t"):
     """
     Cuenta la cantidad de registros que tienen al menos un valor nulo (vacío) en alguna de sus columnas
@@ -70,6 +73,7 @@ def columnas_con_nulos(ruta_archivo, separador="\t"):
 
     return list(columnas_con_nulo)
 
+@manejar_archivo_no_encontrado
 def porcentaje_nulos_por_columna(ruta_archivo, separador="\t"):
     """
     Calcula el porcentaje de registros nulos por cada columna del dataset
@@ -107,6 +111,7 @@ def porcentaje_nulos_por_columna(ruta_archivo, separador="\t"):
 
     return porcentajes
 
+@manejar_archivo_no_encontrado
 def valores_distintos_columna(ruta_archivo, nombre_columna, separador="\t"):
     """
     Devuelve la cantidad de valores distintos que tiene una columna específica del dataset
@@ -127,6 +132,7 @@ def valores_distintos_columna(ruta_archivo, nombre_columna, separador="\t"):
 
     return len(valores)
 
+@manejar_archivo_no_encontrado
 def frecuencia_valores_columna(ruta_archivo, nombre_columna, separador="\t"):
     """
     Devuelve la frecuencia de cada valor distinto que tiene una columna específica del datase
@@ -152,7 +158,7 @@ def frecuencia_valores_columna(ruta_archivo, nombre_columna, separador="\t"):
 
     return frecuencias
 
-
+@manejar_archivo_no_encontrado
 def resumen_columna(ruta_archivo, nombre_columna, tipo, separador="\t"):
     """
     Calcula un resumen de una columna específica del dataset dependiendo de su tipo (numérico, coordenada o texto)
@@ -203,7 +209,7 @@ def resumen_columna(ruta_archivo, nombre_columna, tipo, separador="\t"):
     # Tipo coordinate: calcula mínimo y máximo
     elif tipo == "coordinate":
         numeros = []
-        
+
         for v in valores:
             try:
                 numeros.append(float(v))
@@ -236,6 +242,7 @@ def resumen_columna(ruta_archivo, nombre_columna, tipo, separador="\t"):
     else:
         raise ValueError(f"Tipo no válido: '{tipo}'. Los tipos aceptados son: 'numeric', 'coordinate', 'text'")
     
+@manejar_archivo_no_encontrado
 def columnas_totalmente_nulas(ruta_archivo, separador="\t"):
     """
     Retorna una lista con el nombre de las columnas que tienen todos sus valores nulos
