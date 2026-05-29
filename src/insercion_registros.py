@@ -252,9 +252,6 @@ def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset, separ
     es_valido, errores = validar_registro(registro)
 
     if not es_valido:
-        print("Registro inválido. No se insertó.")
-        for e in errores:
-            print("-", e)
         registrar_operacion(nombre_dataset, "INSERT", 0, error=True)
         return  
     # Corta la función si hay errores
@@ -284,8 +281,6 @@ def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset, separ
 
             # Agrega el nuevo registro al final del archivo
             writer.writerow(registro_completo)
-
-    print("Registro insertado correctamente")
 
     registrar_operacion(nombre_dataset, "INSERT", 1)
     # Si el registro es válido se registra la operación con éxito indicando que se insertó 1 registro
@@ -326,7 +321,6 @@ def insertar_multiples_registros(ruta_origen, ruta_destino, nombre_dataset, sepa
 
     # Si no se ingresó ningún registro válido se termina la función
     if not registros:
-        print("No se ingresaron registros válidos")
         registrar_operacion(nombre_dataset, "INSERT", 0, error=True)
         return
         # Si no se ingresó ningún registro válido se registra la operación con error y se corta la función   
@@ -378,8 +372,6 @@ def insertar_multiples_registros(ruta_origen, ruta_destino, nombre_dataset, sepa
 
             writer.writerow(registro_completo)
             # Escribo el registro en el nuevo archivo
-
-    print("Registros insertados correctamente")
 
     registrar_operacion(nombre_dataset, "INSERT", len(registros))
     # Si se ingresaron registros válidos se registra la operación con éxito indicando la cantidad de registros insertados
