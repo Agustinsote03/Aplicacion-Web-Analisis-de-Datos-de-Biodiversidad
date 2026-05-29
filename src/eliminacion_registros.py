@@ -3,7 +3,9 @@ from pathlib import Path
 from datetime import datetime
 from validador import (es_coordenada_valida, es_fecha_valida, es_incertidumbre_valida)
 from logger import registrar_operacion
+from utils import manejar_archivo_no_encontrado 
 
+@manejar_archivo_no_encontrado
 def eliminar_por_id(ruta_original, ruta_nueva, columna, valor, nombre_dataset, separador="\t"):
     """
     Elimina del dataset el registro que coincida con el valor indicado en la columna dada.
@@ -29,10 +31,6 @@ def eliminar_por_id(ruta_original, ruta_nueva, columna, valor, nombre_dataset, s
 
             escritor.writerow(fila)
 
-    #Detecta si no encontro nada
-    if not eliminado:
-        print("Error: no se encontró el registro")
-
     if eliminado:
         registrar_operacion(nombre_dataset, "DELETE", 1)
     else:
@@ -41,7 +39,7 @@ def eliminar_por_id(ruta_original, ruta_nueva, columna, valor, nombre_dataset, s
 
     return eliminado
 
-
+@manejar_archivo_no_encontrado
 def eliminar_por_lista(ruta_original, ruta_nueva, columna, valores_a_eliminar, nombre_dataset, separador="\t"):
     """
     Elimina todos los registros cuyo valor en la columna indicada pertenezca a la lista dada.
@@ -71,7 +69,6 @@ def eliminar_por_lista(ruta_original, ruta_nueva, columna, valores_a_eliminar, n
             escritor.writerow(fila)
 
     if eliminados == 0:
-        print("No se eliminaron registros")
         registrar_operacion(nombre_dataset, "DELETE", 0, error=True)
     else:
         registrar_operacion(nombre_dataset, "DELETE", eliminados)
@@ -79,13 +76,21 @@ def eliminar_por_lista(ruta_original, ruta_nueva, columna, valores_a_eliminar, n
     
     return eliminados
 
-
+@manejar_archivo_no_encontrado
 def eliminar_por_condicion(ruta_original, ruta_nueva, columna, operador, valor, nombre_dataset, separador="\t"):
     """
     Elimina todos los registros que cumplan la condición indicada sobre una columna.
     Soporta los operadores ==, !=, >, >=, <, <=.
     """
     eliminados = 0
+
+    #Casteo una sola vez antes del loop
+    try:
+        valor_val = float(valor)
+        valor_es_numero = True
+    except (ValueError, TypeError):
+        valor_val = valor
+        valor_es_numero = False
 
     # Abrimos archivo original (lectura) y nuevo (escritura)
     with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
@@ -101,14 +106,14 @@ def eliminar_por_condicion(ruta_original, ruta_nueva, columna, operador, valor, 
             # Obtenemos el valor de la columna indicada
             dato = fila.get(columna, "").strip()
 
-            # Intentamos convertir a número (por si es year, cantidad, etc.)
-            try:
-                dato_val = float(dato)
-                valor_val = float(valor)
-            except:
-                # Si no se puede convertir, lo tratamos como texto
+            # Solo casteamos el dato de la fila (cambia en cada iteración)
+            if valor_es_numero:
+                try:
+                    dato_val = float(dato)
+                except (ValueError, TypeError):
+                    dato_val = dato
+            else:
                 dato_val = dato
-                valor_val = valor
 
             cumple = False # Asumimos que NO cumple la condicion
 
@@ -135,13 +140,11 @@ def eliminar_por_condicion(ruta_original, ruta_nueva, columna, operador, valor, 
             escritor.writerow(fila)
 
     if eliminados == 0:
-        print("No se eliminaron registros")
         registrar_operacion(nombre_dataset, "DELETE", 0, error=True)
     else:
         registrar_operacion(nombre_dataset, "DELETE", eliminados)
 
     return eliminados
-
 
 def validar_fila(fila):
     """
@@ -192,7 +195,7 @@ def validar_fila(fila):
 
     return motivos
 
-
+@manejar_archivo_no_encontrado
 def sanitizar_dataset(ruta_original, ruta_nueva, separador="\t"):
     """
     Recorre el dataset, elimina las filas inválidas y guarda el resultado en un nuevo archivo.
@@ -230,7 +233,7 @@ def sanitizar_dataset(ruta_original, ruta_nueva, separador="\t"):
         "motivos": motivos_conteo,
     }
 
-
+@manejar_archivo_no_encontrado
 def sanitizar_dataset_evolucionada(ruta_original, ruta_nueva, separador="\t"):
     """
     Igual que sanitizar_dataset pero además muestra un reporte detallado por pantalla

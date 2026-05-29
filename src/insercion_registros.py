@@ -2,6 +2,7 @@ import csv
 from pathlib import Path
 from validador import *
 from logger import registrar_operacion
+from utils import manejar_archivo_no_encontrado
 
 #-----------------FUNCIONES AUXILIARES---------------------#
 # Se ingresa un nuevo registro por teclado solicitando al usuario los campos principales del dataset 
@@ -124,15 +125,14 @@ def crear_estructura_registro(
         "vernacularName": vernacularName,
     }
 
-
+COLUMNAS_ID = {"gbifID", "occurrenceID", "catalogNumber"}
 
 # Recibe una lista de columnas y devuelve un diccionario con esas columnas como claves y valores vacíos.
 def crear_registro_vacio(columnas):
     """
-    Retorna un diccionario con las columnas dadas como claves y valores vacíos.
+    Retorna un diccionario con las columnas dadas como claves y valores vacíos, excluyendo las columnas de ID.
     """
-    return{col: "" for col in columnas}
-
+    return {col: "" for col in columnas if col not in COLUMNAS_ID}
 
 CODIGOS_PAIS_VALIDOS = {"AR","CL","BR","UY","PY","BO","PE","EC","CO","VE"}
 FORMATO_FECHA = "%Y-%m-%d"
@@ -200,6 +200,7 @@ def validar_registro(registro):
 
 
 # Recorre el dataset y retorna el mayor catalogNumber encontrado
+@manejar_archivo_no_encontrado
 def max_catalog_number(ruta_archivo, separador="\t"):
     """
     Recorre el dataset y retorna el mayor catalogNumber encontrado.
@@ -244,6 +245,7 @@ def preparar_estructura(registro, ruta_archivo, columnas, nombre_dataset):
     return registro_completo
 
 # Inserta un nuevo registro correctamente formateado al final del dataset conservando la estructura original 
+@manejar_archivo_no_encontrado
 def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset, separador="\t"):
     """
     Valida e inserta un único registro al final del dataset, guardando el resultado en un nuevo archivo.
@@ -253,9 +255,6 @@ def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset, separ
     es_valido, errores = validar_registro(registro)
 
     if not es_valido:
-        print("Registro inválido. No se insertó.")
-        for e in errores:
-            print("-", e)
         registrar_operacion(nombre_dataset, "INSERT", 0, error=True)
         return  
     # Corta la función si hay errores
@@ -286,12 +285,11 @@ def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset, separ
             # Agrega el nuevo registro al final del archivo
             writer.writerow(registro_completo)
 
-    print("Registro insertado correctamente")
-
     registrar_operacion(nombre_dataset, "INSERT", 1)
     # Si el registro es válido se registra la operación con éxito indicando que se insertó 1 registro
 
 # Función para insertar múltiples registros ingresados por teclado
+@manejar_archivo_no_encontrado
 def insertar_multiples_registros(ruta_origen, ruta_destino, nombre_dataset, separador="\t"):
     """
     Solicita registros por teclado en un loop, valida cada uno y los inserta al final del dataset.
@@ -327,7 +325,6 @@ def insertar_multiples_registros(ruta_origen, ruta_destino, nombre_dataset, sepa
 
     # Si no se ingresó ningún registro válido se termina la función
     if not registros:
-        print("No se ingresaron registros válidos")
         registrar_operacion(nombre_dataset, "INSERT", 0, error=True)
         return
         # Si no se ingresó ningún registro válido se registra la operación con error y se corta la función   
@@ -379,8 +376,6 @@ def insertar_multiples_registros(ruta_origen, ruta_destino, nombre_dataset, sepa
 
             writer.writerow(registro_completo)
             # Escribo el registro en el nuevo archivo
-
-    print("Registros insertados correctamente")
 
     registrar_operacion(nombre_dataset, "INSERT", len(registros))
     # Si se ingresaron registros válidos se registra la operación con éxito indicando la cantidad de registros insertados

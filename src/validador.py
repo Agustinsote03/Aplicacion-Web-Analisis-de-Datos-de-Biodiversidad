@@ -1,5 +1,5 @@
 import csv
-from utils import cantidad_registros
+from utils import cantidad_registros, manejar_archivo_no_encontrado
 from datetime import datetime
 
 #Cotas aproximadas de América del Sur
@@ -52,32 +52,32 @@ def es_incertidumbre_valida(incertidumbre_str):
         return False
 #------------------------------------------Funciones principales---------------------------------------#
 
-def validar_coordenadas(ruta_archivo, separador):
+@manejar_archivo_no_encontrado
+def validar_coordenadas(ruta_archivo, separador, col_lat="decimalLatitude", col_lon="decimalLongitude"):
 
     #Se inicializa una lista que contendrá los registros inválidos
     registros_invalidos = []
-    cont = 0
+    
     with open(ruta_archivo, "r", encoding = "utf-8", newline= "") as file_csv:
         csv_reader = csv.DictReader(file_csv, delimiter=separador)
         
         #Se recorre cada fila del archivo
 
         for fila in csv_reader:
-            #Extreamos la latitud y longitud
-            lat = fila.get("decimalLatitude", " ")
-            lon = fila.get("decimalLongitude", " ")
+            lat = fila.get(col_lat, "") or fila.get("latitudeDecimal", "")
+            lon = fila.get(col_lon, "") or fila.get("longitudeDecimal", "")
             
-            #Validación de coordenadas
             lat_valida = es_coordenada_valida(lat, -90, 90)
             lon_valida = es_coordenada_valida(lon, -180, 180)
-
+            
             #Si 'es_coordenada_valida' devuelve false, se agrega a 'registros_invalidos'
             if not lat_valida or not lon_valida:
                 registros_invalidos.append(fila)
         
     return len(registros_invalidos), registros_invalidos
 
-def detectar_coordenadas_incompletas(ruta_archivo, separador):
+@manejar_archivo_no_encontrado
+def detectar_coordenadas_incompletas(ruta_archivo, separador, col_lat="decimalLatitude", col_lon="decimalLongitude"):
         
         registros = []
         with open(ruta_archivo, "r", encoding = "utf-8", newline = "") as file_csv:
@@ -85,13 +85,14 @@ def detectar_coordenadas_incompletas(ruta_archivo, separador):
 
              for fila in csv_reader:
                 # if not (fila.get("decimalLatitude", "")).strip() or not (fila.get("decimalLongitude", "")).strip(): registros.append(fila)
-                lon = (fila.get("decimalLongitude","")).strip()
-                lat = (fila.get("decimalLatitude","")).strip()
+                lon = (fila.get(col_lon,"")).strip()
+                lat = (fila.get(col_lat,"")).strip()
 
                 if (lat and not lon) or (lon and not lat):
                     registros.append(fila)
         return len(registros), registros
 
+@manejar_archivo_no_encontrado
 def validar_fechas(ruta_archivo, nombre_columna, separador="\t"):
     
     registros_invalidos = []
@@ -124,14 +125,15 @@ def validar_fechas(ruta_archivo, nombre_columna, separador="\t"):
 
     return len(registros_invalidos), registros_invalidos
 
-def detectar_duplicados(ruta_archivo, nombre_columbna, separador="\t"):
+@manejar_archivo_no_encontrado
+def detectar_duplicados(ruta_archivo, nombre_columna, separador="\t"):
     ids_duplicados = set()
     ids_totales = set()
     with open(ruta_archivo, encoding="utf-8", newline="") as archivo:
         reader = csv.DictReader(archivo, delimiter=separador)
 
         for fila in reader:
-            registro_id = fila.get("occurrenceID","").strip()
+            registro_id = fila.get(nombre_columna,"").strip()
 
             #Si existe el id, se añade a uno de los dos conjuntos
             if registro_id:
@@ -143,6 +145,7 @@ def detectar_duplicados(ruta_archivo, nombre_columbna, separador="\t"):
 
     return len(ids_duplicados), ids_duplicados
 
+@manejar_archivo_no_encontrado
 def detectar_country_codes_invalidos(ruta_archivo, separador):
         codigos_validos = {"AR", "CL", "BR", "UY", "PY", "BO", "PE", "EC", "CO", "VE"}
         registros_invalidos = []
@@ -158,9 +161,9 @@ def detectar_country_codes_invalidos(ruta_archivo, separador):
                     registros_invalidos.append(fila)
             
             return len(registros_invalidos), registros_invalidos
-        
-def detectar_incertidumbres_invalidas(ruta_archivo, separador):
-        
+
+@manejar_archivo_no_encontrado     
+def detectar_incertidumbres_invalidas(ruta_archivo, separador):  
     registros_invalidos = []
     with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
         csv_reader = csv.DictReader(archivo, delimiter=separador)
@@ -173,7 +176,7 @@ def detectar_incertidumbres_invalidas(ruta_archivo, separador):
 
     return len(registros_invalidos), registros_invalidos
 
-
+@manejar_archivo_no_encontrado
 def ejecutar_analisis_calidad(ruta_archivo, separador):
 
     #Se inicializan los registros
@@ -188,61 +191,59 @@ def ejecutar_analisis_calidad(ruta_archivo, separador):
     cont = 0
     #Formato esperado de las fechas
     formato = "%Y-%m-%d"
-    try:
-        with open(ruta_archivo, "r", encoding = "utf-8", newline="") as archivo:
-            csv_reader = csv.DictReader(archivo, delimiter = separador)
+    
+    with open(ruta_archivo, "r", encoding = "utf-8", newline="") as archivo:
+        csv_reader = csv.DictReader(archivo, delimiter = separador)
 
-            for fila in csv_reader:
+        for fila in csv_reader:
 
-                #Se inicializa el conteo de filas
-                cont += 1
+            #Se inicializa el conteo de filas
+            cont += 1
 
-                #Se valida por taxonomia:
-                taxonomia = fila.get("scientificName","").strip()
-                if not taxonomia:
-                    taxonomia_invalida.append(fila)
+            #Se valida por taxonomia:
+            taxonomia = fila.get("scientificName","").strip()
+            if not taxonomia:
+                taxonomia_invalida.append(fila)
 
-                #Se evaluan las coordenadas
-                lon = (fila.get("decimalLongitude","")).strip()
-                lat = (fila.get("decimalLatitude","")).strip()
-                if (lat and lon):
-                    lat_valida = es_coordenada_valida(lat, -90, 90)
-                    lon_valida = es_coordenada_valida(lon, -180, 180)
-                    if not (lat_valida and lon_valida):
-                        coordenada_invalida.append(fila)
-                elif (lat and not lon) or (lon and not lat):
-                    coordenada_incompleta.append(fila)
+            #Se evaluan las coordenadas
+            lon = (fila.get("decimalLongitude","")).strip()
+            lat = (fila.get("decimalLatitude","")).strip()
+            if (lat and lon):
+                lat_valida = es_coordenada_valida(lat, -90, 90)
+                lon_valida = es_coordenada_valida(lon, -180, 180)
+                if not (lat_valida and lon_valida):
+                    coordenada_invalida.append(fila)
+            elif (lat and not lon) or (lon and not lat):
+                coordenada_incompleta.append(fila)
                     
-                #Se evaluan las fechas(deltipo "2015-06-23T00:00:00Z")
-                fecha_str = (fila.get("eventDate","")).strip()[:10]
-                if fecha_str:
-                    es_valida, fecha = es_fecha_valida(fecha_str, formato)
-                    if not es_valida:
-                        fecha_invalida.append(fila)
-                    elif datetime.now() < fecha: 
-                        fecha_invalida.append(fila)
+            #Se evaluan las fechas(deltipo "2015-06-23T00:00:00Z")
+            fecha_str = (fila.get("eventDate","")).strip()[:10]
+            if fecha_str:
+                es_valida, fecha = es_fecha_valida(fecha_str, formato)
+                if not es_valida:
+                    fecha_invalida.append(fila)
+                elif datetime.now() < fecha: 
+                    fecha_invalida.append(fila)
                 
-                #Se evalua la duplicidad de los IDs
-                registro_id = fila.get("occurrenceID","").strip()
-                if registro_id: # Evita procesar IDs vacíos
-                    if registro_id in ids_totales:
-                        ids_duplicados.add(registro_id)
-                    else:
-                        ids_totales.add(registro_id)
+            #Se evalua la duplicidad de los IDs
+            registro_id = fila.get("occurrenceID","").strip()
+            if registro_id: # Evita procesar IDs vacíos
+                if registro_id in ids_totales:
+                    ids_duplicados.add(registro_id)
+                else:
+                    ids_totales.add(registro_id)
 
-        #Este bloque imprime los resultados
-        print(f"Total de filas: ", cont)
-        print(f"Cantidad de IDs duplicados: ", len(ids_duplicados))
-        print(f"Cantidad de filas con fecha inválida: ", len(fecha_invalida))
-        print(f"Cantidad de filas con taxonomia inválida: ", len(taxonomia_invalida))
-        print(f"Cantidad de filas con coordenadas inválidas", len(coordenada_invalida))
-        print(f"Cantidad de filas con coordenadas incompletas: ", len(coordenada_incompleta))
-    except FileNotFoundError:
-        print(f"Error: El archivo '{ruta_archivo}' no se encontró.")
-        return {}
+    #Este bloque imprime los resultados
+    print(f"Total de filas: ", cont)
+    print(f"Cantidad de IDs duplicados: ", len(ids_duplicados))
+    print(f"Cantidad de filas con fecha inválida: ", len(fecha_invalida))
+    print(f"Cantidad de filas con taxonomia inválida: ", len(taxonomia_invalida))
+    print(f"Cantidad de filas con coordenadas inválidas", len(coordenada_invalida))
+    print(f"Cantidad de filas con coordenadas incompletas: ", len(coordenada_incompleta))
     
     return {"idDuplicado":ids_duplicados, "fechaInvalida":fecha_invalida,"taxonomiaInvalida":taxonomia_invalida,"coordenadaInvalida":coordenada_invalida}
 
+@manejar_archivo_no_encontrado
 def esta_en_territorio(ruta_archivo, separador):
     registro_invalido = []
 
@@ -260,6 +261,7 @@ def esta_en_territorio(ruta_archivo, separador):
 
     return len(registro_invalido), registro_invalido
 
+@manejar_archivo_no_encontrado
 def validar_latitud(ruta_archivo, separador):
     """
      Esta función recibe la latitud, y evalua:
@@ -285,6 +287,7 @@ def validar_latitud(ruta_archivo, separador):
 
     return len(registros_invalido), registros_invalido
 
+@manejar_archivo_no_encontrado
 def validar_longitud(ruta_archivo, separador):
     """
      Esta función recibe la longitud, y evalua:
@@ -309,6 +312,3 @@ def validar_longitud(ruta_archivo, separador):
                 registros_invalido.append(fila)
 
     return len(registros_invalido), registros_invalido
-
-
-
