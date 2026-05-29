@@ -3,7 +3,9 @@ from pathlib import Path
 from datetime import datetime
 from validador import (es_coordenada_valida, es_fecha_valida, es_incertidumbre_valida)
 from logger import registrar_operacion
+from utils import manejar_archivo_no_encontrado 
 
+@manejar_archivo_no_encontrado
 def eliminar_por_id(ruta_original, ruta_nueva, columna, valor, nombre_dataset, separador="\t"):
     """
     Elimina del dataset el registro que coincida con el valor indicado en la columna dada.
@@ -37,7 +39,7 @@ def eliminar_por_id(ruta_original, ruta_nueva, columna, valor, nombre_dataset, s
 
     return eliminado
 
-
+@manejar_archivo_no_encontrado
 def eliminar_por_lista(ruta_original, ruta_nueva, columna, valores_a_eliminar, nombre_dataset, separador="\t"):
     """
     Elimina todos los registros cuyo valor en la columna indicada pertenezca a la lista dada.
@@ -74,7 +76,7 @@ def eliminar_por_lista(ruta_original, ruta_nueva, columna, valores_a_eliminar, n
     
     return eliminados
 
-
+@manejar_archivo_no_encontrado
 def eliminar_por_condicion(ruta_original, ruta_nueva, columna, operador, valor, nombre_dataset, separador="\t"):
     """
     Elimina todos los registros que cumplan la condición indicada sobre una columna.
@@ -144,7 +146,6 @@ def eliminar_por_condicion(ruta_original, ruta_nueva, columna, operador, valor, 
 
     return eliminados
 
-
 def validar_fila(fila):
     """
     Valida los campos de una fila del dataset y retorna una lista con los motivos de invalidez.
@@ -194,7 +195,7 @@ def validar_fila(fila):
 
     return motivos
 
-
+@manejar_archivo_no_encontrado
 def sanitizar_dataset(ruta_original, ruta_nueva, separador="\t"):
     """
     Recorre el dataset, elimina las filas inválidas y guarda el resultado en un nuevo archivo.
@@ -232,7 +233,7 @@ def sanitizar_dataset(ruta_original, ruta_nueva, separador="\t"):
         "motivos": motivos_conteo,
     }
 
-
+@manejar_archivo_no_encontrado
 def sanitizar_dataset_evolucionada(ruta_original, ruta_nueva, separador="\t"):
     """
     Igual que sanitizar_dataset pero además muestra un reporte detallado por pantalla
