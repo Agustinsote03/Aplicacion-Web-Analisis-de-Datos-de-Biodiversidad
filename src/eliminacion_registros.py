@@ -29,10 +29,6 @@ def eliminar_por_id(ruta_original, ruta_nueva, columna, valor, nombre_dataset, s
 
             escritor.writerow(fila)
 
-    #Detecta si no encontro nada
-    if not eliminado:
-        print("Error: no se encontró el registro")
-
     if eliminado:
         registrar_operacion(nombre_dataset, "DELETE", 1)
     else:
@@ -71,7 +67,6 @@ def eliminar_por_lista(ruta_original, ruta_nueva, columna, valores_a_eliminar, n
             escritor.writerow(fila)
 
     if eliminados == 0:
-        print("No se eliminaron registros")
         registrar_operacion(nombre_dataset, "DELETE", 0, error=True)
     else:
         registrar_operacion(nombre_dataset, "DELETE", eliminados)
@@ -143,7 +138,6 @@ def eliminar_por_condicion(ruta_original, ruta_nueva, columna, operador, valor, 
             escritor.writerow(fila)
 
     if eliminados == 0:
-        print("No se eliminaron registros")
         registrar_operacion(nombre_dataset, "DELETE", 0, error=True)
     else:
         registrar_operacion(nombre_dataset, "DELETE", eliminados)
