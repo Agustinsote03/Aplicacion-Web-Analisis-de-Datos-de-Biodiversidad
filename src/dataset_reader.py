@@ -176,7 +176,6 @@ def resumen_columna(ruta_archivo, nombre_columna, tipo, separador="\t"):
             # Filtra valores válidos y arma una lista con todos los datos de la columna
 
     if len(valores) == 0:
-        print("No hay datos en la columna")
         return None
 
     # Tipo numérico: calcula mínimo, máximo y promedio
@@ -218,8 +217,7 @@ def resumen_columna(ruta_archivo, nombre_columna, tipo, separador="\t"):
         }
 
     else:
-        print("Tipo no válido")
-        return None
+        raise ValueError(f"Tipo no válido: '{tipo}'. Los tipos aceptados son: 'numeric', 'coordinate', 'text'")
     
 def columnas_totalmente_nulas(ruta_archivo, separador="\t"):
     """
