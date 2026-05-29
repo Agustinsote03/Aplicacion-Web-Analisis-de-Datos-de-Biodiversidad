@@ -1,7 +1,7 @@
 import streamlit as st 
 import matplotlib.pyplot as plt
 import pandas as pd
-
+from src.dataset_reader import porcentaje_nulos_por_columna
 st.title("Visualización de Datos de Biodiversidad")
 
 
@@ -92,7 +92,7 @@ ax.set_ylabel('Cantidad de observaciones únicas')
 plt.xticks(rotation=45) 
 st.pyplot(fig)
 
-#Ejercicio 3.C
+#Ejercicio 3.C #Preguntar
 
 opciones_taxonomia = {'Clase': 'class', 'Orden': 'order', 'Familia': 'family'}
 
@@ -114,4 +114,22 @@ ax.pie(conteo_taxonomia.values, labels=conteo_taxonomia.index, autopct='%1.1f%%'
 ax.set_title(f"Distribución de registros por {eleccion_usuario}")
 st.pyplot(fig)
 
+#Ejercicio 3.D
 
+st.subheader("Porcentaje de registros nulos por columna")
+ruta_archivo = st.session_state["dataset_actual"]
+diccionario_nulos = porcentaje_nulos_por_columna(ruta_archivo)
+series_nulos = pd.Sereis(diccionario_nulos)
+
+#Calculamos el porcentaje de registros no nulos
+serie_completitud = 100 - series_nulos
+serie_completitud = serie_completitud.sort_values(ascending=True)
+
+fig, ax = plt.subplots(figsize=(10, 10))
+
+ax.barh(serie_completitud.index, serie_completitud.values, color="#3498db")
+ax.set_title("Porcentaje de registro no nulos por columna")
+ax.set_xlabel("Porcentaje %")
+ax.set_xlim(0, 100)
+
+st.ptplot(fig)
