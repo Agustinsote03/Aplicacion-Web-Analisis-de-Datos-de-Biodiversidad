@@ -34,8 +34,7 @@ def buscar_registros(ruta_archivo, filtros, separador="\t"):
                     registros_encontrados.append(fila)
                     # Si cumple todas las condiciones, guardo el registro en la lista de resultados
     except FileNotFoundError:
-        print(f"Error: El archivo '{ruta_archivo}' no se encontró.")
-        return []
+        raise
 
     return registros_encontrados
 
@@ -66,8 +65,7 @@ def actualizar_un_campo(ruta_original, ruta_nueva, id_registro, columna, nuevo_v
             else:
                 registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
     except FileNotFoundError:
-        print(f"Error: El archivo '{ruta_original}' no se encontró.")
-        return False
+        raise
 
     return registro_actualizado
 
@@ -97,10 +95,10 @@ def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modifica
             if registro_actualizado:
                 registrar_operacion(nombre_dataset, "UPDATE", 1)
             else:
-                registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
+                 registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
+
     except FileNotFoundError:
-        print(f"Error: El archivo '{ruta_original}' no se encontró.")
-        return False
+        raise
 
     return registro_actualizado
 
@@ -133,15 +131,14 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
         elif columna == "coordinateUncertaintyInMeters":
             if not es_incertidumbre_valida(str(nuevo_valor)):
                 errores.append(f"coordinateUncertaintyInMeters inválida: '{nuevo_valor}'")
-
-    if errores:
-        print("Errores:", errores)
-        registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
-        return False
     
     #Recién acá se abren los archivos y se recorren las filas
     registro_actualizado = False    
 
+    if errores:
+        registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
+        return False
+    
     # Abrimos archivo original(lectura) y nuevo(escritura)
     try:
         with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
@@ -168,13 +165,8 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
         else:
             registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
 
-        #Si no se actualizo nada
-        if not registro_actualizado:
-            print("No se realizaron cambios")
-
     except FileNotFoundError:
-        print(f"Error: El archivo '{ruta_original}' no se encontró.")
-        return False
+        raise
 
     return registro_actualizado
 
