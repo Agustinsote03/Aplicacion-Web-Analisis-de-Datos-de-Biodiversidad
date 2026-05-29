@@ -180,8 +180,16 @@ def resumen_columna(ruta_archivo, nombre_columna, tipo, separador="\t"):
 
     # Tipo numérico: calcula mínimo, máximo y promedio
     if tipo == "numeric":
-        numeros = [float(v) for v in valores]
+        numeros = []
+        for v in valores:
+            try:
+                numeros.append(float(v))
+            except ValueError:
+                continue
 
+        if not numeros:
+            return None
+        
         minimo = min(numeros)
         maximo = max(numeros)
         promedio = sum(numeros) / len(numeros)
@@ -194,7 +202,16 @@ def resumen_columna(ruta_archivo, nombre_columna, tipo, separador="\t"):
 
     # Tipo coordinate: calcula mínimo y máximo
     elif tipo == "coordinate":
-        numeros = [float(v) for v in valores]
+        numeros = []
+        
+        for v in valores:
+            try:
+                numeros.append(float(v))
+            except ValueError:
+                continue
+
+        if not numeros:
+            return None
 
         minimo = min(numeros)
         maximo = max(numeros)
