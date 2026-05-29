@@ -45,7 +45,7 @@ plt.xticks(rotation=45)
 st.pyplot(fig)
 
 
-#Ejercicio B, se va a crear un nuevo dataframe para manipular las fechas
+#Ejercicio 3.B, se va a crear un nuevo dataframe para manipular las fechas
 
 #Control: se verifica que encabezado le corresponde a la columna que contiene los IDs
 
@@ -65,6 +65,9 @@ df_fechas = df_fechas.dropna(subset=['anio_calculado'])
 df_fechas['fecha'] = pd.to_datetime(df_fechas['fecha'], errors='coerce', utc=True)
 df_fechas['anio_calculado'] = df_fechas['fecha'].dt.year
 
+#Se aplica un filtrado de fechas, para quedarnos solo con las fechas coherentes
+mascara_validos = df_fechas['anio_calculado'].between(1900, 2026)
+df_fechas = df_fechas[mascara_validos]
 #Por control, se imprimen las primeras filas del nuevo dataset
 st.subheader("Primeras filas del dataset de fechas")
 st.dataframe(df_fechas[['anio_calculado', 'codigo']].head(3))
@@ -88,3 +91,27 @@ ax.set_xlabel('Año')
 ax.set_ylabel('Cantidad de observaciones únicas') 
 plt.xticks(rotation=45) 
 st.pyplot(fig)
+
+#Ejercicio 3.C
+
+opciones_taxonomia = {'Clase': 'class', 'Orden': 'order', 'Familia': 'family'}
+
+st.header("Distribución de registros según taxonomía")
+df_actual = st.session_state["dataset_actual"]
+
+eleccion_usuario = st.radio('Selecciona un nivel taxónomico para visualizar en el gráfico', ('Clase', 'Orden', 'Familia'))
+
+columna_seleccionada = opciones_taxonomia[eleccion_usuario]
+columna_taxonomia = df_actual[columna_seleccionada]
+
+#Contamos los registros
+
+conteo_taxonomia = columna_taxonomia.value_counts().head(10)
+
+#Se crea gráfico de torta
+fig, ax = plt.subplots(figsize=(20, 20))
+ax.pie(conteo_taxonomia.values, labels=conteo_taxonomia.index, autopct='%1.1f%%', shadow=True)
+ax.set_title(f"Distribución de registros por {eleccion_usuario}")
+st.pyplot(fig)
+
+
