@@ -124,15 +124,14 @@ def crear_estructura_registro(
         "vernacularName": vernacularName,
     }
 
-
+COLUMNAS_ID = {"gbifID", "occurrenceID", "catalogNumber"}
 
 # Recibe una lista de columnas y devuelve un diccionario con esas columnas como claves y valores vacíos.
 def crear_registro_vacio(columnas):
     """
-    Retorna un diccionario con las columnas dadas como claves y valores vacíos.
+    Retorna un diccionario con las columnas dadas como claves y valores vacíos, excluyendo las columnas de ID.
     """
-    return{col: "" for col in columnas}
-
+    return {col: "" for col in columnas if col not in COLUMNAS_ID}
 
 CODIGOS_PAIS_VALIDOS = {"AR","CL","BR","UY","PY","BO","PE","EC","CO","VE"}
 FORMATO_FECHA = "%Y-%m-%d"
