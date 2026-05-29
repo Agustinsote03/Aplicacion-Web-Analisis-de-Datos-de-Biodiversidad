@@ -9,7 +9,7 @@ def manejar_archivo_no_encontrado(func):
             raise FileNotFoundError(f"No se encontró el archivo: {e.filename}")
     return wrapper
 
-
+@manejar_archivo_no_encontrado
 def cantidad_registros(ruta_archivo, separador="\t"):
     """
     Retorna la cantidad de registros del dataset sin contar el encabezado.
@@ -24,4 +24,3 @@ def cantidad_registros(ruta_archivo, separador="\t"):
             contador += 1
        
     return contador
-
