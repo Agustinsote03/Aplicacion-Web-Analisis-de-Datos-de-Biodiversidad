@@ -110,6 +110,36 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
     Actualiza múltiples campos de un registro identificado por su ID, validando los nuevos valores antes de aplicar los cambios.
     Si algún valor es inválido no se realiza ninguna modificación y se muestran los errores.
     """
+    #Validación una sola vez antes del loop
+    errores = []
+    #Lista para guardar errores de validacion
+
+    for columna, nuevo_valor in modificaciones.items():
+        if columna in ["countryCode", "stateProvince"]:
+            if not isinstance(nuevo_valor, str) or nuevo_valor.strip() == "":
+                errores.append(f"{columna} invalido")
+        elif columna == "decimalLatitude":
+            if not es_coordenada_valida(str(nuevo_valor), -90, 90):
+                errores.append(f"decimalLatitude inválida: '{nuevo_valor}'")
+        elif columna == "decimalLongitude":
+            if not es_coordenada_valida(str(nuevo_valor), -180, 180):
+                errores.append(f"decimalLongitude inválida: '{nuevo_valor}'")
+        elif columna == "eventDate":
+            es_valida, fecha = es_fecha_valida(str(nuevo_valor), FORMATO_FECHA)
+            if not es_valida:
+                errores.append(f"eventDate inválida: '{nuevo_valor}'")
+            elif fecha and fecha > datetime.now():
+                errores.append(f"eventDate futura: '{nuevo_valor}'")
+        elif columna == "coordinateUncertaintyInMeters":
+            if not es_incertidumbre_valida(str(nuevo_valor)):
+                errores.append(f"coordinateUncertaintyInMeters inválida: '{nuevo_valor}'")
+
+    if errores:
+        print("Errores:", errores)
+        registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
+        return False
+    
+    #Recién acá se abren los archivos y se recorren las filas
     registro_actualizado = False    
 
     # Abrimos archivo original(lectura) y nuevo(escritura)
@@ -126,58 +156,22 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
 
             # Recorremos todos los registros
             for fila in lector:
-                errores = [] # Lista para guardar errores de validacion
-                
-                # Buscamos el registro por occurrenceID
                 if str(fila.get(columna_id, "")).strip() == str(id_registro).strip():
-
-                    # Validar antes de cambiar
                     for columna, nuevo_valor in modificaciones.items():
-                        # Validamos campos de texto
-                        if columna in ["countryCode", "stateProvince"]:
-                            if not isinstance(nuevo_valor, str) or nuevo_valor.strip() == "":
-                                errores.append(f"{columna} invalido")
-
-                        elif columna == "decimalLatitude":
-                            if not es_coordenada_valida(str(nuevo_valor), -90, 90):
-                                errores.append(f"decimalLatitude inválida: '{nuevo_valor}'")
-
-                        elif columna == "decimalLongitude":
-                            if not es_coordenada_valida(str(nuevo_valor), -180, 180):
-                                errores.append(f"decimalLongitude inválida: '{nuevo_valor}'")
-
-                        elif columna == "eventDate":
-                            es_valida, fecha = es_fecha_valida(str(nuevo_valor), FORMATO_FECHA)
-                            if not es_valida:
-                                errores.append(f"eventDate inválida: '{nuevo_valor}'")
-                            elif fecha and fecha > datetime.now():
-                                errores.append(f"eventDate futura: '{nuevo_valor}'")
-
-                        elif columna == "coordinateUncertaintyInMeters":
-                            if not es_incertidumbre_valida(str(nuevo_valor)):
-                                errores.append(f"coordinateUncertaintyInMeters inválida: '{nuevo_valor}'")
-
-                    # Actualizar si no hay errores
-                    if not errores:
-                        for columna, nuevo_valor in modificaciones.items():
-                            if columna in fila:
-                                fila[columna] = nuevo_valor
-                        registro_actualizado = True
-                    else:   
-                        # Si hay errores no se modifica
-                        print("Errores:", errores)
-                
-                # Escribimos la fila (modificada o  no) en el nuevo archivo
+                        if columna in fila:
+                            fila[columna] = nuevo_valor
+                    registro_actualizado = True
                 escritor.writerow(fila)
-        
-        # Si no se actualizo nada
-        if not registro_actualizado:
-            print("No se realizaron cambios")
 
         if registro_actualizado:
             registrar_operacion(nombre_dataset, "UPDATE", 1)
         else:
             registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
+
+        #Si no se actualizo nada
+        if not registro_actualizado:
+            print("No se realizaron cambios")
+
     except FileNotFoundError:
         print(f"Error: El archivo '{ruta_original}' no se encontró.")
         return False
