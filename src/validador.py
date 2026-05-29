@@ -56,21 +56,19 @@ def validar_coordenadas(ruta_archivo, separador, col_lat="decimalLatitude", col_
 
     #Se inicializa una lista que contendrá los registros inválidos
     registros_invalidos = []
-    cont = 0
+    
     with open(ruta_archivo, "r", encoding = "utf-8", newline= "") as file_csv:
         csv_reader = csv.DictReader(file_csv, delimiter=separador)
         
         #Se recorre cada fila del archivo
 
         for fila in csv_reader:
-            #Extreamos la latitud y longitud
-            lat = fila.get(col_lat, "")
-            lon = fila.get(col_lon, "")
+            lat = fila.get(col_lat, "") or fila.get("latitudeDecimal", "")
+            lon = fila.get(col_lon, "") or fila.get("longitudeDecimal", "")
             
-            #Validación de coordenadas
             lat_valida = es_coordenada_valida(lat, -90, 90)
             lon_valida = es_coordenada_valida(lon, -180, 180)
-
+            
             #Si 'es_coordenada_valida' devuelve false, se agrega a 'registros_invalidos'
             if not lat_valida or not lon_valida:
                 registros_invalidos.append(fila)
