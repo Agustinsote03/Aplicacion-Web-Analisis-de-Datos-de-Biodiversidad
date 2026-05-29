@@ -87,6 +87,14 @@ def eliminar_por_condicion(ruta_original, ruta_nueva, columna, operador, valor, 
     """
     eliminados = 0
 
+    #Casteo una sola vez antes del loop
+    try:
+        valor_val = float(valor)
+        valor_es_numero = True
+    except (ValueError, TypeError):
+        valor_val = valor
+        valor_es_numero = False
+
     # Abrimos archivo original (lectura) y nuevo (escritura)
     with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
          open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
@@ -101,14 +109,14 @@ def eliminar_por_condicion(ruta_original, ruta_nueva, columna, operador, valor, 
             # Obtenemos el valor de la columna indicada
             dato = fila.get(columna, "").strip()
 
-            # Intentamos convertir a número (por si es year, cantidad, etc.)
-            try:
-                dato_val = float(dato)
-                valor_val = float(valor)
-            except:
-                # Si no se puede convertir, lo tratamos como texto
+            # Solo casteamos el dato de la fila (cambia en cada iteración)
+            if valor_es_numero:
+                try:
+                    dato_val = float(dato)
+                except (ValueError, TypeError):
+                    dato_val = dato
+            else:
                 dato_val = dato
-                valor_val = valor
 
             cumple = False # Asumimos que NO cumple la condicion
 
