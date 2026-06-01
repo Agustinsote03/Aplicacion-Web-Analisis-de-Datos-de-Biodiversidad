@@ -21,14 +21,14 @@ def imprimir_primeras_filas(ruta_archivo, separador="\t"):
                 return
 
 @manejar_archivo_no_encontrado   
-def obtener_columnas(path_archivo, separador="\t"):
+def obtener_columnas(path_archivo, separador="t"):
     """
     Retorna una lista completa de columnas del dataset
     """
     path = Path(path_archivo)
 
     with path.open(newline="", encoding="utf-8") as archivo:
-        reader = csv.DictReader(archivo)
+        reader = csv.DictReader(archivo, delimiter=separador)
 
         columnas = reader.fieldnames
         # Primera fila del CSV (encabezados)
