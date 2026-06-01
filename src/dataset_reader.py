@@ -71,7 +71,7 @@ def columnas_con_nulos(ruta_archivo, separador="\t"):
                     columnas_con_nulo.add(col)
                     # Guarda el nombre de la columna con valor nulo
 
-    return list(columnas_con_nulo)
+    return columnas_con_nulo
 
 @manejar_archivo_no_encontrado
 def porcentaje_nulos_por_columna(ruta_archivo, separador="\t"):
