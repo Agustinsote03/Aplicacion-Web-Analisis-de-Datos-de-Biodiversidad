@@ -25,7 +25,7 @@ def es_coordenada_valida(valor, limite_min, limite_max):
     return es_valida
 
 #Valida si un string puede convertirse a fecha segun el formato dado
-def es_fecha_valida(fecha_str, formato):
+def validar_y_convertir_fecha(fecha_str, formato):
     #Usa try/except porque datetime.strptime muestra ValueError si falla
     try:
         fecha = datetime.strptime(fecha_str, formato)
@@ -244,7 +244,7 @@ def ejecutar_analisis_calidad(ruta_archivo, separador):
     return {"idDuplicado":ids_duplicados, "fechaInvalida":fecha_invalida,"taxonomiaInvalida":taxonomia_invalida,"coordenadaInvalida":coordenada_invalida}
 
 @manejar_archivo_no_encontrado
-def esta_en_territorio(ruta_archivo, separador):
+def obtener_registros_fuera_de_territorio(ruta_archivo, separador):
     registro_invalido = []
 
     with open(ruta_archivo, "r", encoding="utf-8",newline="") as archivo:
