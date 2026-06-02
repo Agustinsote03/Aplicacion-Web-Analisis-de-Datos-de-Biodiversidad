@@ -113,66 +113,124 @@ def crear_registro_vacio(columnas):
 CODIGOS_PAIS_VALIDOS = {"AR","CL","BR","UY","PY","BO","PE","EC","CO","VE"}
 FORMATO_FECHA = "%Y-%m-%d"
 
-def validar_registro(registro):
+def validar_registro_iadiza(registro):
     """
-    Valida los campos de un registro y retorna una tupla (es_valido, errores).
-    Si es_valido es False, errores contiene la lista de problemas encontrados.
+    Valida los campos de un registro IADIZA.
+    Reutiliza las funciones auxiliares ya desarrolladas.
     """
     errores = []
 
-    # Validación de coordenadas
+    # Coordenadas
     lat = registro.get("decimalLatitude", "")
     lon = registro.get("decimalLongitude", "")
-
     if lat != "" and not es_coordenada_valida(lat, -90, 90):
         errores.append(f"decimalLatitude inválida: '{lat}'. Debe estar entre -90 y 90")
-
     if lon != "" and not es_coordenada_valida(lon, -180, 180):
         errores.append(f"decimalLongitude inválida: '{lon}'. Debe estar entre -180 y 180")
 
-    # Validación de fecha
+    # Fecha
     event_date = registro.get("eventDate", "").strip()
     if event_date != "":
-        es_valida, fecha = es_fecha_valida(event_date, FORMATO_FECHA)
+        es_valida, fecha = validar_y_convertir_fecha(event_date, FORMATO_FECHA)
         if not es_valida:
-            errores.append(
-                f"eventDate inválida: '{event_date}' "
-                f"Formato esperado: {FORMATO_FECHA} (ej: 2024-03-15)"
-            )
-        elif fecha is not None:
-            from datetime import datetime
-            if fecha > datetime.now():
-                errores.append(
-                    f"eventDate inválida: '{event_date}'. La fecha no puede ser futura"
-                )
+            errores.append(f"eventDate inválida: '{event_date}'. Formato esperado: {FORMATO_FECHA}")
+        elif fecha is not None and fecha > datetime.now():
+            errores.append(f"eventDate inválida: '{event_date}'. La fecha no puede ser futura")
 
-    # Validación de countryCode
+    # countryCode
     country_code = registro.get("countryCode", "").strip().upper()
     if country_code != "" and country_code not in CODIGOS_PAIS_VALIDOS:
-        errores.append(
-            f"countryCode inválido: '{country_code}' "
-            f"Valores permitidos: {CODIGOS_PAIS_VALIDOS} "
-        )
-    
-    # Validación de incertidumbre de coordenada
+        errores.append(f"countryCode inválido: '{country_code}'. Valores permitidos: {CODIGOS_PAIS_VALIDOS}")
+
+    # Incertidumbre
     incertidumbre = registro.get("coordinateUncertaintyInMeters", "").strip()
     if incertidumbre != "" and not es_incertidumbre_valida(incertidumbre):
-        errores.append(
-            f"coordinateUncertaintyInMeters inválida: '{incertidumbre}' "
-            "Debe ser un número entre 0 y 100"
-        )
+        errores.append(f"coordinateUncertaintyInMeters inválida: '{incertidumbre}'. Debe ser un número entre 0 y 100")
 
-    # Validar que occurrenceStatus tenga un valor conocido si está presente
+    # occurrenceStatus
     status = registro.get("occurrenceStatus", "").strip()
-    valores_validos_status = {"PRESENT", "ABSENT"}
-    if status != "" and status.upper() not in valores_validos_status:
-        errores.append(
-            f"occurrenceStatus inválido: '{status}' "
-            f"Valores permitidos: {valores_validos_status} "
-        )
+    if status != "" and status.upper() not in {"PRESENT", "ABSENT"}:
+        errores.append(f"occurrenceStatus inválido: '{status}'. Valores permitidos: PRESENT, ABSENT")
 
-    es_valido = len(errores) == 0
-    return es_valido, errores
+    return len(errores) == 0, errores
+
+
+def validar_registro_xeno_canto(registro):
+    """
+    Valida los campos de un registro Xeno-canto.
+    Reutiliza las funciones auxiliares ya desarrolladas.
+    """
+    errores = []
+
+    # Coordenadas (Xeno-canto usa nombres distintos)
+    lat = registro.get("latitudeDecimal", "")
+    lon = registro.get("longitudeDecimal", "")
+    if lat != "" and not es_coordenada_valida(lat, -90, 90):
+        errores.append(f"latitudeDecimal inválida: '{lat}'. Debe estar entre -90 y 90")
+    if lon != "" and not es_coordenada_valida(lon, -180, 180):
+        errores.append(f"longitudeDecimal inválida: '{lon}'. Debe estar entre -180 y 180")
+
+    # Fecha
+    event_date = registro.get("eventDate", "").strip()
+    if event_date != "":
+        es_valida, fecha = validar_y_convertir_fecha(event_date, FORMATO_FECHA)
+        if not es_valida:
+            errores.append(f"eventDate inválida: '{event_date}'. Formato esperado: {FORMATO_FECHA}")
+        elif fecha is not None and fecha > datetime.now():
+            errores.append(f"eventDate inválida: '{event_date}'. La fecha no puede ser futura")
+
+    return len(errores) == 0, errores
+
+
+def validar_registro_inaturalist(registro):
+    """
+    Valida los campos de un registro iNaturalist.
+    Reutiliza las funciones auxiliares ya desarrolladas.
+    """
+    errores = []
+
+    # Coordenadas
+    lat = registro.get("decimalLatitude", "")
+    lon = registro.get("decimalLongitude", "")
+    if lat != "" and not es_coordenada_valida(lat, -90, 90):
+        errores.append(f"decimalLatitude inválida: '{lat}'. Debe estar entre -90 y 90")
+    if lon != "" and not es_coordenada_valida(lon, -180, 180):
+        errores.append(f"decimalLongitude inválida: '{lon}'. Debe estar entre -180 y 180")
+
+    # Fecha
+    event_date = registro.get("eventDate", "").strip()
+    if event_date != "":
+        es_valida, fecha = validar_y_convertir_fecha(event_date, FORMATO_FECHA)
+        if not es_valida:
+            errores.append(f"eventDate inválida: '{event_date}'. Formato esperado: {FORMATO_FECHA}")
+        elif fecha is not None and fecha > datetime.now():
+            errores.append(f"eventDate inválida: '{event_date}'. La fecha no puede ser futura")
+
+    # countryCode
+    country_code = registro.get("countryCode", "").strip().upper()
+    if country_code != "" and country_code not in CODIGOS_PAIS_VALIDOS:
+        errores.append(f"countryCode inválido: '{country_code}'. Valores permitidos: {CODIGOS_PAIS_VALIDOS}")
+
+    # Incertidumbre
+    incertidumbre = registro.get("coordinateUncertaintyInMeters", "").strip()
+    if incertidumbre != "" and not es_incertidumbre_valida(incertidumbre):
+        errores.append(f"coordinateUncertaintyInMeters inválida: '{incertidumbre}'. Debe ser un número entre 0 y 100")
+
+    return len(errores) == 0, errores
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Recorre el dataset y retorna el mayor catalogNumber encontrado

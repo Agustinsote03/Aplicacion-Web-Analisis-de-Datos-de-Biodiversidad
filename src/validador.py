@@ -112,7 +112,7 @@ def validar_fechas(ruta_archivo, nombre_columna, separador="\t"):
                 continue
                 #Si el campo de fecha está vacío, se considera inválido
 
-            es_valida, fecha = es_fecha_valida(fecha_str, formato)
+            es_valida, fecha = validar_y_convertir_fecha(fecha_str, formato)
             #Uso de la funcio¿ón auxiliar
             
             if not es_valida:
@@ -219,7 +219,7 @@ def ejecutar_analisis_calidad(ruta_archivo, separador):
             #Se evaluan las fechas(deltipo "2015-06-23T00:00:00Z")
             fecha_str = (fila.get("eventDate","")).strip()[:10]
             if fecha_str:
-                es_valida, fecha = es_fecha_valida(fecha_str, formato)
+                es_valida, fecha = validar_y_convertir_fecha(fecha_str, formato)
                 if not es_valida:
                     fecha_invalida.append(fila)
                 elif datetime.now() < fecha: 
