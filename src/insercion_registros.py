@@ -54,76 +54,52 @@ def ingresar_registro_por_teclado():
 
 #---------------------FUNCIONES PRINCIPALES---------------------#
 
-# Se crea estructura que representa un registro del dataset
-def crear_estructura_registro(
-    license="",
-    modified="",
-    institutionCode="",
-    collectionCode="",
-    basisOfRecord="",
-    occurrenceStatus="",
-    recordedBy="",
-    catalogNumber="",
-    eventDate="",
-    year="",
-    month="",
-    day="",
-    countryCode="",
-    stateProvince="",
-    county="",
-    locality="",
-    decimalLatitude="",
-    decimalLongitude="",
-    coordinateUncertaintyInMeters="",
-    scientificName="",
-    kingdom="",
-    phylum="",
-    taxonClass="",
-    order="",
-    family="",
-    genus="",
-    specificEpithet="",
-    taxonRank="",
-    vernacularName=""
+def crear_estructura_registro_generica(campos):
+    """
+    Crea y retorna un diccionario con los campos recibidos, inicializados con string vacío si no tienen valor.
+    """
+    return {campo: valor for campo, valor in campos.items()}
+
+
+def crear_estructura_registro_xeno_canto(
+    basisOfRecord="", collectionCode="", genus="", scientificName="",
+    taxonRank="", kingdom="", family="", longitudeDecimal="",
+    latitudeDecimal="", country="", locality="", recordedBy="",
+    eventDate="", eventTime="", behavior="", sex="", lifeStage="", license=""
 ):
     """
-    Crea y retorna un diccionario con los campos del dataset inicializados con los valores recibidos.
-    Los campos no indicados quedan vacíos por defecto.
+    Crea y retorna un diccionario con los campos del dataset Xeno-canto.
     """
-    
-  
-    # Devuelve un diccionario con los campos principales del dataset
-    return {
-        "license": license,
-        "modified": modified,
-        "institutionCode": institutionCode,
-        "collectionCode": collectionCode,
-        "basisOfRecord": basisOfRecord,
-        "occurrenceStatus": occurrenceStatus,
-        "recordedBy": recordedBy,
-        "catalogNumber": catalogNumber,
-        "eventDate": eventDate,
-        "year": year,
-        "month": month,
-        "day": day,
-        "countryCode": countryCode,
-        "stateProvince": stateProvince,
-        "county": county,
-        "locality": locality,
-        "decimalLatitude": decimalLatitude,
-        "decimalLongitude": decimalLongitude,
-        "coordinateUncertaintyInMeters": coordinateUncertaintyInMeters,
-        "scientificName": scientificName,
-        "kingdom": kingdom,
-        "phylum": phylum,
-        "class": taxonClass,
-        "order": order,
-        "family": family,
-        "genus": genus,
-        "specificEpithet": specificEpithet,
-        "taxonRank": taxonRank,
-        "vernacularName": vernacularName,
-    }
+    return crear_estructura_registro_generica(locals())
+
+
+def crear_estructura_registro_inaturalist(
+    basisOfRecord="", institutionCode="", recordedBy="", identifiedBy="",
+    captive="", eventDate="", eventTime="", decimalLatitude="",
+    decimalLongitude="", coordinateUncertaintyInMeters="", countryCode="",
+    stateProvince="", scientificName="", taxonRank="", kingdom="",
+    family="", genus="", license="", sex="", lifeStage="", vitality=""
+):
+    """
+    Crea y retorna un diccionario con los campos del dataset iNaturalist.
+    """
+    return crear_estructura_registro_generica(locals())
+
+def crear_estructura_registro_iadiza(
+    license="", modified="", institutionCode="", collectionCode="",
+    basisOfRecord="", occurrenceStatus="", recordedBy="", catalogNumber="",
+    eventDate="", year="", month="", day="",
+    countryCode="", stateProvince="", county="", locality="",
+    decimalLatitude="", decimalLongitude="", coordinateUncertaintyInMeters="", scientificName="",
+    kingdom="", phylum="", taxonClass="", order="",
+    family="", genus="", specificEpithet="", taxonRank="", vernacularName=""
+):
+    """
+    Crea y retorna un diccionario con los campos del dataset IADIZA.
+    """
+    campos = locals()
+    campos["class"] = campos.pop("taxonClass")
+    return crear_estructura_registro_generica(campos)
 
 COLUMNAS_ID = {"gbifID", "occurrenceID", "catalogNumber"}
 
