@@ -312,3 +312,7 @@ def validar_longitud(ruta_archivo, separador):
                 registros_invalido.append(fila)
 
     return len(registros_invalido), registros_invalido
+
+
+
+
