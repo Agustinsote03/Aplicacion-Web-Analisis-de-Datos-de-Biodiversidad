@@ -10,7 +10,9 @@ def eliminar_por_id(ruta_original, ruta_nueva, columna, valor, nombre_dataset, s
     """
     Elimina del dataset el registro que coincida con el valor indicado en la columna dada.
     """
-    eliminado = False
+    eliminados = 0
+    #Contador en lugar de booleano para poder registrar cantidad de registros eliminados
+
 
     with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
          open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
@@ -25,19 +27,19 @@ def eliminar_por_id(ruta_original, ruta_nueva, columna, valor, nombre_dataset, s
 
             # Busca el occurrenceID
             if str(fila.get(columna, "")).strip() == str(valor).strip():
-                eliminado = True
+                eliminados += 1
                 # Elimina la fila correctamente
                 continue  
 
             escritor.writerow(fila)
 
-    if eliminado:
-        registrar_operacion(nombre_dataset, "DELETE", 1)
+    if eliminados:
+        registrar_operacion(nombre_dataset, "DELETE", eliminados)
     else:
         registrar_operacion(nombre_dataset, "DELETE", 0, error=True)
     #Si se elimino algun registro se registra la operacion, sino se registra un error
 
-    return eliminado
+    return eliminados
 
 @manejar_archivo_no_encontrado
 def eliminar_por_lista(ruta_original, ruta_nueva, columna, valores_a_eliminar, nombre_dataset, separador="\t"):

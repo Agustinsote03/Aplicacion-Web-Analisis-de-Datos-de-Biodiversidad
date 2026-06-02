@@ -42,7 +42,9 @@ def actualizar_un_campo(ruta_original, ruta_nueva, id_registro, columna, nuevo_v
     """
         Actualiza un campo especifico de un registro basado en su ID y genera un nuevo archivo con la actualización
     """
-    registro_actualizado = False
+    registros_actualizados = 0
+    #Contador en lugar de booleano para poder registrar cantidad de registros actualizados
+
     try:
         with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
             open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
@@ -56,24 +58,26 @@ def actualizar_un_campo(ruta_original, ruta_nueva, id_registro, columna, nuevo_v
             for fila in lector:
                 if fila.get("occurrenceID","").strip() == str(id_registro).strip():
                     fila[columna] = nuevo_valor
-                    registro_actualizado = True
+                    registros_actualizados += 1
             
                 escritor.writerow(fila)
 
-            if registro_actualizado:
-                registrar_operacion(nombre_dataset, "UPDATE", 1)
+            if registros_actualizados > 0:
+                registrar_operacion(nombre_dataset, "UPDATE", registros_actualizados)
             else:
                 registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
     except FileNotFoundError:
         raise
 
-    return registro_actualizado
+    return registros_actualizados
 
 def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modificaciones, nombre_dataset,separador="\t", columna_id="occurrenceID"):
     """
     Actualiza múltiples campos de un registro identificado por su ID, sin validar los nuevos valores.
     """
-    registro_actualizado = False
+    registros_actualizados = 0
+    #Contador en lugar de booleano para poder registrar cantidad de registros actualizados
+
     try:
         with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
             open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
@@ -89,18 +93,18 @@ def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modifica
 
                         if columna in fila:
                             fila[columna] = nuevo_valor
-                    registro_actualizado = True
+                    registros_actualizados += 1
                 escritor.writerow(fila)
 
-            if registro_actualizado:
-                registrar_operacion(nombre_dataset, "UPDATE", 1)
+            if registros_actualizados > 0:
+                registrar_operacion(nombre_dataset, "UPDATE", registros_actualizados)
             else:
                  registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
 
     except FileNotFoundError:
         raise
 
-    return registro_actualizado
+    return registros_actualizados
 
 
 def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro, modificaciones, nombre_dataset, separador="\t", columna_id="occurrenceID"):
@@ -133,7 +137,8 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
                 errores.append(f"coordinateUncertaintyInMeters inválida: '{nuevo_valor}'")
     
     #Recién acá se abren los archivos y se recorren las filas
-    registro_actualizado = False    
+    registros_actualizados = 0
+    #Contador en lugar de booleano para poder registrar cantidad de registros actualizados
 
     if errores:
         registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
@@ -157,18 +162,18 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
                     for columna, nuevo_valor in modificaciones.items():
                         if columna in fila:
                             fila[columna] = nuevo_valor
-                    registro_actualizado = True
+                    registros_actualizados += 1
                 escritor.writerow(fila)
 
-        if registro_actualizado:
-            registrar_operacion(nombre_dataset, "UPDATE", 1)
+        if registros_actualizados > 0:
+            registrar_operacion(nombre_dataset, "UPDATE", registros_actualizados)
         else:
             registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
 
     except FileNotFoundError:
         raise
 
-    return registro_actualizado
+    return registros_actualizados
 
 
 def actualizar_un_campo_validando(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor, nombre_dataset,separador="\t"):
