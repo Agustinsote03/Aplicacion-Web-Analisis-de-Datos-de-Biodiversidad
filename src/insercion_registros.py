@@ -256,43 +256,30 @@ def preparar_estructura_inaturalist(registro, ruta_archivo, columnas, separador=
 
 # Inserta un nuevo registro correctamente formateado al final del dataset conservando la estructura original 
 @manejar_archivo_no_encontrado
-def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset, separador="\t"):
+def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset, preparar_fn, separador="\t"):
     """
     Valida e inserta un único registro al final del dataset, guardando el resultado en un nuevo archivo.
     Si el registro es inválido no se realiza ninguna inserción.
     """
-    # Valida el registro antes de intentar insertarlo, mostrando los errores encontrados si no es válido
     es_valido, errores = validar_registro(registro)
 
     if not es_valido:
         registrar_operacion(nombre_dataset, "INSERT", 0, error=True)
         return  
-    # Corta la función si hay errores
-    # Si el registro no es válido se registra la operación con error y se corta la función 
 
-    
-    # Abre el dataset original en modo lectura
     with open(ruta_origen, "r", encoding="utf-8", newline="") as f_in:
-
         reader = csv.DictReader(f_in, delimiter=separador)
         columnas = reader.fieldnames
-        # Guarda el nombre de las columnas
 
-        # Genera el registro listo para insertar, asignando un nuevo catalogNumber y occurrenceID
-        registro_completo = preparar_estructura(registro, ruta_origen, columnas, nombre_dataset)
+        registro_completo = preparar_fn(registro, ruta_origen, columnas)
 
-        # Abre el archivo destino en modo escritura y copia el contenido del original, luego agrega el nuevo registro
         with open(ruta_destino, "w", encoding="utf-8", newline="") as f_out:
             writer = csv.DictWriter(f_out, fieldnames=columnas, delimiter=separador)
-
             writer.writeheader()
-            # Escribe la primera fila (nombre de columnas)
 
-            # Copia todas las filas del dataset original
             for fila in reader:
                 writer.writerow(fila)
 
-            # Agrega el nuevo registro al final del archivo
             writer.writerow(registro_completo)
 
     registrar_operacion(nombre_dataset, "INSERT", 1)
