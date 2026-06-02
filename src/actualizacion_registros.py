@@ -75,7 +75,9 @@ def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modifica
     """
     Actualiza múltiples campos de un registro identificado por su ID, sin validar los nuevos valores.
     """
-    registro_actualizado = False
+    registros_actualizados = 0
+    #Contador en lugar de booleano para poder registrar cantidad de registros actualizados
+
     try:
         with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
             open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
@@ -91,18 +93,18 @@ def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modifica
 
                         if columna in fila:
                             fila[columna] = nuevo_valor
-                    registro_actualizado = True
+                    registros_actualizados += 1
                 escritor.writerow(fila)
 
-            if registro_actualizado:
-                registrar_operacion(nombre_dataset, "UPDATE", 1)
+            if registros_actualizados > 0:
+                registrar_operacion(nombre_dataset, "UPDATE", registros_actualizados)
             else:
                  registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
 
     except FileNotFoundError:
         raise
 
-    return registro_actualizado
+    return registros_actualizados
 
 
 def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro, modificaciones, nombre_dataset, separador="\t", columna_id="occurrenceID"):
