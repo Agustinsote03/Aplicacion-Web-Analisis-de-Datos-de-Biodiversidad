@@ -93,12 +93,9 @@ def detectar_coordenadas_incompletas(ruta_archivo, separador, col_lat="decimalLa
         return len(registros), registros
 
 @manejar_archivo_no_encontrado
-def validar_fechas(ruta_archivo, nombre_columna, separador="\t"):
+def validar_fechas(ruta_archivo, nombre_columna, separador="\t", formato="%Y-%m-%d"):
     
     registros_invalidos = []
-    
-    formato = "%d/%m/%y"
-    #Defino el formato esperado de las fechas (dia/mes/año)
 
     with open(ruta_archivo, encoding="utf-8", newline="") as archivo:
         reader = csv.DictReader(archivo, delimiter=separador)
