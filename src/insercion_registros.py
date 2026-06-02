@@ -174,51 +174,85 @@ def validar_registro(registro):
     es_valido = len(errores) == 0
     return es_valido, errores
 
-
-# Recorre el dataset y retorna el mayor catalogNumber encontrado
 @manejar_archivo_no_encontrado
-def max_catalog_number(ruta_archivo, separador="\t"):
+def max_numero_dataset(ruta_archivo, separador, columna, extraer_numero):
     """
-    Recorre el dataset y retorna el mayor catalogNumber encontrado.
+    Recorre el dataset y retorna el mayor número encontrado en la columna indicada,
+    usando la función extraer_numero para obtener el número de cada valor.
     """
     max_num = 0
-    with open(ruta_archivo, "r", encoding = "utf-8", newline = "") as f:
-        reader = csv.DictReader(f, delimiter = separador)
+    with open(ruta_archivo, "r", encoding="utf-8", newline="") as f:
+        reader = csv.DictReader(f, delimiter=separador)
         for fila in reader:
-            catalog = fila.get("catalogNumber", "").strip()
-            if catalog.isdigit():
-                num = int(catalog)
-                if num > max_num:
-                    max_num = num
+            valor = fila.get(columna, "").strip()
+            num = extraer_numero(valor)
+            if num is not None and num > max_num:
+                max_num = num
     return max_num
 
+def max_catalog_number_iadiza(ruta_archivo, separador="\t"):
+    return max_numero_dataset(ruta_archivo, separador, "catalogNumber",
+        lambda v: int(v) if v.isdigit() else None)
 
-# Recibe estructura del inciso 4.A y retorna un diccionario listo para añadir al CSV
-def preparar_estructura(registro, ruta_archivo, columnas, nombre_dataset):
+def max_catalog_number_xeno_canto(ruta_archivo, separador=","):
+    return max_numero_dataset(ruta_archivo, separador, "catalogNumber",
+        lambda v: int(v[2:]) if v.startswith("XC") and v[2:].isdigit() else None)
+
+def max_catalog_number_inaturalist(ruta_archivo, separador=","):
+    return max_numero_dataset(ruta_archivo, separador, "id",
+        lambda v: int(v) if v.isdigit() else None)
+
+
+def preparar_estructura_generica(registro, ruta_archivo, columnas, separador, obtener_max_num, construir_ids):
     """
-    Toma un registro y lo completa con todas las columnas del dataset, asignando un nuevo catalogNumber y occurrenceID correlativos.
+    Toma un registro y lo completa con todas las columnas del dataset,
+    delegando la obtención del máximo número y la construcción de IDs a funciones específicas.
     """
-    max_num = max_catalog_number(ruta_archivo)
+    max_num = obtener_max_num(ruta_archivo, separador)
     nuevo_num = max_num + 1
-    
-    # Se usa zfill para rellenar el número con ceros a la izquierda respetando el patrón de ocurrenceID
-    nuevo_catalog = str(nuevo_num).zfill(6) # Lo rellena hasta tener 6 dígitos
-    nuevo_occurrence_id = f"{nombre_dataset}:COI:{nuevo_catalog}"
 
-    # Se arma el registro completo con todas las columnas del dataset
-    registro_completo = {col: "" for col in columnas}    
-
-    # Se copian los campos del registro recibido
+    registro_completo = {col: "" for col in columnas}
     for campo, valor in registro.items():
         if campo in registro_completo:
             registro_completo[campo] = valor
-    
-    # Se setean los IDs
-    registro_completo["gbifID"] = "" # Asignado externamente por GBIF
-    registro_completo["occurrenceID"] = nuevo_occurrence_id
-    registro_completo["catalogNumber"] = nuevo_catalog
+
+    ids = construir_ids(nuevo_num)
+    registro_completo.update(ids)
 
     return registro_completo
+
+def preparar_estructura_iadiza(registro, ruta_archivo, columnas, nombre_dataset, separador="\t"):
+    return preparar_estructura_generica(
+        registro, ruta_archivo, columnas, separador,
+        obtener_max_num=lambda r, s: max_catalog_number_iadiza(r, s),
+        construir_ids=lambda n: {
+            "gbifID": "",
+            "occurrenceID": f"{nombre_dataset}:COI:{str(n).zfill(6)}",
+            "catalogNumber": str(n).zfill(6)
+        }
+    )
+
+def preparar_estructura_xeno_canto(registro, ruta_archivo, columnas, separador=","):
+    return preparar_estructura_generica(
+        registro, ruta_archivo, columnas, separador,
+        obtener_max_num=lambda r, s: max_catalog_number_xeno_canto(r, s),
+        construir_ids=lambda n: {
+            "id": f"{n}@XC",
+            "occurrenceID": f"https://data.biodiversitydata.nl/xeno-canto/observation/XC{n}",
+            "catalogNumber": f"XC{n}"
+        }
+    )
+
+def preparar_estructura_inaturalist(registro, ruta_archivo, columnas, separador=","):
+    return preparar_estructura_generica(
+        registro, ruta_archivo, columnas, separador,
+        obtener_max_num=lambda r, s: max_catalog_number_inaturalist(r, s),
+        construir_ids=lambda n: {
+            "id": str(n),
+            "occurrenceID": f"https://www.inaturalist.org/observations/{n}",
+            "catalogNumber": str(n)
+        }
+    )
 
 # Inserta un nuevo registro correctamente formateado al final del dataset conservando la estructura original 
 @manejar_archivo_no_encontrado
