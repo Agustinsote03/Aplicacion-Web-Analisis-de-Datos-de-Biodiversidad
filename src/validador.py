@@ -93,7 +93,7 @@ def detectar_coordenadas_incompletas(ruta_archivo, separador, col_lat="decimalLa
         return len(registros), registros
 
 @manejar_archivo_no_encontrado
-def validar_fechas(ruta_archivo, nombre_columna, separador="\t", formato="%Y-%m-%d"):
+def validar_fechas(ruta_archivo, nombre_columna, separador="\t", formato="%Y-%m-%d", contar_vacios=False):
     
     registros_invalidos = []
 
@@ -101,16 +101,17 @@ def validar_fechas(ruta_archivo, nombre_columna, separador="\t", formato="%Y-%m-
         reader = csv.DictReader(archivo, delimiter=separador)
 
         for fila in reader:
-            fecha_str = (fila.get(nombre_columna, "")).strip()
-            #Se usa get para evitar errores si la columna no existe
+            fecha_str = (fila.get(nombre_columna, "")).strip()[:10]
+            # Tomamos solo los primeros 10 caracteres (YYYY-MM-DD)
 
             if not fecha_str:
-                registros_invalidos.append(fila)
+                if contar_vacios:
+                    registros_invalidos.append(fila)
                 continue
-                #Si el campo de fecha está vacío, se considera inválido
+                #Si la fecha está vacía, se cuenta como inválida solo si contar_vacios es True
 
             es_valida, fecha = es_fecha_valida(fecha_str, formato)
-            #Uso de la funcio¿ón auxiliar
+            #Uso de la función auxiliar
             
             if not es_valida:
                 registros_invalidos.append(fila)
