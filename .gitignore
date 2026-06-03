@@ -10,6 +10,9 @@ processed_datasets/*
 logs/*.log
 
 __pycache__
+<<<<<<< HEAD
 .venv/
+=======
+>>>>>>> 812e2efe7c5a9285809675333b4a3942ebaa3e4a
 
 **/*.ipynb_checkpoints
