@@ -18,6 +18,7 @@ from insercion_registros import (
     preparar_estructura_inaturalist,
     insertar_registro,
 )
+from actualizacion_registros import buscar_registros, actualizar_multiples_campos_validando
 from config import CONFIGURACION_DATASETS
  
 # Mapeo de funciones por dataset
@@ -134,7 +135,7 @@ ruta_destino = cfg["ruta_procesado"]
 # Pestañas
 tab_insertar, tab_actualizar, tab_eliminar = st.tabs(["Insertar", "Actualizar", "Eliminar"])
  
-# ── 4.A — Formulario de inserción ───────────────────────
+#-------- 4.A - Formulario de inserción ---------#
 with tab_insertar:
     st.subheader("Insertar nuevo registro")
     st.markdown("Completá los campos del nuevo registro. Los campos marcados con * son obligatorios.")
@@ -194,3 +195,90 @@ with tab_insertar:
                 st.success("Registro insertado correctamente.")
                 # Recargamos el dataset en session_state para reflejar el cambio
                 st.session_state["dataset_actual"] = cargar_dataset(nombre_dataset)
+
+
+#-------- 4.B y 4.C - Actualizar --------#
+with tab_actualizar:
+    st.subheader("Actualizar registro")
+
+    # 4.B - Buscar registro por ID
+    st.markdown("#### Buscar registro por ID")
+    placeholders_id = {
+        "iadiza": "ej: IADIZA:COI:006861",
+        "xeno_canto": "ej: https://data.biodiversitydata.nl/xeno-canto/observation/XC999540",
+        "inaturalist": "ej: https://www.inaturalist.org/observations/12345",
+    }
+
+    id_busqueda = st.text_input(
+        "Ingresá el occurrenceID del registro a modificar",
+        placeholder=placeholders_id[nombre_dataset],
+        key="id_actualizar"
+    )
+
+    if st.button("Buscar", key="btn_buscar_actualizar"):
+        if not id_busqueda.strip():
+            st.warning("Ingresá un occurrenceID para buscar")
+        else:
+            resultados = buscar_registros(
+                ruta_origen,
+                {"occurrenceID": id_busqueda.strip()},
+                separador=cfg["separador"]
+            )
+            if not resultados:
+                st.error(f"No se encontró ningún registro con occurrenceID: '{id_busqueda}'")
+                st.session_state.pop("registro_a_editar", None)
+            else:
+                st.session_state["registro_a_editar"] = resultados[0]
+                st.success("Registro encontrado")
+            
+    # 4.C - Formulario editable
+    if "registro_a_editar" in st.session_state:
+        registro_actual = st.session_state["registro_a_editar"]
+ 
+        st.markdown("#### Editá los campos del registro")
+        st.markdown("Los valores actuales aparecen precargados. Modificá solo los que necesitás")
+ 
+        campos_editar = campos_por_dataset[nombre_dataset]
+ 
+        nuevos_valores = {}
+        with st.form("form_actualizar"):
+            col1, col2 = st.columns(2)
+            mitad = len(campos_editar) // 2
+ 
+            for i, (campo, etiqueta, _) in enumerate(campos_editar):
+                valor_actual = registro_actual.get(campo, "")
+                with col1 if i < mitad else col2:
+                    nuevos_valores[campo] = st.text_input(etiqueta, value=valor_actual, key=f"edit_{campo}")
+ 
+            submitted_actualizar = st.form_submit_button("Guardar cambios")
+ 
+        if submitted_actualizar:
+            # Detectar campos modificados
+            modificaciones = {
+                campo: nuevo
+                for campo, nuevo in nuevos_valores.items()
+                if nuevo != registro_actual.get(campo, "")
+            }
+ 
+            if not modificaciones:
+                st.warning("No se realizaron cambios")
+            else:
+                resultado = actualizar_multiples_campos_validando(
+                    ruta_origen,
+                    ruta_destino,
+                    id_busqueda.strip(),
+                    modificaciones,
+                    nombre_dataset.upper(),
+                    separador=cfg["separador"]
+                )
+ 
+                if resultado:
+                    st.success("Registro actualizado correctamente")
+                    st.markdown("**Campos modificados:**")
+                    for campo, nuevo in modificaciones.items():
+                        st.write(f" **{campo}**: {registro_actual.get(campo, '')} → {nuevo}")
+                    # Actualizamos el dataset en session_state
+                    st.session_state["dataset_actual"] = cargar_dataset(nombre_dataset)
+                    st.session_state.pop("registro_a_editar", None)
+                else:
+                    st.error("No se pudo actualizar el registro. Revisá los valores ingresados")
