@@ -1,14 +1,14 @@
 import csv
 from pathlib import Path
 from datetime import datetime
-from validador import (es_coordenada_valida, es_fecha_valida, es_incertidumbre_valida)
+from validador import (es_coordenada_valida, validar_y_convertir_fecha, es_incertidumbre_valida)
 from logger import registrar_operacion
 from utils import manejar_archivo_no_encontrado 
 
 @manejar_archivo_no_encontrado
-def eliminar_por_id(ruta_original, ruta_nueva, columna, valor, nombre_dataset, separador="\t"):
+def eliminar_por_id_generica(ruta_original, ruta_nueva, columna, valor, nombre_dataset, separador="\t"):
     """
-    Elimina del dataset el registro que coincida con el valor indicado en la columna dada.
+        Elimina del dataset el registro que coincida con el valor indicado en la columna dada.
     """
     eliminado = False
 
@@ -38,6 +38,24 @@ def eliminar_por_id(ruta_original, ruta_nueva, columna, valor, nombre_dataset, s
     #Si se elimino algun registro se registra la operacion, sino se registra un error
 
     return eliminado
+
+def eliminar_por_id_iadiza(ruta_original, ruta_nueva, columna, valor):
+    """
+        Elimina del dataset el registro que coincida con el valor indicado en la columna dada en el dataset IADIZA
+    """
+    return eliminar_por_id_generica(ruta_original, ruta_nueva, columna, valor, nombre_dataset="iadiza", separador="\t")
+
+def eliminar_por_id_xeno_canto(ruta_original, ruta_nueva, columna, valor):
+    """
+        Elimina del dataset el registro que coincida con el valor indicado en la columna dada en el dataset Xeno-Canto
+    """
+    return eliminar_por_id_generica(ruta_original, ruta_nueva, columna, valor, nombre_dataset="xeno_canto", separador=",")
+
+def eliminar_por_id_inaturalist(ruta_original, ruta_nueva, columna, valor):
+    """
+        Elimina del dataset el registro que coincida con el valor indicado en la columna dada en el dataset iNaturalist
+    """
+    return eliminar_por_id_generica(ruta_original, ruta_nueva, columna, valor, nombre_dataset="inaturalist", separador=",")
 
 @manejar_archivo_no_encontrado
 def eliminar_por_lista(ruta_original, ruta_nueva, columna, valores_a_eliminar, nombre_dataset, separador="\t"):
