@@ -10,3 +10,5 @@ processed_datasets/*
 logs/*.log
 
 __pycache__
+
+**/*.ipynb_checkpoints
