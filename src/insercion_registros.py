@@ -437,92 +437,51 @@ def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset, prepa
 
 # Función para insertar múltiples registros ingresados por teclado
 @manejar_archivo_no_encontrado
-def insertar_multiples_registros(ruta_origen, ruta_destino, nombre_dataset, separador="\t"):
+def insertar_multiples_registros(ruta_origen, ruta_destino, nombre_dataset, preparar_fn, validar_fn, ingresar_fn, separador="\t"):
     """
     Solicita registros por teclado en un loop, valida cada uno y los inserta al final del dataset.
     La carga termina cuando el usuario deja el campo license vacío.
     """
     registros = []
-    # Lista donde se guardarán los registros válidos
 
     print("Carga de múltiples registros (dejar vacío 'license' para terminar)")
 
-    # Loop para ingresar varios registros por teclado
     while True:
-        registro = ingresar_registro_por_teclado()
-        # Pide datos al usuario para crear un nuevo registro
+        registro = ingresar_fn()
 
-        # Condición de corte, si no se escribe license se termina la carga de registros
         if registro.get("license", "") == "":
             break
         
-        # Valida cada registro ingresado
-        es_valido, errores = validar_registro(registro)
+        es_valido, errores = validar_fn(registro)
 
         if es_valido:
             registros.append(registro)
             print("Registro agregado\n")
-            #Si es válido se agrega a la lista de registros
         else:
             print("Registro inválido:")
             for e in errores:
                 print("-", e)
-                # Si no es válido se muestran los errores y no se agrega a la lista
             print()
 
-    # Si no se ingresó ningún registro válido se termina la función
     if not registros:
         registrar_operacion(nombre_dataset, "INSERT", 0, error=True)
         return
-        # Si no se ingresó ningún registro válido se registra la operación con error y se corta la función   
 
-    # Abrimos dataset original
     with open(ruta_origen, "r", encoding="utf-8", newline="") as f_in:
-
         reader = csv.DictReader(f_in, delimiter=separador)
         columnas = reader.fieldnames
-        # Nombre de las columnas del dataset
+        filas = list(reader)
 
-        filas = list(reader)  
-        # Guardamos todas las filas originales en memoria
-
-    max_num = max_catalog_number(ruta_origen, separador)
-    # Calculo el último catalogNumber una sola vez para luego asignar nuevos números a los registros ingresados, evitando recorrer el dataset repetidamente
-
-    # Creo el nuevo archivo
     with open(ruta_destino, "w", encoding="utf-8", newline="") as f_out:
-
         writer = csv.DictWriter(f_out, fieldnames=columnas, delimiter=separador)
         writer.writeheader()
-        # Escribo los encabezados del dataset
 
         for fila in filas:
             writer.writerow(fila)
-            # Copio el dataset original al nuevo archivo
 
-        # Agrego los nuevos registros al final del archivo
         for i, registro in enumerate(registros, start=1):
-
-            # Genero nuevos IDs para cada registro sin repetir
-            nuevo_num = max_num + i
-            nuevo_catalog = str(nuevo_num).zfill(6)
-            nuevo_occurrence_id = f"{nombre_dataset}:COI:{nuevo_catalog}"
-
-            registro_completo = {col: "" for col in columnas}
-            #Creo estructura completa con todas las columnas del dataset
-
-            for campo, valor in registro.items():
-                if campo in registro_completo:
-                    registro_completo[campo] = valor
-                # Copio los datos del usuario
-
-            registro_completo["gbifID"] = ""
-            registro_completo["occurrenceID"] = nuevo_occurrence_id
-            registro_completo["catalogNumber"] = nuevo_catalog
-            # Seteo los IDs para cada registro
-
+            registro_completo = preparar_fn(registro, ruta_origen, columnas)
             writer.writerow(registro_completo)
-            # Escribo el registro en el nuevo archivo
 
     registrar_operacion(nombre_dataset, "INSERT", len(registros))
     # Si se ingresaron registros válidos se registra la operación con éxito indicando la cantidad de registros insertados
