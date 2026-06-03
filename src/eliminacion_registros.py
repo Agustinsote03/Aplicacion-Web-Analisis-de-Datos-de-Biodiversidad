@@ -301,7 +301,7 @@ def sanitizar_dataset_inaturalist(ruta_original, ruta_nueva):
 
 
 @manejar_archivo_no_encontrado
-def sanitizar_dataset_evolucionada(ruta_original, ruta_nueva, separador="\t"):
+def sanitizar_dataset_evolucionada_generica(ruta_original, ruta_nueva, separador="\t", col_lat="decimalLatitude", col_lon="decimalLongitude"):
     """
     Igual que sanitizar_dataset pero además muestra un reporte detallado por pantalla
     e incluye el ID de cada registro eliminado y sus motivos en el resultado.
@@ -323,7 +323,7 @@ def sanitizar_dataset_evolucionada(ruta_original, ruta_nueva, separador="\t"):
 
         for fila in lector:
             total += 1
-            motivos = validar_fila(fila)
+            motivos = validar_fila(fila, col_lat, col_lon)
 
             if motivos:
                 eliminados += 1
@@ -354,3 +354,21 @@ def sanitizar_dataset_evolucionada(ruta_original, ruta_nueva, separador="\t"):
         "motivos_conteo": motivos_conteo,
         "detalle": reporte_detallado,
     }
+
+def sanitizar_dataset_evolucionada_iadiza(ruta_original, ruta_nueva):
+    """
+    Igual que sanitizar_dataset pero además muestra un reporte detallado por pantalla para IADIZA
+    """
+    return sanitizar_dataset_evolucionada_generica(ruta_original, ruta_nueva, separador="\t", col_lat="decimalLatitude", col_lon="decimalLongitude")
+
+def sanitizar_dataset_evolucionada_xeno_canto(ruta_original, ruta_nueva):
+    """
+    Igual que sanitizar_dataset pero además muestra un reporte detallado por pantalla para Xeno-canto
+    """
+    return sanitizar_dataset_evolucionada_generica(ruta_original, ruta_nueva, separador=",", col_lat="latitudeDecimal", col_lon="longitudeDecimal")
+
+def sanitizar_dataset_evolucionada_inaturalist(ruta_original, ruta_nueva):
+    """
+    Igual que sanitizar_dataset pero además muestra un reporte detallado por pantalla para iNaturalist
+    """
+    return sanitizar_dataset_evolucionada_generica(ruta_original, ruta_nueva, separador=",", col_lat="decimalLatitude", col_lon="decimalLongitude")
