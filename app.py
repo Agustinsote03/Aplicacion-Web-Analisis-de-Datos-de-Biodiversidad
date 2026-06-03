@@ -11,23 +11,32 @@ from config import CONFIGURACION_DATASETS
 
 st.set_page_config(page_title="App Biodiversidad", layout="wide")
 
-# Páginas que aparecen en el sidebar
-paginas = [
-    st.Page("pages/1_Inicio.py", title="Inicio"),
-    st.Page("pages/2_Estado_del_sistema.py", title="Estado del sistema"),
-    st.Page("pages/3_Busqueda.py", title="Búsqueda"),
-    st.Page("pages/4_Visualizacion.py", title="Visualización"),
-    st.Page("pages/5_Gestion_de_registros.py", title="Gestión de registros"),
-    st.Page("pages/6_Datasets.py", title="Datasets"),
-]
+# Definir todas las páginas
+inicio = st.Page("pages/1_Inicio.py", title="Inicio")
+estado = st.Page("pages/2_Estado_del_sistema.py", title="Estado del sistema")
+busqueda = st.Page("pages/3_Busqueda.py", title="Búsqueda")
+visualizacion = st.Page("pages/4_Visualizacion.py", title="Visualización")
+gestion = st.Page("pages/5_Gestion_de_registros.py", title="Gestión de registros")
+datasets = st.Page("pages/6_Datasets.py", title="Datasets")
+ficha = st.Page("pages/7_Ficha.py", title="Ficha de datos")
 
-# Página oculta
-pagina_ficha = st.Page("pages/7_Ficha.py", title="Ficha de datos")
+# Registrar todas las páginas incluyendo ficha para que st.switch_page funcione
+pg = st.navigation([inicio, estado, busqueda, visualizacion, gestion, datasets, ficha])
 
-pg = st.navigation(paginas + [pagina_ficha], position="sidebar")
+# Guardar la página de ficha en session_state para usarla desde P3
+st.session_state["pagina_ficha"] = ficha
 
-seleccionar_dataset()
-mostrar_info_dataset()
+# Sidebar manual - sin la ficha
+with st.sidebar:
+    st.page_link(inicio, label="Inicio")
+    st.page_link(estado, label="Estado del sistema")
+    st.page_link(busqueda, label="Búsqueda")
+    st.page_link(visualizacion, label="Visualización")
+    st.page_link(gestion, label="Gestión de registros")
+    st.page_link(datasets, label="Datasets")
+    st.markdown("---")
+    seleccionar_dataset()
+    mostrar_info_dataset()
 
 st.title("Aplicacion de Biodiversidad")
 st.write("Selecciona una pagina desde el menu lateral")

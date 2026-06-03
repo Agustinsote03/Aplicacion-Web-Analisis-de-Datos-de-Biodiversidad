@@ -227,4 +227,4 @@ if "resultados_busqueda" in st.session_state:
     #------------EJERCICIO 6.A: BOTÓN VER FICHA------------#
         st.markdown("---")
         if st.button("Ver ficha", key="ver_ficha_btn"):
-            st.switch_page("pages/_7_Ficha.py")
+            st.switch_page(st.session_state["pagina_ficha"])
