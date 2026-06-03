@@ -113,7 +113,7 @@ def eliminar_por_lista_inaturalist(ruta_original, ruta_nueva, columna, valores_a
     return eliminar_por_lista_generica(ruta_original, ruta_nueva, columna, valores_a_eliminar, nombre_dataset="inaturalist", separador=",")
 
 @manejar_archivo_no_encontrado
-def eliminar_por_condicion(ruta_original, ruta_nueva, columna, operador, valor, nombre_dataset, separador="\t"):
+def eliminar_por_condicion_generica(ruta_original, ruta_nueva, columna, operador, valor, nombre_dataset, separador="\t"):
     """
     Elimina todos los registros que cumplan la condición indicada sobre una columna.
     Soporta los operadores ==, !=, >, >=, <, <=.
@@ -181,6 +181,27 @@ def eliminar_por_condicion(ruta_original, ruta_nueva, columna, operador, valor, 
         registrar_operacion(nombre_dataset, "DELETE", eliminados)
 
     return eliminados
+
+def eliminar_por_condicion_iadiza(ruta_original, ruta_nueva, columna, operador, valor):
+    """
+    Elimina todos los registros que cumplan la condición indicada sobre una columna del dataset IADIZA.
+    Soporta los operadores ==, !=, >, >=, <, <=.
+    """
+    return eliminar_por_condicion_generica(ruta_original, ruta_nueva, columna, operador, valor, nombre_dataset="iadiza", separador="\t")
+
+def eliminar_por_condicion_xeno_canto(ruta_original, ruta_nueva, columna, operador, valor):
+    """
+    Elimina todos los registros que cumplan la condición indicada sobre una columna del dataset Xeno-canto.
+    Soporta los operadores ==, !=, >, >=, <, <=.
+    """
+    return eliminar_por_condicion_generica(ruta_original, ruta_nueva, columna, operador, valor, nombre_dataset="xeno_canto", separador=",")
+
+def eliminar_por_condicion_inaturalist(ruta_original, ruta_nueva, columna, operador, valor):
+    """
+    Elimina todos los registros que cumplan la condición indicada sobre una columna del dataset iNaturalist.
+    Soporta los operadores ==, !=, >, >=, <, <=.
+    """
+    return eliminar_por_condicion_generica(ruta_original, ruta_nueva, columna, operador, valor, nombre_dataset="inaturalist", separador=",")
 
 def validar_fila(fila):
     """
