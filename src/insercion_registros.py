@@ -6,9 +6,9 @@ from utils import manejar_archivo_no_encontrado
 
 #-----------------FUNCIONES AUXILIARES---------------------#
 # Se ingresa un nuevo registro por teclado solicitando al usuario los campos principales del dataset 
-def ingresar_registro_por_teclado():
+def ingresar_registro_por_teclado_iadiza():
     """
-    Solicita al usuario los campos principales de un registro por teclado y retorna el registro creado.
+    Solicita al usuario los campos principales del registro IADIZA por teclado y retorna el registro creado.
     """
     print("Ingrese los datos del nuevo registro:")
 
@@ -31,7 +31,7 @@ def ingresar_registro_por_teclado():
     scientificName = input("Scientific Name: ")
 
     # Uso la función de creación de estructura para generar un nuevo registro con los datos ingresados
-    registro = crear_estructura_registro(
+    registro = crear_estructura_registro_iadiza(
         license=license,
         institutionCode=institutionCode,
         collectionCode=collectionCode,
@@ -48,6 +48,112 @@ def ingresar_registro_por_teclado():
         decimalLatitude=decimalLatitude,
         decimalLongitude=decimalLongitude,
         scientificName=scientificName
+    )
+
+    return registro
+
+def ingresar_registro_por_teclado_xeno_canto():
+    """
+    Solicita al usuario los campos principales del registro Xeno-canto por teclado y retorna el registro creado.
+    """
+    print("Ingrese los datos del nuevo registro:")
+
+    # Pido los campos principales del dataset al usuario
+    basisOfRecord=input("Basis of Record: ")
+    collectionCode=input("Collection Code: ")
+    genus=input("Genus: ")
+    scientificName=input("Scientific Name: ")
+    taxonRank=input("Taxon Rank: ")
+    kingdom=input("Kingdom: ")
+    family=input("Family: ")
+    longitudeDecimal=input("Longitude Decimal: ")
+    latitudeDecimal=input("Latitude Decimal: ")
+    country=input("Country: ")
+    locality=input("Locality: ")
+    recordedBy=input("Recorded By: ")
+    eventDate=input("Event Date (YYYY-MM-DD): ")
+    eventTime=input("Event Time: ")
+    behavior=input("Behavior: ")
+    sex=input("Sex: ")
+    lifeStage=input("Life Stage: ")
+    license=input("License: ")
+
+    # Uso la función de creación de estructura para generar un nuevo registro con los datos ingresados
+    registro = crear_estructura_registro_xeno_canto(
+        basisOfRecord=basisOfRecord,
+        collectionCode=collectionCode,
+        genus=genus,
+        scientificName=scientificName,
+        taxonRank=taxonRank,
+        kingdom=kingdom,
+        family=family,
+        longitudeDecimal=longitudeDecimal,
+        latitudeDecimal=latitudeDecimal,
+        country=country,
+        locality=locality,
+        recordedBy=recordedBy,
+        eventDate=eventDate,
+        eventTime=eventTime,
+        behavior=behavior,
+        sex=sex,
+        lifeStage=lifeStage,
+        license=license
+    )
+
+    return registro
+
+def ingresar_registro_por_teclado_inaturalist():
+    """
+    Solicita al usuario los campos principales del registro iNaturalist por teclado y retorna el registro creado.
+    """
+    print("Ingrese los datos del nuevo registro:")
+
+    # Pido los campos principales del dataset al usuario
+    basisOfRecord=input("Basis of Record: ")
+    institutionCode=input("Institution Code: ")
+    recordedBy=input("Recorded By: ")
+    identifiedBy=input("Identified By: ")
+    captive=input("Captive: ")
+    eventDate=input("Event Date (YYYY-MM-DD): ")
+    eventTime=input("Event Time: ")
+    decimalLatitude=input("Decimal Latitude: ")
+    decimalLongitude=input("Decimal Longitude: ")
+    coordinateUncertaintyInMeters=input("Coordinate Uncertainty in Meters: ")
+    countryCode=input("Country Code: ")
+    stateProvince=input("State Province: ")
+    scientificName=input("Scientific Name: ")
+    taxonRank=input("Taxon Rank: ")
+    kingdom=input("Kingdom: ")
+    family=input("Family: ")
+    genus=input("Genus: ")
+    license=input("License: ")
+    sex=input("Sex: ")
+    lifeStage=input("Life Stage: ")
+    vitality=input("Vitality: ")
+
+    # Uso la función de creación de estructura para generar un nuevo registro con los datos ingresados
+    registro = crear_estructura_registro_inaturalist(
+        basisOfRecord=basisOfRecord,
+        institutionCode=institutionCode,
+        recordedBy=recordedBy,
+        identifiedBy=identifiedBy,
+        captive=captive,
+        eventDate=eventDate,
+        eventTime=eventTime,
+        decimalLatitude=decimalLatitude,
+        decimalLongitude=decimalLongitude,
+        coordinateUncertaintyInMeters=coordinateUncertaintyInMeters,
+        countryCode=countryCode,
+        stateProvince=stateProvince,
+        scientificName=scientificName,
+        taxonRank=taxonRank,
+        kingdom=kingdom,
+        family=family,
+        genus=genus,
+        license=license,
+        sex=sex,
+        lifeStage=lifeStage,
+        vitality=vitality
     )
 
     return registro
