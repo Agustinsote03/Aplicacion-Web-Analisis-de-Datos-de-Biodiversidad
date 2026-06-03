@@ -3,39 +3,33 @@ from pathlib import Path
 from logger import registrar_operacion
 from validador import es_coordenada_valida, validar_y_convertir_fecha, es_incertidumbre_valida
 from datetime import datetime
+from utils import manejar_archivo_no_encontrado
 FORMATO_FECHA = "%Y-%m-%d"
 
 def buscar_registros_generica(ruta_archivo, filtros, separador="\t"):
+    """ 
+    Busca y retorna registros de un dataset que cumplan con los criterios de filtrado 
     """
-        Busca y retorna registros de un dataset que cumplan con los criterios de filtrado
-    """
-    registros_encontrados = []  
-    # Lista donde voy a guardar resultados
-    try:
-        with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
+    registros_encontrados = []
+    
+    with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
             lector = csv.DictReader(archivo, delimiter=separador)
+            
+            #Se recorre cada fila del dataset
+            for fila in lector:
+                cumple_filtros = True
+                
+                #Se verifica si la fila cumple con todos los filtros del diccionario
+                for columna, valor_buscado in filtros.items():
 
-            for fila in lector:  
-            # Recorro todo el dataset
-
-                cumple_condicion = True  
-                # Asumo que cumple
-
-                # Recorro los filtros que se pasaron por parámetro
-                for columna, valor in filtros.items():
-
-                    # Comparo valor del CSV con el filtro
-                    if fila.get(columna, "").strip() != str(valor).strip():
-                        cumple_condicion = False
+                    if fila.get(columna) != str(valor_buscado):
+                        cumple_filtros = False
                         break  
-                        # Si no cumple, corto el bucle
-
-                if cumple_condicion:
+                
+                #Si la fila pasó todos los filtros, se agrega los resultados
+                if cumple_filtros:
                     registros_encontrados.append(fila)
-                    # Si cumple todas las condiciones, guardo el registro en la lista de resultados
-    except FileNotFoundError:
-        raise
-
+        
     return registros_encontrados
 
 def buscar_registros_iadiza(ruta_archivo, filtros):
