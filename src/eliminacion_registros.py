@@ -58,7 +58,7 @@ def eliminar_por_id_inaturalist(ruta_original, ruta_nueva, columna, valor):
     return eliminar_por_id_generica(ruta_original, ruta_nueva, columna, valor, nombre_dataset="inaturalist", separador=",")
 
 @manejar_archivo_no_encontrado
-def eliminar_por_lista(ruta_original, ruta_nueva, columna, valores_a_eliminar, nombre_dataset, separador="\t"):
+def eliminar_por_lista_generica(ruta_original, ruta_nueva, columna, valores_a_eliminar, nombre_dataset, separador="\t"):
     """
     Elimina todos los registros cuyo valor en la columna indicada pertenezca a la lista dada.
     """
@@ -93,6 +93,24 @@ def eliminar_por_lista(ruta_original, ruta_nueva, columna, valores_a_eliminar, n
     #Si se elimino algun registro se registra la operación, sino se registra un error
     
     return eliminados
+
+def eliminar_por_lista_iadiza(ruta_original, ruta_nueva, columna, valores_a_eliminar):
+    """
+    Elimina todos los registros cuyo valor en la columna indicada pertenezca a la lista dada en el dataset IADIZA.
+    """
+    return eliminar_por_lista_generica(ruta_original, ruta_nueva, columna, valores_a_eliminar, nombre_dataset="iadiza", separador="\t")
+
+def eliminar_por_lista_xeno_canto(ruta_original, ruta_nueva, columna, valores_a_eliminar):
+    """
+    Elimina todos los registros cuyo valor en la columna indicada pertenezca a la lista dada en el dataset Xeno-Canto.
+    """
+    return eliminar_por_lista_generica(ruta_original, ruta_nueva, columna, valores_a_eliminar, nombre_dataset="xeno_canto", separador=",")
+
+def eliminar_por_lista_inaturalist(ruta_original, ruta_nueva, columna, valores_a_eliminar):
+    """
+    Elimina todos los registros cuyo valor en la columna indicada pertenezca a la lista dada en el dataset iNaturalist.
+    """
+    return eliminar_por_lista_generica(ruta_original, ruta_nueva, columna, valores_a_eliminar, nombre_dataset="inaturalist", separador=",")
 
 @manejar_archivo_no_encontrado
 def eliminar_por_condicion(ruta_original, ruta_nueva, columna, operador, valor, nombre_dataset, separador="\t"):
