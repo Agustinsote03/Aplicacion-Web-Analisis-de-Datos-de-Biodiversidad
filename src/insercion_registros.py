@@ -219,19 +219,6 @@ def validar_registro_inaturalist(registro):
     return len(errores) == 0, errores
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 @manejar_archivo_no_encontrado
 def max_numero_dataset(ruta_archivo, separador, columna, extraer_numero):
     """
@@ -312,14 +299,13 @@ def preparar_estructura_inaturalist(registro, ruta_archivo, columnas, separador=
         }
     )
 
-# Inserta un nuevo registro correctamente formateado al final del dataset conservando la estructura original 
 @manejar_archivo_no_encontrado
-def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset, preparar_fn, separador="\t"):
+def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset, preparar_fn, validar_fn, separador="\t"):
     """
     Valida e inserta un único registro al final del dataset, guardando el resultado en un nuevo archivo.
     Si el registro es inválido no se realiza ninguna inserción.
     """
-    es_valido, errores = validar_registro(registro)
+    es_valido = validar_fn(registro)
 
     if not es_valido:
         registrar_operacion(nombre_dataset, "INSERT", 0, error=True)
