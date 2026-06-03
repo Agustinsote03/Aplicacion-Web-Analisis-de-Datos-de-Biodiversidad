@@ -223,3 +223,8 @@ if "resultados_busqueda" in st.session_state:
         with col4:
             observadores = resultados["recordedBy"].nunique() if "recordedBy" in resultados.columns else 0
             st.metric("Observadores", observadores)
+
+    #------------EJERCICIO 6.A: BOTÓN VER FICHA------------#
+        st.markdown("---")
+        if st.button("Ver ficha", key="ver_ficha_btn"):
+            st.switch_page(st.session_state["pagina_ficha"])
