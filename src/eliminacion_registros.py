@@ -203,57 +203,48 @@ def eliminar_por_condicion_inaturalist(ruta_original, ruta_nueva, columna, opera
     """
     return eliminar_por_condicion_generica(ruta_original, ruta_nueva, columna, operador, valor, nombre_dataset="inaturalist", separador=",")
 
-def validar_fila(fila):
+def validar_fila(fila, col_lat="decimalLatitude", col_lon="decimalLongitude"):
     """
     Valida los campos de una fila del dataset y retorna una lista con los motivos de invalidez.
-    Si la lista está vacía, la fila es válida.
     """
     codigos_pais_validos = {"AR","CL","BR","UY","PY","BO","PE","EC","CO","VE"}
     formato_fecha = "%Y-%m-%d"
-    
     motivos = []
 
-    #Validar latitud
-    lat = fila.get("decimalLatitude", "").strip()
+    lat = fila.get(col_lat, "").strip()
     if lat and not es_coordenada_valida(lat, -90, 90):
         motivos.append("latitud inválida")
 
-    #Validar longitud
-    lon = fila.get("decimalLongitude", "").strip()
+    lon = fila.get(col_lon, "").strip()
     if lon and not es_coordenada_valida(lon, -180, 180):
         motivos.append("longitud inválida")
 
-    #Validar que no haya coordenada incompleta
     if (lat and not lon) or (lon and not lat):
         motivos.append("coordenada incompleta")
 
-    #Validar fecha
     fecha_str = fila.get("eventDate", "").strip()[:10]
     if fecha_str:
-        es_valida, fecha = es_fecha_valida(fecha_str, formato_fecha)
+        es_valida, fecha = validar_y_convertir_fecha(fecha_str, formato_fecha)
         if not es_valida:
             motivos.append("fecha inválida")
         elif fecha and fecha > datetime.now():
             motivos.append("fecha futura")
 
-    #Validar countryCode
     country_code = fila.get("countryCode", "").strip().upper()
     if country_code and country_code not in codigos_pais_validos:
         motivos.append(f"countryCode inválido: {country_code}")
 
-    #Validar incertidumbre de coordenada
     incertidumbre = fila.get("coordinateUncertaintyInMeters", "").strip()
     if incertidumbre and not es_incertidumbre_valida(incertidumbre):
         motivos.append("coordinateUncertaintyInMeters inválida")
 
-    #Validar nombre científico
     if not fila.get("scientificName", "").strip():
         motivos.append("scientificName vacío")
 
     return motivos
 
 @manejar_archivo_no_encontrado
-def sanitizar_dataset(ruta_original, ruta_nueva, separador="\t"):
+def sanitizar_dataset_generica(ruta_original, ruta_nueva, separador="\t", col_lat="decimalLatitude", col_lon="decimalLongitude"):
     """
     Recorre el dataset, elimina las filas inválidas y guarda el resultado en un nuevo archivo.
     Retorna un resumen con el total de registros, los eliminados y los motivos.
@@ -266,15 +257,15 @@ def sanitizar_dataset(ruta_original, ruta_nueva, separador="\t"):
 
     with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
          open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
- 
+
         lector = csv.DictReader(archivo_original, delimiter=separador)
         escritor = csv.DictWriter(archivo_nuevo, fieldnames=lector.fieldnames, delimiter=separador)
- 
+
         escritor.writeheader()
 
         for fila in lector:
             total += 1
-            motivos = validar_fila(fila)
+            motivos = validar_fila(fila, col_lat, col_lon)  
 
             if motivos:
                 eliminados += 1
@@ -289,6 +280,25 @@ def sanitizar_dataset(ruta_original, ruta_nueva, separador="\t"):
         "eliminados": eliminados,
         "motivos": motivos_conteo,
     }
+
+def sanitizar_dataset_iadiza(ruta_original, ruta_nueva):
+    """
+    Recorre el dataset, elimina las filas inválidas y guarda el resultado en un nuevo archivo para el dataset IADIZA.
+    """
+    return sanitizar_dataset_generica(ruta_original, ruta_nueva, separador="\t", col_lat="decimalLatitude", col_lon="decimalLongitude")
+
+def sanitizar_dataset_xeno_canto(ruta_original, ruta_nueva):
+    """
+    Recorre el dataset, elimina las filas inválidas y guarda el resultado en un nuevo archivo para el dataset Xeno-canto.
+    """
+    return sanitizar_dataset_generica(ruta_original, ruta_nueva, separador=",", col_lat="latitudeDecimal", col_lon="longitudeDecimal")
+
+def sanitizar_dataset_inaturalist(ruta_original, ruta_nueva):
+    """
+    Recorre el dataset, elimina las filas inválidas y guarda el resultado en un nuevo archivo para el dataset iNaturalist.
+    """
+    return sanitizar_dataset_generica(ruta_original, ruta_nueva, separador=",", col_lat="decimalLatitude", col_lon="decimalLongitude")
+
 
 @manejar_archivo_no_encontrado
 def sanitizar_dataset_evolucionada(ruta_original, ruta_nueva, separador="\t"):
