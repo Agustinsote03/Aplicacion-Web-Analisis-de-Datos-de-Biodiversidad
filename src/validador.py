@@ -244,92 +244,77 @@ def ejecutar_analisis_calidad(ruta_archivo, separador):
     return {"idDuplicado":ids_duplicados, "fechaInvalida":fecha_invalida,"taxonomiaInvalida":taxonomia_invalida,"coordenadaInvalida":coordenada_invalida}
 
 
+@manejar_archivo_no_encontrado 
 def obtener_registros_fuera_de_territorio(ruta_archivo, separador, col_lat="decimalLatitude", col_lon="decimalLongitude"): 
     """
     Valida que los campos de latitud y longitud se encuentren dentro de las cotas 
     geográficas definidas para América del Sur.
     """
     registros_invalido = []
-    try:
-        with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
-            csv_reader = csv.DictReader(archivo, delimiter=separador)
+    
+    with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
+        csv_reader = csv.DictReader(archivo, delimiter=separador)
+        
+        for fila in csv_reader:
+            # Extraemos ambas coordenadas
+            lat = fila.get(col_lat, "")
+            lon = fila.get(col_lon, "")
             
-            for fila in csv_reader:
-                # Extraemos ambas coordenadas
-                lat = fila.get(col_lat, "")
-                lon = fila.get(col_lon, "")
+            # Verificamos que ambas existan 
+            if lat and lon:
+                # Usamos tu función auxiliar y las constantes globales
+                lat_en_sudamerica = es_coordenada_valida(lat, LAT_MIN, LAT_MAX)
+                lon_en_sudamerica = es_coordenada_valida(lon, LON_MIN, LON_MAX)
                 
-                # Verificamos que ambas existan antes de evaluarlas matemáticamente
-                if lat and lon:
-                    # Usamos tu función auxiliar y las constantes globales
-                    lat_en_sudamerica = es_coordenada_valida(lat, LAT_MIN, LAT_MAX)
-                    lon_en_sudamerica = es_coordenada_valida(lon, LON_MIN, LON_MAX)
-                    
-                    # Si alguna de las dos cae fuera del territorio, el registro es inválido
-                    if not lat_en_sudamerica or not lon_en_sudamerica:
-                        registros_invalido.append(fila)
-                else:
-                    # Si falta alguna de las coordenadas, no se puede ubicar en el mapa, 
-                    # por lo que también pasa a la lista de inválidos.
+                # Si alguna de las dos cae fuera del territorio, el registro es inválido
+                if not lat_en_sudamerica or not lon_en_sudamerica:
                     registros_invalido.append(fila)
-    except FileNotFoundError:
-        print(f"Error: El archivo '{ruta_archivo}' no se encontró.")
-        return 0, []       
+            else:
+                # Si falta alguna de las coordenadas, no se puede ubicar en el mapa
+                registros_invalido.append(fila)
+                
     return len(registros_invalido), registros_invalido
 
+@manejar_archivo_no_encontrado
 def validar_latitud(ruta_archivo, separador, col_lat="decimalLatitude"):
     """
-    Esta función recibe la latitud, y evalua:
-        -Que exista
-        -Que sea efectivamente una coordenada
-        -Que pertenezca al territorio de América del Sur
+    Agrupa validaciones de latitud: existencia, formato (-90 a 90) y pertenencia a Sudamérica.
+    La variabilidad de nombres se maneja con el parámetro col_lat.
     """
-    try:
-        registros_invalido = []
-        with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
-            csv_reader = csv.DictReader(archivo, delimiter=separador)
-            for fila in csv_reader:
-                lat = fila.get(col_lat,"")
-                if lat:
-                    es_formato_valido = es_coordenada_valida(lat,-90,90)
-                    esta_en_sudamerica = es_coordenada_valida(lat,LAT_MIN,LAT_MAX)
-                    if not es_formato_valido or not esta_en_sudamerica:
-                        registros_invalido.append(fila)
-                else:
-                    registros_invalido.append(fila)
-    except FileNotFoundError:
-        print(f"Error: El archivo '{ruta_archivo}' no se encontró.")
-        return 0, []
-    
+    registros_invalido = []
+    with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
+        csv_reader = csv.DictReader(archivo, delimiter=separador)
+        for fila in csv_reader:
+            lat = fila.get(col_lat, "")
+            
+            # Validaciones agrupadas
+            es_formato_valido = es_coordenada_valida(lat, -90, 90)
+            esta_en_sudamerica = es_coordenada_valida(lat, LAT_MIN, LAT_MAX)
+            
+            if not lat or not es_formato_valido or not esta_en_sudamerica: 
+                registros_invalido.append(fila)
+                
     return len(registros_invalido), registros_invalido
 
-
+@manejar_archivo_no_encontrado
 def validar_longitud(ruta_archivo, separador, col_lon="decimalLongitude"):
     """
-     Esta función recibe la longitud, y evalua:
-      -Que exista
-      -Que sea efectivamente una coordenada (-180 a 180)
-      -Que pertenezca al territorio de América del Sur
+    Agrupa validaciones de longitud: existencia, formato (-180 a 180) y pertenencia a Sudamérica.
+    La variabilidad de nombres se maneja con el parámetro col_lon.
     """
-    try:
-        registros_invalido = []
-        with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
-            csv_reader = csv.DictReader(archivo, delimiter=separador)
-            for fila in csv_reader:
-                lon = fila.get(col_lon,"")
-                if lon:
-                    # Validamos formato global y límites territoriales
-                    es_formato_valido = es_coordenada_valida(lon, -180, 180)
-                    esta_en_sudamerica = es_coordenada_valida(lon, LON_MIN, LON_MAX)
-                    
-                    if not es_formato_valido or not esta_en_sudamerica: 
-                        registros_invalido.append(fila)
-                else:
-                    registros_invalido.append(fila)
-    except FileNotFoundError:
-        print(f"Error: El archivo '{ruta_archivo}' no se encontró.")
-        return 0, []
-        
+    registros_invalido = []
+    with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
+        csv_reader = csv.DictReader(archivo, delimiter=separador)
+        for fila in csv_reader:
+            lon = fila.get(col_lon, "")
+            
+            # Validaciones agrupadas
+            es_formato_valido = es_coordenada_valida(lon, -180, 180)
+            esta_en_sudamerica = es_coordenada_valida(lon, LON_MIN, LON_MAX)
+            
+            if not lon or not es_formato_valido or not esta_en_sudamerica: 
+                registros_invalido.append(fila)
+                
     return len(registros_invalido), registros_invalido
 
 
