@@ -50,7 +50,7 @@ def buscar_registros_inaturalist(ruta_archivo, filtros):
     """
     return buscar_registros_generica(ruta_archivo, filtros, separador=",")
 
-def actualizar_un_campo(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor, nombre_dataset, separador="\t"):
+def actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor, nombre_dataset, separador="\t", columna_id="occurrenceID"):
     """
         Actualiza un campo especifico de un registro basado en su ID y genera un nuevo archivo con la actualización
     """
@@ -66,7 +66,7 @@ def actualizar_un_campo(ruta_original, ruta_nueva, id_registro, columna, nuevo_v
             escritor.writeheader()
 
             for fila in lector:
-                if fila.get("occurrenceID","").strip() == str(id_registro).strip():
+                if fila.get(columna_id, "").strip() == str(id_registro).strip():
                     fila[columna] = nuevo_valor
                     registro_actualizado = True
             
@@ -80,6 +80,19 @@ def actualizar_un_campo(ruta_original, ruta_nueva, id_registro, columna, nuevo_v
         raise
 
     return registro_actualizado
+
+def actualizar_un_campo_iadiza(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor):
+    return actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor,
+                                        nombre_dataset="iadiza", separador="\t")
+
+def actualizar_un_campo_xeno_canto(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor):
+    return actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor,
+                                        nombre_dataset="xeno_canto", separador=",")
+
+def actualizar_un_campo_inaturalist(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor):
+    return actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor,
+                                        nombre_dataset="inaturalist", separador=",")
+
 
 def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modificaciones, nombre_dataset,separador="\t", columna_id="occurrenceID"):
     """
