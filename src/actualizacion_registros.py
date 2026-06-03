@@ -1,11 +1,11 @@
 import csv
 from pathlib import Path
 from logger import registrar_operacion
-from validador import es_coordenada_valida, es_fecha_valida, es_incertidumbre_valida
+from validador import es_coordenada_valida, validar_y_convertir_fecha, es_incertidumbre_valida
 from datetime import datetime
 FORMATO_FECHA = "%Y-%m-%d"
 
-def buscar_registros(ruta_archivo, filtros, separador="\t"):
+def buscar_registros_generica(ruta_archivo, filtros, separador="\t"):
     """
         Busca y retorna registros de un dataset que cumplan con los criterios de filtrado
     """
@@ -37,6 +37,24 @@ def buscar_registros(ruta_archivo, filtros, separador="\t"):
         raise
 
     return registros_encontrados
+
+def buscar_registros_iadiza(ruta_archivo, filtros):
+    """
+        Busca registros en el dataset de IADIZA utilizando tabulaciones como separador
+    """
+    return buscar_registros_generica(ruta_archivo, filtros, separador="\t")
+
+def buscar_registros_xeno_canto(ruta_archivo, filtros):
+    """
+        Busca registros en el dataset de XENO utilizando comas como separador
+    """
+    return buscar_registros_generica(ruta_archivo, filtros, separador=",")
+
+def buscar_registros_inaturalist(ruta_archivo, filtros):
+    """
+        Busca registros en el dataset de INAT utilizando comas como separador
+    """
+    return buscar_registros_generica(ruta_archivo, filtros, separador=",")
 
 def actualizar_un_campo(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor, nombre_dataset, separador="\t"):
     """
