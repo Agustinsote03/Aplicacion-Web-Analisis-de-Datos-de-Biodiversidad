@@ -1,8 +1,10 @@
 import streamlit as st
 import sys
 from pathlib import Path
+import pandas as pd
 
 sys.path.append(str(Path(__file__).parent.parent / "src"))
+from config import CONFIGURACION_DATASETS
 from dataset_loader import seleccionar_dataset, mostrar_info_dataset
 from ficha_mapa import (
     detectar_columnas_coordenadas,
@@ -30,7 +32,6 @@ def verificar_resultados():
         st.stop()
 
     resultados = st.session_state["resultados_busqueda"]
-    st.write("DEBUG - Registros recibidos:", len(resultados))  # DEBUG
 
     if resultados.empty:
         st.info("No hay registros para mostrar en el mapa.")
@@ -54,13 +55,14 @@ def mostrar_metricas(df_validos, df_invalidos, total):
 
 
 def mostrar_selector_coloreo(df_validos, col_pais):
-    """
-    Muestra el selector de criterio de coloreo y retorna
-    la columna elegida y el mapa de colores correspondiente.
-    """
     st.subheader("Configuración del mapa")
     opciones_color = obtener_opciones_coloreo(df_validos, col_pais)
-    criterio_label = st.selectbox("Colorear puntos por:", list(opciones_color.keys()), key="selector_coloreo_ficha")
+    criterio_label = st.selectbox(
+        "Colorear puntos por:", 
+        list(opciones_color.keys()), 
+        key="selector_coloreo_ficha",
+        index=0
+    )
     col_color = opciones_color[criterio_label]
     mapa_colores = construir_mapa_colores(df_validos, col_color)
     return criterio_label, col_color, mapa_colores
@@ -109,6 +111,76 @@ def mostrar_mapa(df_validos, col_lat, col_lon, col_color, mapa_colores, col_pais
     return mapa_data
 
 
+def cargar_multimedia(nombre_dataset, id_core):
+    """
+    Carga las filas de multimedia que corresponden a un id_core dado.
+    Retorna un DataFrame o None si no hay archivo de multimedia.
+    """
+    cfg = CONFIGURACION_DATASETS[nombre_dataset]
+    ruta_multimedia = cfg.get("ruta_multimedia")
+
+    if not ruta_multimedia or not Path(ruta_multimedia).exists():
+        return None
+
+    if nombre_dataset == "xeno_canto":
+        df_media = pd.read_csv(ruta_multimedia, sep=",", encoding="utf-8", low_memory=False)
+        # la primera columna es coreid, filtramos por el id_core
+        col_coreid = df_media.columns[0]
+        resultado = df_media[df_media[col_coreid] == id_core]
+        # filtramos espectrogramas, nos quedamos solo con audio
+        if "format" in resultado.columns:
+            resultado = resultado[resultado["format"].str.contains("audio", case=False, na=False)]
+        return resultado
+
+    elif nombre_dataset == "inaturalist":
+        df_media = pd.read_csv(ruta_multimedia, sep=",", encoding="utf-8", low_memory=False)
+        col_coreid = df_media.columns[0]
+        resultado = df_media[df_media[col_coreid] == id_core]
+        # nos quedamos solo con fotos
+        if "type" in resultado.columns:
+            resultado = resultado[resultado["type"] == "StillImage"]
+        return resultado
+
+    return None
+
+
+def mostrar_multimedia(fila, nombre_dataset):
+    """
+    Muestra el contenido multimedia de una ocurrencia.
+    """
+    st.subheader("Multimedia")
+
+    # El id_core es la primera columna del occurrence
+    id_core = fila.iloc[0] if hasattr(fila, 'iloc') else None
+    if not id_core:
+        st.info("No se pudo determinar el ID del registro.")
+        return
+
+    df_media = cargar_multimedia(nombre_dataset, id_core)
+
+    if df_media is None:
+        st.info("Este dataset no tiene archivos multimedia disponibles.")
+        return
+
+    if df_media.empty:
+        st.info("No se encontró multimedia para este registro.")
+        return
+
+    if nombre_dataset == "xeno_canto":
+        st.markdown(f"Se encontraron **{len(df_media)}** archivo(s) de audio.")
+        for _, fila_media in df_media.iterrows():
+            url = fila_media.get("accessURI", "")
+            if url:
+                st.audio(url)
+
+    elif nombre_dataset == "inaturalist":
+        st.markdown(f"Se encontraron **{len(df_media)}** foto(s).")
+        cols = st.columns(min(3, len(df_media)))
+        for i, (_, fila_media) in enumerate(df_media.iterrows()):
+            url = fila_media.get("identifier", "")
+            if url:
+                cols[i % 3].image(url)
+
 def main():
     seleccionar_dataset()
     mostrar_info_dataset()
@@ -132,15 +204,16 @@ def main():
 
     criterio_label, col_color, mapa_colores = mostrar_selector_coloreo(df_validos, col_pais)
     mostrar_leyenda(criterio_label, col_color, mapa_colores)
-    mostrar_mapa(df_validos, col_lat, col_lon, col_color, mapa_colores, col_pais)
-
-    criterio_label, col_color, mapa_colores = mostrar_selector_coloreo(df_validos, col_pais)
-    mostrar_leyenda(criterio_label, col_color, mapa_colores)
-    mapa_data = mostrar_mapa(df_validos, col_lat, col_lon, col_color, mapa_colores, col_pais)  # guardar el retorno
+    mapa_data = mostrar_mapa(df_validos, col_lat, col_lon, col_color, mapa_colores, col_pais)
 
     # 6.C — Ficha del registro seleccionado
     st.subheader("Ficha del registro")
     nombre_clickeado = mapa_data.get("last_object_clicked_tooltip") if mapa_data else None
+
+    if nombre_clickeado:
+        registros = df_validos[df_validos["scientificName"] == nombre_clickeado]
+        if not registros.empty:
+            fila = registros.iloc[0]
 
     if nombre_clickeado:
         registros = df_validos[df_validos["scientificName"] == nombre_clickeado]
@@ -166,6 +239,10 @@ def main():
                 {"Campo": list(campos_ficha.keys()), "Valor": list(campos_ficha.values())}
             )
             st.dataframe(df_ficha, use_container_width=True, hide_index=True)
+
+            # 6.D — multimedia, adentro del if
+            nombre_dataset = st.session_state.get("nombre_dataset", "")
+            mostrar_multimedia(fila, nombre_dataset)
     else:
         st.info("Hacé clic en un punto del mapa para ver su ficha.")
 
