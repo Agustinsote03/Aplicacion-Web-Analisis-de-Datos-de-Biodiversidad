@@ -18,7 +18,7 @@ from insercion_registros import (
     preparar_estructura_inaturalist,
     insertar_registro,
 )
-from actualizacion_registros import buscar_registros, actualizar_multiples_campos_validando
+from actualizacion_registros import buscar_registros_generica, actualizar_multiples_campos_validando
 from config import CONFIGURACION_DATASETS
  
 # Mapeo de funciones por dataset
@@ -219,7 +219,7 @@ with tab_actualizar:
         if not id_busqueda.strip():
             st.warning("Ingresá un occurrenceID para buscar")
         else:
-            resultados = buscar_registros(
+            resultados = buscar_registros_generica(
                 ruta_origen,
                 {"occurrenceID": id_busqueda.strip()},
                 separador=cfg["separador"]
