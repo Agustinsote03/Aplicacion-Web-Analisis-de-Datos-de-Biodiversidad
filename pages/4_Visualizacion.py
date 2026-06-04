@@ -5,8 +5,8 @@ from pathlib import Path
 import sys
 
 #Importación de funciones
-sys.path.append(str(Path(__file__).parent.parent / "src"))
-from utils import calcular_porcentaje_nulos_logica
+#sys.path.append(str(Path(__file__).parent.parent / "src"))
+#from utils import calcular_porcentaje_nulos_logica
 
 st.title("Visualización de Datos de Biodiversidad")
 
@@ -46,7 +46,7 @@ df_actual = st.session_state["dataset_actual"]
 
 
 #Ejericio 3.A: Cantidad de observaciones por ubicación
-def cantidad_registros():
+def cantidad_registros(df_actual):
     st.header("Observaciones por ubicacion")
     num_elementos = st.slider("Cantidad de ubicaciones a mostrar: ", min_value=1, max_value=10, value=5)
 
@@ -66,7 +66,7 @@ def cantidad_registros():
 
 
 #Ejercicio 3.B, se va a crear un nuevo dataframe para manipular las fechas
-def cantidad_registros_por_anio():
+def cantidad_registros_por_anio(df_actual):
     nombre_id = df_actual.columns[0]
     df_fechas = df_actual[['eventDate', nombre_id]].rename(columns={'eventDate': 'fecha', nombre_id: 'codigo'})
     df_fechas['fecha'] = pd.to_datetime(df_fechas['fecha'], errors='coerce', utc=True)
@@ -94,56 +94,68 @@ def cantidad_registros_por_anio():
     generar_grafico_generico(conteos_por_anio.index, conteos_por_anio.values, tipo_grafico="line", titulo="Cantidad de registros por año", x_etiqueta="Año", y_etiqueta="Cantidad de observaciones únicas", color="#e74c3c")
 
 
-#Ejercicio 3.C #Preguntar
+#Ejercicio 3.C
 
-opciones_taxonomia = {'Clase': 'class', 'Orden': 'order', 'Familia': 'family'}
+def distribucion_registros_taxonomia(df_actual):
+    st.header("Distribución de registros según taxonomía")
+    opciones_taxonomia = {'Clase': 'class', 'Orden': 'order', 'Familia': 'family'}
 
-st.header("Distribución de registros según taxonomía")
-df_actual = st.session_state["dataset_actual"]
+    # Se filtran solo las opciones cuya columna existe en el dataset
+    opciones_disponibles = {k: v for k, v in opciones_taxonomia.items() if v in df_actual.columns}
 
-eleccion_usuario = st.radio('Selecciona un nivel taxónomico para visualizar en el gráfico', ('Clase', 'Orden', 'Familia'))
+    if not opciones_disponibles:
+        st.warning("Este dataset no contiene columnas taxonómicas (class, order, family).")
+        return
 
-columna_seleccionada = opciones_taxonomia[eleccion_usuario]
-columna_taxonomia = df_actual[columna_seleccionada]
+    eleccion_usuario = st.radio(
+        'Selecciona un nivel taxonómico para visualizar en el gráfico',
+        list(opciones_disponibles.keys())
+    )
+    columna_seleccionada = opciones_taxonomia[eleccion_usuario]
+    columna_taxonomia = df_actual[columna_seleccionada]
+    
+    #Se cuentan los registros por cada valor único de la columna taxonomica seleccionada
+    conteo_taxonomia = columna_taxonomia.value_counts().head(10)
 
-#Contamos los registros
-
-conteo_taxonomia = columna_taxonomia.value_counts().head(10)
-
-#Se crea gráfico de torta
-fig, ax = plt.subplots(figsize=(20, 20))
-ax.pie(conteo_taxonomia.values, labels=conteo_taxonomia.index, autopct='%1.1f%%', shadow=True)
-ax.set_title(f"Distribución de registros por {eleccion_usuario}")
-st.pyplot(fig)
+    #Se crea gráfico de torta
+    generar_grafico_generico(conteo_taxonomia.index, conteo_taxonomia.values, tipo_grafico="pie", titulo=f"Distribución de registros por {eleccion_usuario}",figsize=(20, 17))
 
 #Ejercicio 3.D
 
-def mostrar_grafico_completitud(nombre_archivo_dataset, separador="\t"):
+def mostrar_grafico_completitud(df):
     st.subheader("Completitud de datos por columna")
-    
-    ruta_str = "processed_datasets/" + nombre_archivo_dataset
-    
-    #Se reutiliza la función del ejercicio 3.F
-    porcentaje_nulos_dict = calcular_porcentaje_nulos_logica(ruta_str, separador)
-    
-    #Se pasa a pandas para procesar el grafico 
-    porcentaje_nulos = pd.Series(porcentaje_nulos_dict)
-    
-    #Se calculan los porcentajes de registros no nulos
-    porcentaje_no_nulos = 100 - porcentaje_nulos
-    porcentaje_ordenado = porcentaje_no_nulos.sort_values(ascending=True)
-    
-    #Se grafica con Matplotlib
-    fig, ax = plt.subplots(figsize=(10, 8))
-    ax.barh(porcentaje_ordenado.index, porcentaje_ordenado.values, color='#4db6ac')
-    
-    ax.set_title("Porcentaje de completitud por columna")
-    ax.set_xlabel("Porcentaje de registros NO nulos (%)")
-    ax.set_ylabel("Columnas")
-    fig.tight_layout()
-    
-    st.pyplot(fig)
 
-nombre_dataset = st.session_state["nombre_dataset"]
-mostrar_grafico_completitud(nombre_dataset)
+    # Se convierte el DataFrame al formato que espera calcular_porcentaje_nulos_logica
+    filas = df.fillna("").astype(str).to_dict(orient="records")
+
+    # Se reutiliza la función lógica de la parte 1
+    porcentaje_nulos = calcular_porcentaje_nulos_logica(filas, df.columns)
+
+    # Se invierte para mostrar completitud en lugar de nulos
+    completitud = {col: 100 - pct for col, pct in porcentaje_nulos.items()}
+    
+    # Se filtra columnas 100% nulas y se ordena de menor a mayor
+    ordenado = sorted(
+        [(col, val) for col, val in completitud.items() if val > 0],
+        key=lambda x: x[1]
+    )
+
+    columnas = [item[0] for item in ordenado]
+    valores  = [item[1] for item in ordenado]
+
+    generar_grafico_generico(
+        columnas,
+        valores,
+        tipo_grafico="barh",
+        titulo="Porcentaje de completitud por columna",
+        x_etiqueta="% de registros NO nulos",
+        y_etiqueta="Columnas",
+        figsize=(10, max(8, len(columnas) * 0.3)),
+        labelsize=7  # ← para el tick_params
+    )
 #Ejercicio 3.E
+
+cantidad_registros(df_actual)
+cantidad_registros_por_anio(df_actual)
+distribucion_registros_taxonomia(df_actual)
+#mostrar_grafico_completitud(df_actual)
