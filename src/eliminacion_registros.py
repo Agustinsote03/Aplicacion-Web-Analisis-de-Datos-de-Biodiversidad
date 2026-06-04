@@ -1,14 +1,14 @@
 import csv
 from pathlib import Path
 from datetime import datetime
-from validador import (es_coordenada_valida, es_fecha_valida, es_incertidumbre_valida)
+from validador import (es_coordenada_valida, validar_y_convertir_fecha, es_incertidumbre_valida)
 from logger import registrar_operacion
 from utils import manejar_archivo_no_encontrado 
 
 @manejar_archivo_no_encontrado
-def eliminar_por_id(ruta_original, ruta_nueva, columna, valor, nombre_dataset, separador="\t"):
+def eliminar_por_id_generica(ruta_original, ruta_nueva, columna, valor, nombre_dataset, separador="\t"):
     """
-    Elimina del dataset el registro que coincida con el valor indicado en la columna dada.
+        Elimina del dataset el registro que coincida con el valor indicado en la columna dada.
     """
     eliminados = 0
     #Contador en lugar de booleano para poder registrar cantidad de registros eliminados
@@ -41,8 +41,26 @@ def eliminar_por_id(ruta_original, ruta_nueva, columna, valor, nombre_dataset, s
 
     return eliminados
 
+def eliminar_por_id_iadiza(ruta_original, ruta_nueva, columna, valor):
+    """
+        Elimina del dataset el registro que coincida con el valor indicado en la columna dada en el dataset IADIZA
+    """
+    return eliminar_por_id_generica(ruta_original, ruta_nueva, columna, valor, nombre_dataset="iadiza", separador="\t")
+
+def eliminar_por_id_xeno_canto(ruta_original, ruta_nueva, columna, valor):
+    """
+        Elimina del dataset el registro que coincida con el valor indicado en la columna dada en el dataset Xeno-Canto
+    """
+    return eliminar_por_id_generica(ruta_original, ruta_nueva, columna, valor, nombre_dataset="xeno_canto", separador=",")
+
+def eliminar_por_id_inaturalist(ruta_original, ruta_nueva, columna, valor):
+    """
+        Elimina del dataset el registro que coincida con el valor indicado en la columna dada en el dataset iNaturalist
+    """
+    return eliminar_por_id_generica(ruta_original, ruta_nueva, columna, valor, nombre_dataset="inaturalist", separador=",")
+
 @manejar_archivo_no_encontrado
-def eliminar_por_lista(ruta_original, ruta_nueva, columna, valores_a_eliminar, nombre_dataset, separador="\t"):
+def eliminar_por_lista_generica(ruta_original, ruta_nueva, columna, valores_a_eliminar, nombre_dataset, separador="\t"):
     """
     Elimina todos los registros cuyo valor en la columna indicada pertenezca a la lista dada.
     """
@@ -78,8 +96,26 @@ def eliminar_por_lista(ruta_original, ruta_nueva, columna, valores_a_eliminar, n
     
     return eliminados
 
+def eliminar_por_lista_iadiza(ruta_original, ruta_nueva, columna, valores_a_eliminar):
+    """
+    Elimina todos los registros cuyo valor en la columna indicada pertenezca a la lista dada en el dataset IADIZA.
+    """
+    return eliminar_por_lista_generica(ruta_original, ruta_nueva, columna, valores_a_eliminar, nombre_dataset="iadiza", separador="\t")
+
+def eliminar_por_lista_xeno_canto(ruta_original, ruta_nueva, columna, valores_a_eliminar):
+    """
+    Elimina todos los registros cuyo valor en la columna indicada pertenezca a la lista dada en el dataset Xeno-Canto.
+    """
+    return eliminar_por_lista_generica(ruta_original, ruta_nueva, columna, valores_a_eliminar, nombre_dataset="xeno_canto", separador=",")
+
+def eliminar_por_lista_inaturalist(ruta_original, ruta_nueva, columna, valores_a_eliminar):
+    """
+    Elimina todos los registros cuyo valor en la columna indicada pertenezca a la lista dada en el dataset iNaturalist.
+    """
+    return eliminar_por_lista_generica(ruta_original, ruta_nueva, columna, valores_a_eliminar, nombre_dataset="inaturalist", separador=",")
+
 @manejar_archivo_no_encontrado
-def eliminar_por_condicion(ruta_original, ruta_nueva, columna, operador, valor, nombre_dataset, separador="\t"):
+def eliminar_por_condicion_generica(ruta_original, ruta_nueva, columna, operador, valor, nombre_dataset, separador="\t"):
     """
     Elimina todos los registros que cumplan la condición indicada sobre una columna.
     Soporta los operadores ==, !=, >, >=, <, <=.
@@ -148,57 +184,69 @@ def eliminar_por_condicion(ruta_original, ruta_nueva, columna, operador, valor, 
 
     return eliminados
 
-def validar_fila(fila):
+def eliminar_por_condicion_iadiza(ruta_original, ruta_nueva, columna, operador, valor):
+    """
+    Elimina todos los registros que cumplan la condición indicada sobre una columna del dataset IADIZA.
+    Soporta los operadores ==, !=, >, >=, <, <=.
+    """
+    return eliminar_por_condicion_generica(ruta_original, ruta_nueva, columna, operador, valor, nombre_dataset="iadiza", separador="\t")
+
+def eliminar_por_condicion_xeno_canto(ruta_original, ruta_nueva, columna, operador, valor):
+    """
+    Elimina todos los registros que cumplan la condición indicada sobre una columna del dataset Xeno-canto.
+    Soporta los operadores ==, !=, >, >=, <, <=.
+    """
+    return eliminar_por_condicion_generica(ruta_original, ruta_nueva, columna, operador, valor, nombre_dataset="xeno_canto", separador=",")
+
+def eliminar_por_condicion_inaturalist(ruta_original, ruta_nueva, columna, operador, valor):
+    """
+    Elimina todos los registros que cumplan la condición indicada sobre una columna del dataset iNaturalist.
+    Soporta los operadores ==, !=, >, >=, <, <=.
+    """
+    return eliminar_por_condicion_generica(ruta_original, ruta_nueva, columna, operador, valor, nombre_dataset="inaturalist", separador=",")
+
+def validar_fila(fila, col_lat="decimalLatitude", col_lon="decimalLongitude"):
     """
     Valida los campos de una fila del dataset y retorna una lista con los motivos de invalidez.
-    Si la lista está vacía, la fila es válida.
     """
     codigos_pais_validos = {"AR","CL","BR","UY","PY","BO","PE","EC","CO","VE"}
     formato_fecha = "%Y-%m-%d"
-    
     motivos = []
 
-    #Validar latitud
-    lat = fila.get("decimalLatitude", "").strip()
+    lat = fila.get(col_lat, "").strip()
     if lat and not es_coordenada_valida(lat, -90, 90):
         motivos.append("latitud inválida")
 
-    #Validar longitud
-    lon = fila.get("decimalLongitude", "").strip()
+    lon = fila.get(col_lon, "").strip()
     if lon and not es_coordenada_valida(lon, -180, 180):
         motivos.append("longitud inválida")
 
-    #Validar que no haya coordenada incompleta
     if (lat and not lon) or (lon and not lat):
         motivos.append("coordenada incompleta")
 
-    #Validar fecha
     fecha_str = fila.get("eventDate", "").strip()[:10]
     if fecha_str:
-        es_valida, fecha = es_fecha_valida(fecha_str, formato_fecha)
+        es_valida, fecha = validar_y_convertir_fecha(fecha_str, formato_fecha)
         if not es_valida:
             motivos.append("fecha inválida")
         elif fecha and fecha > datetime.now():
             motivos.append("fecha futura")
 
-    #Validar countryCode
     country_code = fila.get("countryCode", "").strip().upper()
     if country_code and country_code not in codigos_pais_validos:
         motivos.append(f"countryCode inválido: {country_code}")
 
-    #Validar incertidumbre de coordenada
     incertidumbre = fila.get("coordinateUncertaintyInMeters", "").strip()
     if incertidumbre and not es_incertidumbre_valida(incertidumbre):
         motivos.append("coordinateUncertaintyInMeters inválida")
 
-    #Validar nombre científico
     if not fila.get("scientificName", "").strip():
         motivos.append("scientificName vacío")
 
     return motivos
 
 @manejar_archivo_no_encontrado
-def sanitizar_dataset(ruta_original, ruta_nueva, separador="\t"):
+def sanitizar_dataset_generica(ruta_original, ruta_nueva, separador="\t", col_lat="decimalLatitude", col_lon="decimalLongitude"):
     """
     Recorre el dataset, elimina las filas inválidas y guarda el resultado en un nuevo archivo.
     Retorna un resumen con el total de registros, los eliminados y los motivos.
@@ -211,15 +259,15 @@ def sanitizar_dataset(ruta_original, ruta_nueva, separador="\t"):
 
     with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
          open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
- 
+
         lector = csv.DictReader(archivo_original, delimiter=separador)
         escritor = csv.DictWriter(archivo_nuevo, fieldnames=lector.fieldnames, delimiter=separador)
- 
+
         escritor.writeheader()
 
         for fila in lector:
             total += 1
-            motivos = validar_fila(fila)
+            motivos = validar_fila(fila, col_lat, col_lon)  
 
             if motivos:
                 eliminados += 1
@@ -235,8 +283,27 @@ def sanitizar_dataset(ruta_original, ruta_nueva, separador="\t"):
         "motivos": motivos_conteo,
     }
 
+def sanitizar_dataset_iadiza(ruta_original, ruta_nueva):
+    """
+    Recorre el dataset, elimina las filas inválidas y guarda el resultado en un nuevo archivo para el dataset IADIZA.
+    """
+    return sanitizar_dataset_generica(ruta_original, ruta_nueva, separador="\t", col_lat="decimalLatitude", col_lon="decimalLongitude")
+
+def sanitizar_dataset_xeno_canto(ruta_original, ruta_nueva):
+    """
+    Recorre el dataset, elimina las filas inválidas y guarda el resultado en un nuevo archivo para el dataset Xeno-canto.
+    """
+    return sanitizar_dataset_generica(ruta_original, ruta_nueva, separador=",", col_lat="latitudeDecimal", col_lon="longitudeDecimal")
+
+def sanitizar_dataset_inaturalist(ruta_original, ruta_nueva):
+    """
+    Recorre el dataset, elimina las filas inválidas y guarda el resultado en un nuevo archivo para el dataset iNaturalist.
+    """
+    return sanitizar_dataset_generica(ruta_original, ruta_nueva, separador=",", col_lat="decimalLatitude", col_lon="decimalLongitude")
+
+
 @manejar_archivo_no_encontrado
-def sanitizar_dataset_evolucionada(ruta_original, ruta_nueva, separador="\t"):
+def sanitizar_dataset_evolucionada_generica(ruta_original, ruta_nueva, separador="\t", col_lat="decimalLatitude", col_lon="decimalLongitude"):
     """
     Igual que sanitizar_dataset pero además muestra un reporte detallado por pantalla
     e incluye el ID de cada registro eliminado y sus motivos en el resultado.
@@ -258,7 +325,7 @@ def sanitizar_dataset_evolucionada(ruta_original, ruta_nueva, separador="\t"):
 
         for fila in lector:
             total += 1
-            motivos = validar_fila(fila)
+            motivos = validar_fila(fila, col_lat, col_lon)
 
             if motivos:
                 eliminados += 1
@@ -289,3 +356,21 @@ def sanitizar_dataset_evolucionada(ruta_original, ruta_nueva, separador="\t"):
         "motivos_conteo": motivos_conteo,
         "detalle": reporte_detallado,
     }
+
+def sanitizar_dataset_evolucionada_iadiza(ruta_original, ruta_nueva):
+    """
+    Igual que sanitizar_dataset pero además muestra un reporte detallado por pantalla para IADIZA
+    """
+    return sanitizar_dataset_evolucionada_generica(ruta_original, ruta_nueva, separador="\t", col_lat="decimalLatitude", col_lon="decimalLongitude")
+
+def sanitizar_dataset_evolucionada_xeno_canto(ruta_original, ruta_nueva):
+    """
+    Igual que sanitizar_dataset pero además muestra un reporte detallado por pantalla para Xeno-canto
+    """
+    return sanitizar_dataset_evolucionada_generica(ruta_original, ruta_nueva, separador=",", col_lat="latitudeDecimal", col_lon="longitudeDecimal")
+
+def sanitizar_dataset_evolucionada_inaturalist(ruta_original, ruta_nueva):
+    """
+    Igual que sanitizar_dataset pero además muestra un reporte detallado por pantalla para iNaturalist
+    """
+    return sanitizar_dataset_evolucionada_generica(ruta_original, ruta_nueva, separador=",", col_lat="decimalLatitude", col_lon="decimalLongitude")

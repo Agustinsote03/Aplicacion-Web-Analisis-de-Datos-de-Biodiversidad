@@ -6,9 +6,9 @@ from utils import manejar_archivo_no_encontrado
 
 #-----------------FUNCIONES AUXILIARES---------------------#
 # Se ingresa un nuevo registro por teclado solicitando al usuario los campos principales del dataset 
-def ingresar_registro_por_teclado():
+def ingresar_registro_por_teclado_iadiza():
     """
-    Solicita al usuario los campos principales de un registro por teclado y retorna el registro creado.
+    Solicita al usuario los campos principales del registro IADIZA por teclado y retorna el registro creado.
     """
     print("Ingrese los datos del nuevo registro:")
 
@@ -31,7 +31,7 @@ def ingresar_registro_por_teclado():
     scientificName = input("Scientific Name: ")
 
     # Uso la función de creación de estructura para generar un nuevo registro con los datos ingresados
-    registro = crear_estructura_registro(
+    registro = crear_estructura_registro_iadiza(
         license=license,
         institutionCode=institutionCode,
         collectionCode=collectionCode,
@@ -52,78 +52,160 @@ def ingresar_registro_por_teclado():
 
     return registro
 
+def ingresar_registro_por_teclado_xeno_canto():
+    """
+    Solicita al usuario los campos principales del registro Xeno-canto por teclado y retorna el registro creado.
+    """
+    print("Ingrese los datos del nuevo registro:")
+
+    # Pido los campos principales del dataset al usuario
+    basisOfRecord=input("Basis of Record: ")
+    collectionCode=input("Collection Code: ")
+    genus=input("Genus: ")
+    scientificName=input("Scientific Name: ")
+    taxonRank=input("Taxon Rank: ")
+    kingdom=input("Kingdom: ")
+    family=input("Family: ")
+    longitudeDecimal=input("Longitude Decimal: ")
+    latitudeDecimal=input("Latitude Decimal: ")
+    country=input("Country: ")
+    locality=input("Locality: ")
+    recordedBy=input("Recorded By: ")
+    eventDate=input("Event Date (YYYY-MM-DD): ")
+    eventTime=input("Event Time: ")
+    behavior=input("Behavior: ")
+    sex=input("Sex: ")
+    lifeStage=input("Life Stage: ")
+    license=input("License: ")
+
+    # Uso la función de creación de estructura para generar un nuevo registro con los datos ingresados
+    registro = crear_estructura_registro_xeno_canto(
+        basisOfRecord=basisOfRecord,
+        collectionCode=collectionCode,
+        genus=genus,
+        scientificName=scientificName,
+        taxonRank=taxonRank,
+        kingdom=kingdom,
+        family=family,
+        longitudeDecimal=longitudeDecimal,
+        latitudeDecimal=latitudeDecimal,
+        country=country,
+        locality=locality,
+        recordedBy=recordedBy,
+        eventDate=eventDate,
+        eventTime=eventTime,
+        behavior=behavior,
+        sex=sex,
+        lifeStage=lifeStage,
+        license=license
+    )
+
+    return registro
+
+def ingresar_registro_por_teclado_inaturalist():
+    """
+    Solicita al usuario los campos principales del registro iNaturalist por teclado y retorna el registro creado.
+    """
+    print("Ingrese los datos del nuevo registro:")
+
+    # Pido los campos principales del dataset al usuario
+    basisOfRecord=input("Basis of Record: ")
+    institutionCode=input("Institution Code: ")
+    recordedBy=input("Recorded By: ")
+    identifiedBy=input("Identified By: ")
+    captive=input("Captive: ")
+    eventDate=input("Event Date (YYYY-MM-DD): ")
+    eventTime=input("Event Time: ")
+    decimalLatitude=input("Decimal Latitude: ")
+    decimalLongitude=input("Decimal Longitude: ")
+    coordinateUncertaintyInMeters=input("Coordinate Uncertainty in Meters: ")
+    countryCode=input("Country Code: ")
+    stateProvince=input("State Province: ")
+    scientificName=input("Scientific Name: ")
+    taxonRank=input("Taxon Rank: ")
+    kingdom=input("Kingdom: ")
+    family=input("Family: ")
+    genus=input("Genus: ")
+    license=input("License: ")
+    sex=input("Sex: ")
+    lifeStage=input("Life Stage: ")
+    vitality=input("Vitality: ")
+
+    # Uso la función de creación de estructura para generar un nuevo registro con los datos ingresados
+    registro = crear_estructura_registro_inaturalist(
+        basisOfRecord=basisOfRecord,
+        institutionCode=institutionCode,
+        recordedBy=recordedBy,
+        identifiedBy=identifiedBy,
+        captive=captive,
+        eventDate=eventDate,
+        eventTime=eventTime,
+        decimalLatitude=decimalLatitude,
+        decimalLongitude=decimalLongitude,
+        coordinateUncertaintyInMeters=coordinateUncertaintyInMeters,
+        countryCode=countryCode,
+        stateProvince=stateProvince,
+        scientificName=scientificName,
+        taxonRank=taxonRank,
+        kingdom=kingdom,
+        family=family,
+        genus=genus,
+        license=license,
+        sex=sex,
+        lifeStage=lifeStage,
+        vitality=vitality
+    )
+
+    return registro
+
 #---------------------FUNCIONES PRINCIPALES---------------------#
 
-# Se crea estructura que representa un registro del dataset
-def crear_estructura_registro(
-    license="",
-    modified="",
-    institutionCode="",
-    collectionCode="",
-    basisOfRecord="",
-    occurrenceStatus="",
-    recordedBy="",
-    catalogNumber="",
-    eventDate="",
-    year="",
-    month="",
-    day="",
-    countryCode="",
-    stateProvince="",
-    county="",
-    locality="",
-    decimalLatitude="",
-    decimalLongitude="",
-    coordinateUncertaintyInMeters="",
-    scientificName="",
-    kingdom="",
-    phylum="",
-    taxonClass="",
-    order="",
-    family="",
-    genus="",
-    specificEpithet="",
-    taxonRank="",
-    vernacularName=""
+def crear_estructura_registro_generica(campos):
+    """
+    Crea y retorna un diccionario con los campos recibidos, inicializados con string vacío si no tienen valor.
+    """
+    return {campo: valor for campo, valor in campos.items()}
+
+
+def crear_estructura_registro_xeno_canto(
+    basisOfRecord="", collectionCode="", genus="", scientificName="",
+    taxonRank="", kingdom="", family="", longitudeDecimal="",
+    latitudeDecimal="", country="", locality="", recordedBy="",
+    eventDate="", eventTime="", behavior="", sex="", lifeStage="", license=""
 ):
     """
-    Crea y retorna un diccionario con los campos del dataset inicializados con los valores recibidos.
-    Los campos no indicados quedan vacíos por defecto.
+    Crea y retorna un diccionario con los campos del dataset Xeno-canto.
     """
-    
-  
-    # Devuelve un diccionario con los campos principales del dataset
-    return {
-        "license": license,
-        "modified": modified,
-        "institutionCode": institutionCode,
-        "collectionCode": collectionCode,
-        "basisOfRecord": basisOfRecord,
-        "occurrenceStatus": occurrenceStatus,
-        "recordedBy": recordedBy,
-        "catalogNumber": catalogNumber,
-        "eventDate": eventDate,
-        "year": year,
-        "month": month,
-        "day": day,
-        "countryCode": countryCode,
-        "stateProvince": stateProvince,
-        "county": county,
-        "locality": locality,
-        "decimalLatitude": decimalLatitude,
-        "decimalLongitude": decimalLongitude,
-        "coordinateUncertaintyInMeters": coordinateUncertaintyInMeters,
-        "scientificName": scientificName,
-        "kingdom": kingdom,
-        "phylum": phylum,
-        "class": taxonClass,
-        "order": order,
-        "family": family,
-        "genus": genus,
-        "specificEpithet": specificEpithet,
-        "taxonRank": taxonRank,
-        "vernacularName": vernacularName,
-    }
+    return crear_estructura_registro_generica(locals())
+
+
+def crear_estructura_registro_inaturalist(
+    basisOfRecord="", institutionCode="", recordedBy="", identifiedBy="",
+    captive="", eventDate="", eventTime="", decimalLatitude="",
+    decimalLongitude="", coordinateUncertaintyInMeters="", countryCode="",
+    stateProvince="", scientificName="", taxonRank="", kingdom="",
+    family="", genus="", license="", sex="", lifeStage="", vitality=""
+):
+    """
+    Crea y retorna un diccionario con los campos del dataset iNaturalist.
+    """
+    return crear_estructura_registro_generica(locals())
+
+def crear_estructura_registro_iadiza(
+    license="", modified="", institutionCode="", collectionCode="",
+    basisOfRecord="", occurrenceStatus="", recordedBy="", catalogNumber="",
+    eventDate="", year="", month="", day="",
+    countryCode="", stateProvince="", county="", locality="",
+    decimalLatitude="", decimalLongitude="", coordinateUncertaintyInMeters="", scientificName="",
+    kingdom="", phylum="", taxonClass="", order="",
+    family="", genus="", specificEpithet="", taxonRank="", vernacularName=""
+):
+    """
+    Crea y retorna un diccionario con los campos del dataset IADIZA.
+    """
+    campos = locals()
+    campos["class"] = campos.pop("taxonClass")
+    return crear_estructura_registro_generica(campos)
 
 COLUMNAS_ID = {"gbifID", "occurrenceID", "catalogNumber"}
 
@@ -137,152 +219,217 @@ def crear_registro_vacio(columnas):
 CODIGOS_PAIS_VALIDOS = {"AR","CL","BR","UY","PY","BO","PE","EC","CO","VE"}
 FORMATO_FECHA = "%Y-%m-%d"
 
-def validar_registro(registro):
+def validar_registro_iadiza(registro):
     """
-    Valida los campos de un registro y retorna una tupla (es_valido, errores).
-    Si es_valido es False, errores contiene la lista de problemas encontrados.
+    Valida los campos de un registro IADIZA.
+    Reutiliza las funciones auxiliares ya desarrolladas.
     """
     errores = []
 
-    # Validación de coordenadas
+    # Coordenadas
     lat = registro.get("decimalLatitude", "")
     lon = registro.get("decimalLongitude", "")
-
     if lat != "" and not es_coordenada_valida(lat, -90, 90):
         errores.append(f"decimalLatitude inválida: '{lat}'. Debe estar entre -90 y 90")
-
     if lon != "" and not es_coordenada_valida(lon, -180, 180):
         errores.append(f"decimalLongitude inválida: '{lon}'. Debe estar entre -180 y 180")
 
-    # Validación de fecha
+    # Fecha
     event_date = registro.get("eventDate", "").strip()
     if event_date != "":
-        es_valida, fecha = es_fecha_valida(event_date, FORMATO_FECHA)
+        es_valida, fecha = validar_y_convertir_fecha(event_date, FORMATO_FECHA)
         if not es_valida:
-            errores.append(
-                f"eventDate inválida: '{event_date}' "
-                f"Formato esperado: {FORMATO_FECHA} (ej: 2024-03-15)"
-            )
-        elif fecha is not None:
-            from datetime import datetime
-            if fecha > datetime.now():
-                errores.append(
-                    f"eventDate inválida: '{event_date}'. La fecha no puede ser futura"
-                )
+            errores.append(f"eventDate inválida: '{event_date}'. Formato esperado: {FORMATO_FECHA}")
+        elif fecha is not None and fecha > datetime.now():
+            errores.append(f"eventDate inválida: '{event_date}'. La fecha no puede ser futura")
 
-    # Validación de countryCode
+    # countryCode
     country_code = registro.get("countryCode", "").strip().upper()
     if country_code != "" and country_code not in CODIGOS_PAIS_VALIDOS:
-        errores.append(
-            f"countryCode inválido: '{country_code}' "
-            f"Valores permitidos: {CODIGOS_PAIS_VALIDOS} "
-        )
-    
-    # Validación de incertidumbre de coordenada
+        errores.append(f"countryCode inválido: '{country_code}'. Valores permitidos: {CODIGOS_PAIS_VALIDOS}")
+
+    # Incertidumbre
     incertidumbre = registro.get("coordinateUncertaintyInMeters", "").strip()
     if incertidumbre != "" and not es_incertidumbre_valida(incertidumbre):
-        errores.append(
-            f"coordinateUncertaintyInMeters inválida: '{incertidumbre}' "
-            "Debe ser un número entre 0 y 100"
-        )
+        errores.append(f"coordinateUncertaintyInMeters inválida: '{incertidumbre}'. Debe ser un número entre 0 y 100")
 
-    # Validar que occurrenceStatus tenga un valor conocido si está presente
+    # occurrenceStatus
     status = registro.get("occurrenceStatus", "").strip()
-    valores_validos_status = {"PRESENT", "ABSENT"}
-    if status != "" and status.upper() not in valores_validos_status:
-        errores.append(
-            f"occurrenceStatus inválido: '{status}' "
-            f"Valores permitidos: {valores_validos_status} "
-        )
+    if status != "" and status.upper() not in {"PRESENT", "ABSENT"}:
+        errores.append(f"occurrenceStatus inválido: '{status}'. Valores permitidos: PRESENT, ABSENT")
 
-    es_valido = len(errores) == 0
-    return es_valido, errores
+    return len(errores) == 0, errores
 
 
-# Recorre el dataset y retorna el mayor catalogNumber encontrado
-@manejar_archivo_no_encontrado
-def max_catalog_number(ruta_archivo, separador="\t"):
+def validar_registro_xeno_canto(registro):
     """
-    Recorre el dataset y retorna el mayor catalogNumber encontrado.
+    Valida los campos de un registro Xeno-canto.
+    Reutiliza las funciones auxiliares ya desarrolladas.
+    """
+    errores = []
+
+    # Coordenadas (Xeno-canto usa nombres distintos)
+    lat = registro.get("latitudeDecimal", "")
+    lon = registro.get("longitudeDecimal", "")
+    if lat != "" and not es_coordenada_valida(lat, -90, 90):
+        errores.append(f"latitudeDecimal inválida: '{lat}'. Debe estar entre -90 y 90")
+    if lon != "" and not es_coordenada_valida(lon, -180, 180):
+        errores.append(f"longitudeDecimal inválida: '{lon}'. Debe estar entre -180 y 180")
+
+    # Fecha
+    event_date = registro.get("eventDate", "").strip()
+    if event_date != "":
+        es_valida, fecha = validar_y_convertir_fecha(event_date, FORMATO_FECHA)
+        if not es_valida:
+            errores.append(f"eventDate inválida: '{event_date}'. Formato esperado: {FORMATO_FECHA}")
+        elif fecha is not None and fecha > datetime.now():
+            errores.append(f"eventDate inválida: '{event_date}'. La fecha no puede ser futura")
+
+    return len(errores) == 0, errores
+
+
+def validar_registro_inaturalist(registro):
+    """
+    Valida los campos de un registro iNaturalist.
+    Reutiliza las funciones auxiliares ya desarrolladas.
+    """
+    errores = []
+
+    # Coordenadas
+    lat = registro.get("decimalLatitude", "")
+    lon = registro.get("decimalLongitude", "")
+    if lat != "" and not es_coordenada_valida(lat, -90, 90):
+        errores.append(f"decimalLatitude inválida: '{lat}'. Debe estar entre -90 y 90")
+    if lon != "" and not es_coordenada_valida(lon, -180, 180):
+        errores.append(f"decimalLongitude inválida: '{lon}'. Debe estar entre -180 y 180")
+
+    # Fecha
+    event_date = registro.get("eventDate", "").strip()
+    if event_date != "":
+        es_valida, fecha = validar_y_convertir_fecha(event_date, FORMATO_FECHA)
+        if not es_valida:
+            errores.append(f"eventDate inválida: '{event_date}'. Formato esperado: {FORMATO_FECHA}")
+        elif fecha is not None and fecha > datetime.now():
+            errores.append(f"eventDate inválida: '{event_date}'. La fecha no puede ser futura")
+
+    # countryCode
+    country_code = registro.get("countryCode", "").strip().upper()
+    if country_code != "" and country_code not in CODIGOS_PAIS_VALIDOS:
+        errores.append(f"countryCode inválido: '{country_code}'. Valores permitidos: {CODIGOS_PAIS_VALIDOS}")
+
+    # Incertidumbre
+    incertidumbre = registro.get("coordinateUncertaintyInMeters", "").strip()
+    if incertidumbre != "" and not es_incertidumbre_valida(incertidumbre):
+        errores.append(f"coordinateUncertaintyInMeters inválida: '{incertidumbre}'. Debe ser un número entre 0 y 100")
+
+    return len(errores) == 0, errores
+
+
+@manejar_archivo_no_encontrado
+def max_numero_dataset(ruta_archivo, separador, columna, extraer_numero):
+    """
+    Recorre el dataset y retorna el mayor número encontrado en la columna indicada,
+    usando la función extraer_numero para obtener el número de cada valor.
     """
     max_num = 0
-    with open(ruta_archivo, "r", encoding = "utf-8", newline = "") as f:
-        reader = csv.DictReader(f, delimiter = separador)
+    with open(ruta_archivo, "r", encoding="utf-8", newline="") as f:
+        reader = csv.DictReader(f, delimiter=separador)
         for fila in reader:
-            catalog = fila.get("catalogNumber", "").strip()
-            if catalog.isdigit():
-                num = int(catalog)
-                if num > max_num:
-                    max_num = num
+            valor = fila.get(columna, "").strip()
+            num = extraer_numero(valor)
+            if num is not None and num > max_num:
+                max_num = num
     return max_num
 
+def max_catalog_number_iadiza(ruta_archivo, separador="\t"):
+    return max_numero_dataset(ruta_archivo, separador, "catalogNumber",
+        lambda v: int(v) if v.isdigit() else None)
 
-# Recibe estructura del inciso 4.A y retorna un diccionario listo para añadir al CSV
-def preparar_estructura(registro, ruta_archivo, columnas, nombre_dataset):
+def max_catalog_number_xeno_canto(ruta_archivo, separador=","):
+    return max_numero_dataset(ruta_archivo, separador, "catalogNumber",
+        lambda v: int(v[2:]) if v.startswith("XC") and v[2:].isdigit() else None)
+
+def max_catalog_number_inaturalist(ruta_archivo, separador=","):
+    return max_numero_dataset(ruta_archivo, separador, "id",
+        lambda v: int(v) if v.isdigit() else None)
+
+
+def preparar_estructura_generica(registro, ruta_archivo, columnas, separador, obtener_max_num, construir_ids):
     """
-    Toma un registro y lo completa con todas las columnas del dataset, asignando un nuevo catalogNumber y occurrenceID correlativos.
+    Toma un registro y lo completa con todas las columnas del dataset,
+    delegando la obtención del máximo número y la construcción de IDs a funciones específicas.
     """
-    max_num = max_catalog_number(ruta_archivo)
+    max_num = obtener_max_num(ruta_archivo, separador)
     nuevo_num = max_num + 1
-    
-    # Se usa zfill para rellenar el número con ceros a la izquierda respetando el patrón de ocurrenceID
-    nuevo_catalog = str(nuevo_num).zfill(6) # Lo rellena hasta tener 6 dígitos
-    nuevo_occurrence_id = f"{nombre_dataset}:COI:{nuevo_catalog}"
 
-    # Se arma el registro completo con todas las columnas del dataset
-    registro_completo = {col: "" for col in columnas}    
-
-    # Se copian los campos del registro recibido
+    registro_completo = {col: "" for col in columnas}
     for campo, valor in registro.items():
         if campo in registro_completo:
             registro_completo[campo] = valor
-    
-    # Se setean los IDs
-    registro_completo["gbifID"] = "" # Asignado externamente por GBIF
-    registro_completo["occurrenceID"] = nuevo_occurrence_id
-    registro_completo["catalogNumber"] = nuevo_catalog
+
+    ids = construir_ids(nuevo_num)
+    registro_completo.update(ids)
 
     return registro_completo
 
-# Inserta un nuevo registro correctamente formateado al final del dataset conservando la estructura original 
+def preparar_estructura_iadiza(registro, ruta_archivo, columnas, nombre_dataset, separador="\t"):
+    return preparar_estructura_generica(
+        registro, ruta_archivo, columnas, separador,
+        obtener_max_num=lambda r, s: max_catalog_number_iadiza(r, s),
+        construir_ids=lambda n: {
+            "gbifID": "",
+            "occurrenceID": f"{nombre_dataset}:COI:{str(n).zfill(6)}",
+            "catalogNumber": str(n).zfill(6)
+        }
+    )
+
+def preparar_estructura_xeno_canto(registro, ruta_archivo, columnas, separador=","):
+    return preparar_estructura_generica(
+        registro, ruta_archivo, columnas, separador,
+        obtener_max_num=lambda r, s: max_catalog_number_xeno_canto(r, s),
+        construir_ids=lambda n: {
+            "id": f"{n}@XC",
+            "occurrenceID": f"https://data.biodiversitydata.nl/xeno-canto/observation/XC{n}",
+            "catalogNumber": f"XC{n}"
+        }
+    )
+
+def preparar_estructura_inaturalist(registro, ruta_archivo, columnas, separador=","):
+    return preparar_estructura_generica(
+        registro, ruta_archivo, columnas, separador,
+        obtener_max_num=lambda r, s: max_catalog_number_inaturalist(r, s),
+        construir_ids=lambda n: {
+            "id": str(n),
+            "occurrenceID": f"https://www.inaturalist.org/observations/{n}",
+            "catalogNumber": str(n)
+        }
+    )
+
 @manejar_archivo_no_encontrado
-def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset, separador="\t"):
+def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset, preparar_fn, validar_fn, separador="\t"):
     """
     Valida e inserta un único registro al final del dataset, guardando el resultado en un nuevo archivo.
     Si el registro es inválido no se realiza ninguna inserción.
     """
-    # Valida el registro antes de intentar insertarlo, mostrando los errores encontrados si no es válido
-    es_valido, errores = validar_registro(registro)
+    es_valido = validar_fn(registro)
 
     if not es_valido:
         registrar_operacion(nombre_dataset, "INSERT", 0, error=True)
         return  
-    # Corta la función si hay errores
-    # Si el registro no es válido se registra la operación con error y se corta la función 
 
-    
-    # Abre el dataset original en modo lectura
     with open(ruta_origen, "r", encoding="utf-8", newline="") as f_in:
-
         reader = csv.DictReader(f_in, delimiter=separador)
         columnas = reader.fieldnames
-        # Guarda el nombre de las columnas
 
-        # Genera el registro listo para insertar, asignando un nuevo catalogNumber y occurrenceID
-        registro_completo = preparar_estructura(registro, ruta_origen, columnas, nombre_dataset)
+        registro_completo = preparar_fn(registro, ruta_origen, columnas)
 
-        # Abre el archivo destino en modo escritura y copia el contenido del original, luego agrega el nuevo registro
         with open(ruta_destino, "w", encoding="utf-8", newline="") as f_out:
             writer = csv.DictWriter(f_out, fieldnames=columnas, delimiter=separador)
-
             writer.writeheader()
-            # Escribe la primera fila (nombre de columnas)
 
-            # Copia todas las filas del dataset original
             for fila in reader:
                 writer.writerow(fila)
 
-            # Agrega el nuevo registro al final del archivo
             writer.writerow(registro_completo)
 
     registrar_operacion(nombre_dataset, "INSERT", 1)
@@ -290,92 +437,51 @@ def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset, separ
 
 # Función para insertar múltiples registros ingresados por teclado
 @manejar_archivo_no_encontrado
-def insertar_multiples_registros(ruta_origen, ruta_destino, nombre_dataset, separador="\t"):
+def insertar_multiples_registros(ruta_origen, ruta_destino, nombre_dataset, preparar_fn, validar_fn, ingresar_fn, separador="\t"):
     """
     Solicita registros por teclado en un loop, valida cada uno y los inserta al final del dataset.
     La carga termina cuando el usuario deja el campo license vacío.
     """
     registros = []
-    # Lista donde se guardarán los registros válidos
 
     print("Carga de múltiples registros (dejar vacío 'license' para terminar)")
 
-    # Loop para ingresar varios registros por teclado
     while True:
-        registro = ingresar_registro_por_teclado()
-        # Pide datos al usuario para crear un nuevo registro
+        registro = ingresar_fn()
 
-        # Condición de corte, si no se escribe license se termina la carga de registros
         if registro.get("license", "") == "":
             break
         
-        # Valida cada registro ingresado
-        es_valido, errores = validar_registro(registro)
+        es_valido, errores = validar_fn(registro)
 
         if es_valido:
             registros.append(registro)
             print("Registro agregado\n")
-            #Si es válido se agrega a la lista de registros
         else:
             print("Registro inválido:")
             for e in errores:
                 print("-", e)
-                # Si no es válido se muestran los errores y no se agrega a la lista
             print()
 
-    # Si no se ingresó ningún registro válido se termina la función
     if not registros:
         registrar_operacion(nombre_dataset, "INSERT", 0, error=True)
         return
-        # Si no se ingresó ningún registro válido se registra la operación con error y se corta la función   
 
-    # Abrimos dataset original
     with open(ruta_origen, "r", encoding="utf-8", newline="") as f_in:
-
         reader = csv.DictReader(f_in, delimiter=separador)
         columnas = reader.fieldnames
-        # Nombre de las columnas del dataset
+        filas = list(reader)
 
-        filas = list(reader)  
-        # Guardamos todas las filas originales en memoria
-
-    max_num = max_catalog_number(ruta_origen, separador)
-    # Calculo el último catalogNumber una sola vez para luego asignar nuevos números a los registros ingresados, evitando recorrer el dataset repetidamente
-
-    # Creo el nuevo archivo
     with open(ruta_destino, "w", encoding="utf-8", newline="") as f_out:
-
         writer = csv.DictWriter(f_out, fieldnames=columnas, delimiter=separador)
         writer.writeheader()
-        # Escribo los encabezados del dataset
 
         for fila in filas:
             writer.writerow(fila)
-            # Copio el dataset original al nuevo archivo
 
-        # Agrego los nuevos registros al final del archivo
         for i, registro in enumerate(registros, start=1):
-
-            # Genero nuevos IDs para cada registro sin repetir
-            nuevo_num = max_num + i
-            nuevo_catalog = str(nuevo_num).zfill(6)
-            nuevo_occurrence_id = f"{nombre_dataset}:COI:{nuevo_catalog}"
-
-            registro_completo = {col: "" for col in columnas}
-            #Creo estructura completa con todas las columnas del dataset
-
-            for campo, valor in registro.items():
-                if campo in registro_completo:
-                    registro_completo[campo] = valor
-                # Copio los datos del usuario
-
-            registro_completo["gbifID"] = ""
-            registro_completo["occurrenceID"] = nuevo_occurrence_id
-            registro_completo["catalogNumber"] = nuevo_catalog
-            # Seteo los IDs para cada registro
-
+            registro_completo = preparar_fn(registro, ruta_origen, columnas)
             writer.writerow(registro_completo)
-            # Escribo el registro en el nuevo archivo
 
     registrar_operacion(nombre_dataset, "INSERT", len(registros))
     # Si se ingresaron registros válidos se registra la operación con éxito indicando la cantidad de registros insertados

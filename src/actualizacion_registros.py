@@ -1,44 +1,56 @@
 import csv
 from pathlib import Path
 from logger import registrar_operacion
-from validador import es_coordenada_valida, es_fecha_valida, es_incertidumbre_valida
+from validador import es_coordenada_valida, validar_y_convertir_fecha, es_incertidumbre_valida
 from datetime import datetime
+from utils import manejar_archivo_no_encontrado
 FORMATO_FECHA = "%Y-%m-%d"
 
-def buscar_registros(ruta_archivo, filtros, separador="\t"):
+def buscar_registros_generica(ruta_archivo, filtros, separador="\t"):
+    """ 
+    Busca y retorna registros de un dataset que cumplan con los criterios de filtrado 
     """
-        Busca y retorna registros de un dataset que cumplan con los criterios de filtrado
-    """
-    registros_encontrados = []  
-    # Lista donde voy a guardar resultados
-    try:
-        with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
+    registros_encontrados = []
+    
+    with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
             lector = csv.DictReader(archivo, delimiter=separador)
+            
+            #Se recorre cada fila del dataset
+            for fila in lector:
+                cumple_filtros = True
+                
+                #Se verifica si la fila cumple con todos los filtros del diccionario
+                for columna, valor_buscado in filtros.items():
 
-            for fila in lector:  
-            # Recorro todo el dataset
-
-                cumple_condicion = True  
-                # Asumo que cumple
-
-                # Recorro los filtros que se pasaron por parámetro
-                for columna, valor in filtros.items():
-
-                    # Comparo valor del CSV con el filtro
-                    if fila.get(columna, "").strip() != str(valor).strip():
-                        cumple_condicion = False
+                    if fila.get(columna) != str(valor_buscado):
+                        cumple_filtros = False
                         break  
-                        # Si no cumple, corto el bucle
-
-                if cumple_condicion:
+                
+                #Si la fila pasó todos los filtros, se agrega los resultados
+                if cumple_filtros:
                     registros_encontrados.append(fila)
-                    # Si cumple todas las condiciones, guardo el registro en la lista de resultados
-    except FileNotFoundError:
-        raise
-
+        
     return registros_encontrados
 
-def actualizar_un_campo(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor, nombre_dataset, separador="\t"):
+def buscar_registros_iadiza(ruta_archivo, filtros):
+    """
+        Busca registros en el dataset de IADIZA utilizando tabulaciones como separador
+    """
+    return buscar_registros_generica(ruta_archivo, filtros, separador="\t")
+
+def buscar_registros_xeno_canto(ruta_archivo, filtros):
+    """
+        Busca registros en el dataset de XENO utilizando comas como separador
+    """
+    return buscar_registros_generica(ruta_archivo, filtros, separador=",")
+
+def buscar_registros_inaturalist(ruta_archivo, filtros):
+    """
+        Busca registros en el dataset de INAT utilizando comas como separador
+    """
+    return buscar_registros_generica(ruta_archivo, filtros, separador=",")
+
+def actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor, nombre_dataset, separador="\t", columna_id="occurrenceID"):
     """
         Actualiza un campo especifico de un registro basado en su ID y genera un nuevo archivo con la actualización
     """
@@ -56,7 +68,7 @@ def actualizar_un_campo(ruta_original, ruta_nueva, id_registro, columna, nuevo_v
             escritor.writeheader()
 
             for fila in lector:
-                if fila.get("occurrenceID","").strip() == str(id_registro).strip():
+                if fila.get(columna_id, "").strip() == str(id_registro).strip():
                     fila[columna] = nuevo_valor
                     registros_actualizados += 1
             
@@ -65,11 +77,24 @@ def actualizar_un_campo(ruta_original, ruta_nueva, id_registro, columna, nuevo_v
             if registros_actualizados > 0:
                 registrar_operacion(nombre_dataset, "UPDATE", registros_actualizados)
             else:
-                registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
+                registrar_operacion(nombre_dataset, "UPDATE", registros_actualizados, error=(registros_actualizados == 0))
     except FileNotFoundError:
         raise
 
-    return registros_actualizados
+    return registros_actualizados > 0 
+
+def actualizar_un_campo_iadiza(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor):
+    return actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor,
+                                        nombre_dataset="iadiza", separador="\t")
+
+def actualizar_un_campo_xeno_canto(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor):
+    return actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor,
+                                        nombre_dataset="xeno_canto", separador=",")
+
+def actualizar_un_campo_inaturalist(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor):
+    return actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor,
+                                        nombre_dataset="inaturalist", separador=",")
+
 
 def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modificaciones, nombre_dataset,separador="\t", columna_id="occurrenceID"):
     """
@@ -99,12 +124,12 @@ def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modifica
             if registros_actualizados > 0:
                 registrar_operacion(nombre_dataset, "UPDATE", registros_actualizados)
             else:
-                 registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
+                registrar_operacion(nombre_dataset, "UPDATE", registros_actualizados, error=(registros_actualizados == 0))
 
     except FileNotFoundError:
         raise
 
-    return registros_actualizados
+    return registros_actualizados > 0
 
 
 def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro, modificaciones, nombre_dataset, separador="\t", columna_id="occurrenceID"):
@@ -127,7 +152,7 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
             if not es_coordenada_valida(str(nuevo_valor), -180, 180):
                 errores.append(f"decimalLongitude inválida: '{nuevo_valor}'")
         elif columna == "eventDate":
-            es_valida, fecha = es_fecha_valida(str(nuevo_valor), FORMATO_FECHA)
+            es_valida, fecha = validar_y_convertir_fecha(str(nuevo_valor), FORMATO_FECHA)
             if not es_valida:
                 errores.append(f"eventDate inválida: '{nuevo_valor}'")
             elif fecha and fecha > datetime.now():
@@ -137,6 +162,7 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
                 errores.append(f"coordinateUncertaintyInMeters inválida: '{nuevo_valor}'")
     
     #Recién acá se abren los archivos y se recorren las filas
+    registros_actualizados = 0    
     registros_actualizados = 0
     #Contador en lugar de booleano para poder registrar cantidad de registros actualizados
 
@@ -168,12 +194,12 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
         if registros_actualizados > 0:
             registrar_operacion(nombre_dataset, "UPDATE", registros_actualizados)
         else:
-            registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
+            registrar_operacion(nombre_dataset, "UPDATE", registros_actualizados, error=(registros_actualizados == 0))
 
     except FileNotFoundError:
         raise
 
-    return registros_actualizados
+    return registros_actualizados > 0
 
 
 def actualizar_un_campo_validando(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor, nombre_dataset,separador="\t"):
@@ -185,4 +211,44 @@ def actualizar_un_campo_validando(ruta_original, ruta_nueva, id_registro, column
 
     return actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro, modificaciones, nombre_dataset, separador)
 
+def actualizar_multiples_campos_iadiza(ruta_original, ruta_nueva, id_registro, modificaciones):
+    """
+    Actualiza múltiples campos de un registro en el dataset IADIZA.
+    """
+    return actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modificaciones,
+                                       nombre_dataset="iadiza", separador="\t")
 
+def actualizar_multiples_campos_xeno_canto(ruta_original, ruta_nueva, id_registro, modificaciones):
+    """
+    Actualiza múltiples campos de un registro en el dataset Xeno-canto.
+    """
+    return actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modificaciones,
+                                       nombre_dataset="xeno_canto", separador=",")
+
+def actualizar_multiples_campos_inaturalist(ruta_original, ruta_nueva, id_registro, modificaciones):
+    """
+    Actualiza múltiples campos de un registro en el dataset iNaturalist.
+    """
+    return actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modificaciones,
+                                       nombre_dataset="inaturalist", separador=",")
+
+def actualizar_multiples_campos_validando_iadiza(ruta_original, ruta_nueva, id_registro, modificaciones):
+    """
+    Actualiza múltiples campos validados de un registro en el dataset IADIZA.
+    """
+    return actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro, modificaciones,
+                                                  nombre_dataset="iadiza", separador="\t")
+
+def actualizar_multiples_campos_validando_xeno_canto(ruta_original, ruta_nueva, id_registro, modificaciones):
+    """
+    Actualiza múltiples campos validados de un registro en el dataset Xeno-canto.
+    """
+    return actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro, modificaciones,
+                                                  nombre_dataset="xeno_canto", separador=",")
+
+def actualizar_multiples_campos_validando_inaturalist(ruta_original, ruta_nueva, id_registro, modificaciones):
+    """
+    Actualiza múltiples campos validados de un registro en el dataset iNaturalist.
+    """
+    return actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro, modificaciones,
+                                                  nombre_dataset="inaturalist", separador=",")
