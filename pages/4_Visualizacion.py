@@ -60,7 +60,7 @@ def cantidad_registros():
         columna_agrupacion = 'locality' 
         etiqueta_eje = 'Localidad'
     conteos = df_actual[columna_agrupacion].value_counts().head(num_elementos)
-    generar_grafico_generico(conteos.index, conteos.values, tipo_grafico="bar", titulo=f"Top {num_elementos} {etiqueta_eje.lower()}s con más observaciones", x_etiqueta=etiqueta_eje, y_etiqueta="Cantidad de Registros", color="#4ddb34")
+    generar_grafico_generico(conteos.index, conteos.values, tipo_grafico="bar", titulo=f"Top {num_elementos} {etiqueta_eje.lower()}s con más observaciones", x_etiqueta=etiqueta_eje, y_etiqueta="Cantidad de Registros", color="#4ddb34", figsize=(12, 6))
 
 
 
