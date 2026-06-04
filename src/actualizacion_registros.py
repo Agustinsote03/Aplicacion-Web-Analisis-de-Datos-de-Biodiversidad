@@ -205,4 +205,44 @@ def actualizar_un_campo_validando(ruta_original, ruta_nueva, id_registro, column
 
     return actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro, modificaciones, nombre_dataset, separador)
 
+def actualizar_multiples_campos_iadiza(ruta_original, ruta_nueva, id_registro, modificaciones):
+    """
+    Actualiza múltiples campos de un registro en el dataset IADIZA.
+    """
+    return actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modificaciones,
+                                       nombre_dataset="iadiza", separador="\t")
 
+def actualizar_multiples_campos_xeno_canto(ruta_original, ruta_nueva, id_registro, modificaciones):
+    """
+    Actualiza múltiples campos de un registro en el dataset Xeno-canto.
+    """
+    return actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modificaciones,
+                                       nombre_dataset="xeno_canto", separador=",")
+
+def actualizar_multiples_campos_inaturalist(ruta_original, ruta_nueva, id_registro, modificaciones):
+    """
+    Actualiza múltiples campos de un registro en el dataset iNaturalist.
+    """
+    return actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modificaciones,
+                                       nombre_dataset="inaturalist", separador=",")
+
+def actualizar_multiples_campos_validando_iadiza(ruta_original, ruta_nueva, id_registro, modificaciones):
+    """
+    Actualiza múltiples campos validados de un registro en el dataset IADIZA.
+    """
+    return actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro, modificaciones,
+                                                  nombre_dataset="iadiza", separador="\t")
+
+def actualizar_multiples_campos_validando_xeno_canto(ruta_original, ruta_nueva, id_registro, modificaciones):
+    """
+    Actualiza múltiples campos validados de un registro en el dataset Xeno-canto.
+    """
+    return actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro, modificaciones,
+                                                  nombre_dataset="xeno_canto", separador=",")
+
+def actualizar_multiples_campos_validando_inaturalist(ruta_original, ruta_nueva, id_registro, modificaciones):
+    """
+    Actualiza múltiples campos validados de un registro en el dataset iNaturalist.
+    """
+    return actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro, modificaciones,
+                                                  nombre_dataset="inaturalist", separador=",")
