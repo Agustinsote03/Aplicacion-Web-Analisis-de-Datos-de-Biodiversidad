@@ -150,7 +150,9 @@ def frecuencia_valores_columna(ruta_archivo, nombre_columna, separador="\t"):
 
         for fila in reader:
             valor = fila[nombre_columna]
-
+            if valor == "" or valor is None:
+                valor = "(nulo)"
+                
             if valor in frecuencias:
                 frecuencias[valor] += 1
             else:
