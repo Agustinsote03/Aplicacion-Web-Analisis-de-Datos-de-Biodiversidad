@@ -148,7 +148,7 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
             if not es_coordenada_valida(str(nuevo_valor), -180, 180):
                 errores.append(f"decimalLongitude inválida: '{nuevo_valor}'")
         elif columna == "eventDate":
-            es_valida, fecha = es_fecha_valida(str(nuevo_valor), FORMATO_FECHA)
+            es_valida, fecha = validar_y_convertir_fecha(str(nuevo_valor), FORMATO_FECHA)
             if not es_valida:
                 errores.append(f"eventDate inválida: '{nuevo_valor}'")
             elif fecha and fecha > datetime.now():
