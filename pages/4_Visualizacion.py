@@ -10,6 +10,7 @@ from utils import calcular_porcentaje_nulos_logica
 
 st.title("Visualización de Datos de Biodiversidad")
 
+#--------------------------------------------------Funciones Auxiliares-------------------------------------------------------#
 def generar_grafico_generico(datos_x, datos_y, tipo_grafico="bar", titulo="", x_etiqueta="", y_etiqueta="", **kwargs):
 
     """
@@ -36,14 +37,16 @@ def generar_grafico_generico(datos_x, datos_y, tipo_grafico="bar", titulo="", x_
     fig.tight_layout()
     st.pyplot(fig)
 
-#Control: se verifica que haya un dataset cargado en la sesión
+
+#--------------------------------Control: se verifica que haya un dataset cargado en la sesión--------------------------------#
+
 if "dataset_actual" not in st.session_state or st.session_state["dataset_actual"] is None:
     st.warning("Selecciona un dataset desde la barra lateral para visualizar los datos.")
     st.stop()
 df_actual = st.session_state["dataset_actual"]
 
 
-
+#--------------------------------------------------Funciones Principales-------------------------------------------------------#
 
 #Ejericio 3.A: Cantidad de observaciones por ubicación
 def cantidad_registros(df_actual):
@@ -170,6 +173,8 @@ def mostrar_grafico_completitud(df_actual):
         figsize=(10, max(8, len(columnas) * 0.3)),
         labelsize=7
     )
+
+#Ejercicio 3.E
 
 
 cantidad_registros(df_actual)
