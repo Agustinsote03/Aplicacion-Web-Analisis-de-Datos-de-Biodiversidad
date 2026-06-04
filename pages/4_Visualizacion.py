@@ -1,7 +1,13 @@
 import streamlit as st 
 import matplotlib.pyplot as plt
 import pandas as pd
-from src.dataset_reader import porcentaje_nulos_por_columna
+from pathlib import Path
+import sys
+
+#Importación de funciones
+sys.path.append(str(Path(__file__).parent.parent / "src"))
+from utils import calcular_porcentaje_nulos_logica
+
 st.title("Visualización de Datos de Biodiversidad")
 
 
@@ -116,20 +122,32 @@ st.pyplot(fig)
 
 #Ejercicio 3.D
 
-st.subheader("Porcentaje de registros nulos por columna")
-ruta_archivo = st.session_state["dataset_actual"]
-diccionario_nulos = porcentaje_nulos_por_columna(ruta_archivo)
-series_nulos = pd.Sereis(diccionario_nulos)
+def mostrar_grafico_completitud(nombre_archivo_dataset, separador="\t"):
+    st.subheader("Completitud de datos por columna")
+    
+    ruta_str = "processed_datasets/" + nombre_archivo_dataset
+    
+    #Se reutiliza la función del ejercicio 3.F
+    porcentaje_nulos_dict = calcular_porcentaje_nulos_logica(ruta_str, separador)
+    
+    #Se pasa a pandas para procesar el grafico 
+    porcentaje_nulos = pd.Series(porcentaje_nulos_dict)
+    
+    #Se calculan los porcentajes de registros no nulos
+    porcentaje_no_nulos = 100 - porcentaje_nulos
+    porcentaje_ordenado = porcentaje_no_nulos.sort_values(ascending=True)
+    
+    #Se grafica con Matplotlib
+    fig, ax = plt.subplots(figsize=(10, 8))
+    ax.barh(porcentaje_ordenado.index, porcentaje_ordenado.values, color='#4db6ac')
+    
+    ax.set_title("Porcentaje de completitud por columna")
+    ax.set_xlabel("Porcentaje de registros NO nulos (%)")
+    ax.set_ylabel("Columnas")
+    fig.tight_layout()
+    
+    st.pyplot(fig)
 
-#Calculamos el porcentaje de registros no nulos
-serie_completitud = 100 - series_nulos
-serie_completitud = serie_completitud.sort_values(ascending=True)
-
-fig, ax = plt.subplots(figsize=(10, 10))
-
-ax.barh(serie_completitud.index, serie_completitud.values, color="#3498db")
-ax.set_title("Porcentaje de registro no nulos por columna")
-ax.set_xlabel("Porcentaje %")
-ax.set_xlim(0, 100)
-
-st.ptplot(fig)
+nombre_dataset = st.session_state["nombre_dataset"]
+mostrar_grafico_completitud(nombre_dataset)
+#Ejercicio 3.E

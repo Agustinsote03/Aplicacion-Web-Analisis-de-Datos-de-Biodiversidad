@@ -63,4 +63,8 @@ def cantidad_registros(ruta_archivo, separador="\t"):
         for fila in reader:
             contador += 1
        
+<<<<<<< HEAD
     return contador
+=======
+    return contador
+>>>>>>> 0409cac4aea1b19f5b2c36da9635751cbd846b39
