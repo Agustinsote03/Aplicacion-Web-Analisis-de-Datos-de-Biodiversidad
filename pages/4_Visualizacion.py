@@ -10,93 +10,86 @@ from utils import calcular_porcentaje_nulos_logica
 
 st.title("Visualización de Datos de Biodiversidad")
 
+def generar_grafico_generico(datos_x, datos_y, tipo_grafico="bar", titulo="", x_etiqueta="", y_etiqueta="", **kwargs):
 
+    """
+     Crea un gráfico de Matplotlib según los argumentos recibidos y lo renderiza en Streamlit
+    """
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    if tipo_grafico == 'bar':
+        ax.bar(datos_x, datos_y, color=kwargs.get('color', '#4db6ac'))
+        plt.xticks(rotation=45)
+
+    elif tipo_grafico == 'line':
+        ax.plot(datos_x, datos_y, marker='o', color=kwargs.get('color', '#e74c3c'))
+        plt.xticks(rotation=45)
+
+    elif tipo_grafico == 'pie':
+        ax.pie(datos_y, labels=datos_x, autopct='%1.1f%%', shadow=True)
+    
+    ax.set_title(titulo)
+    if tipo_grafico != "pie":
+        ax.set_xlabel(x_etiqueta)
+        ax.set_ylabel(y_etiqueta)
+    
+
+    fig.tight_layout()
+    st.pyplot(fig)
+
+#Control: se verifica que haya un dataset cargado en la sesión
 if "dataset_actual" not in st.session_state or st.session_state["dataset_actual"] is None:
     st.warning("Selecciona un dataset desde la barra lateral para visualizar los datos.")
     st.stop()
-
-
 df_actual = st.session_state["dataset_actual"]
 
-st.header("Observaciones por ubicación")
+#Ejericio 3.A: Cantidad de observaciones por ubicación
+def cantidad_registros():
+    st.header("Observaciones por ubicacion")
+    num_elementos = st.slider("Cantidad de ubicaciones a mostrar: ", min_value=1, max_value=10, value=5)
 
-num_elementos = st.slider("Cantidad de ubicaciones a mostrar: ", min_value=1, max_value=10, value=5)
-
-#Validación automática: Si hay 1 solo país único, graficamos por provincia. Si hay más, por país.
-if 'country' in df_actual.columns and df_actual['country'].nunique() > 1:
-    columna_agrupacion = 'country'
-    etiqueta_eje = 'País'
-# Si no hay 'country' o es un solo país, verificamos si existe 'stateProvince'
-elif 'stateProvince' in df_actual.columns:
-    columna_agrupacion = 'stateProvince'
-    etiqueta_eje = 'Provincia'
-# Si tampoco existe (algunos datasets son muy básicos), usamos 'locality'
-else:
-    columna_agrupacion = 'locality' 
-    etiqueta_eje = 'Localidad'
-
-conteos = df_actual[columna_agrupacion].value_counts().head(num_elementos)
-
-#Bloque de gráfico de Matplotlib
-fig, ax = plt.subplots(figsize=(10, 6))
-ax.bar(conteos.index, conteos.values, color="#4ddb34") 
-
-# Etiquetas y título 
-ax.set_xlabel(etiqueta_eje)
-ax.set_ylabel("Cantidad de Registros")
-ax.set_title(f"Top {num_elementos} {etiqueta_eje.lower()}s con más observaciones")
-plt.xticks(rotation=45) 
-
-# Renderiza Streamlit
-st.pyplot(fig)
+    if 'country' in df_actual.columns and df_actual['country'].nunique() > 1:
+        columna_agrupacion = 'country'
+        etiqueta_eje = 'País'
+    elif 'stateProvince' in df_actual.columns:
+        columna_agrupacion = 'stateProvince'
+        etiqueta_eje = 'Provincia'
+    else:
+        columna_agrupacion = 'locality' 
+        etiqueta_eje = 'Localidad'
+    conteos = df_actual[columna_agrupacion].value_counts().head(num_elementos)
+    generar_grafico_generico(conteos.index, conteos.values, tipo_grafico="bar", titulo=f"Top {num_elementos} {etiqueta_eje.lower()}s con más observaciones", x_etiqueta=etiqueta_eje, y_etiqueta="Cantidad de Registros", color="#4ddb34")
 
 
 #Ejercicio 3.B, se va a crear un nuevo dataframe para manipular las fechas
 
-#Control: se verifica que encabezado le corresponde a la columna que contiene los IDs
+def cantidad_registros_por_anio():
+    nombre_id = df_actual.columns[0]
+    df_fechas = df_actual[['eventDate', nombre_id]].rename(columns={'eventDate': 'fecha', nombre_id: 'codigo'})
+    df_fechas['fecha'] = pd.to_datetime(df_fechas['fecha'], errors='coerce', utc=True)
+    df_fechas['anio_calculado'] = df_fechas['fecha'].dt.year
+    contador_nulos = df_fechas['anio_calculado'].isnull().sum()
 
-nombre_id = df_actual.columns[0] #Preguntar si es segura esta forma de obtener el nombre de la columna ID
-df_fechas = df_actual[['eventDate', nombre_id]].rename(columns={'eventDate': 'fecha', nombre_id: 'codigo'}) 
+    #Se limpia el dataframe
+    df_fechas = df_fechas.dropna(subset=['anio_calculado'])
 
-df_fechas['fecha'] = pd.to_datetime(df_fechas['fecha'], errors='coerce', utc= True)
-df_fechas['anio_calculado'] = df_fechas['fecha'].dt.year
-contador_nulos = df_fechas['anio_calculado'].isnull().sum()
-st.warning(f"Se encontraron {contador_nulos} registros con fechas nulas o inválidas")
+    #Se cambia el formato de las fechas a uno más simple
+    df_fechas['fecha'] = pd.to_datetime(df_fechas['fecha'], errors='coerce', utc=True)
+    df_fechas['anio_calculado'] = df_fechas['fecha'].dt.year
 
-#Se limpia el dataframe
-df_fechas = df_fechas.dropna(subset=['anio_calculado'])
+    #Se aplica un filtrado de fechas, para quedarnos solo con las fechas coherentes
+    mascara_validos = df_fechas['anio_calculado'].between(1900, 2026)
+    df_fechas = df_fechas[mascara_validos]
 
-#Se cambia el formato de las fechas a uno más simple
+    #Se agrupan los datos por año y se cuentan la cantidad de registros únicos que hay para cada año, descartando duplicados
+    conteos_por_anio = df_fechas.groupby('anio_calculado')['codigo'].nunique()
+    contador_nulos = df_fechas['anio_calculado'].isnull().sum()
 
-df_fechas['fecha'] = pd.to_datetime(df_fechas['fecha'], errors='coerce', utc=True)
-df_fechas['anio_calculado'] = df_fechas['fecha'].dt.year
+    #Se muestra en una advertencia la cantidad de registros con fechas nulas o inválidas
+    st.warning(f"Se encontraron {contador_nulos} registros con fechas nulas o inválidas")
 
-#Se aplica un filtrado de fechas, para quedarnos solo con las fechas coherentes
-mascara_validos = df_fechas['anio_calculado'].between(1900, 2026)
-df_fechas = df_fechas[mascara_validos]
-#Por control, se imprimen las primeras filas del nuevo dataset
-st.subheader("Primeras filas del dataset de fechas")
-st.dataframe(df_fechas[['anio_calculado', 'codigo']].head(3))
+    generar_grafico_generico(conteos_por_anio.index, conteos_por_anio.values, tipo_grafico="line", titulo="Cantidad de registros por año", x_etiqueta="Año", y_etiqueta="Cantidad de observaciones únicas", color="#e74c3c")
 
-
-#Se agrupan los datos por año y se cuentan la cantidad de registros únicos que hay para cada año, descartando duplicados
-conteos_por_anio = df_fechas.groupby('anio_calculado')['codigo'].nunique()
-contador_nulos = df_fechas['anio_calculado'].isnull().sum()
-
-st.warning(f"Se encontraron {contador_nulos} registros con fechas nulas o inválidas")
-
-
-#En este bloque se grafican las lineas con matplotlib
-fig, ax = plt.subplots(figsize=(10, 6))
-
-
-ax.plot(conteos_por_anio.index, conteos_por_anio.values, marker='o', color='#e74c3c')
-
-ax.set_title('Cantidad de registros por año')
-ax.set_xlabel('Año')
-ax.set_ylabel('Cantidad de observaciones únicas') 
-plt.xticks(rotation=45) 
-st.pyplot(fig)
 
 #Ejercicio 3.C #Preguntar
 
