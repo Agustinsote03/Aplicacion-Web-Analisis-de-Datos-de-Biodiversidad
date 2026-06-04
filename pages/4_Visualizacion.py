@@ -10,45 +10,54 @@ from utils import calcular_porcentaje_nulos_logica
 
 st.title("Visualización de Datos de Biodiversidad")
 
+def generar_grafico_generico(datos_x, datos_y, tipo_grafico="bar", titulo="", x_etiqueta="", y_etiqueta="", **kwargs):
+
+    """
+     Crea un gráfico de Matplotlib según los argumentos recibidos y lo renderiza en Streamlit
+    """
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    if tipo_grafico == 'bar':
+        ax.bar(datos_x, datos_y, color=kwargs.get('color', '#4db6ac'))
+        plt.xticks(rotation=45)
+
+    elif tipo_grafico == 'line':
+        ax.plot(datos_x, datos_y, marker='o', color=kwargs.get('color', '#e74c3c'))
+        plt.xticks(rotation=45)
+
+    elif tipo_grafico == 'pie':
+        ax.pie(datos_y, labels=datos_x, autopct='%1.1f%%', shadow=True)
+    
+    ax.set_title(titulo)
+    if tipo_grafico != "pie":
+        ax.set_xlabel(x_etiqueta)
+        ax.set_ylabel(y_etiqueta)
+    
+
+    fig.tight_layout()
+    st.pyplot(fig)
 
 if "dataset_actual" not in st.session_state or st.session_state["dataset_actual"] is None:
     st.warning("Selecciona un dataset desde la barra lateral para visualizar los datos.")
     st.stop()
-
-
 df_actual = st.session_state["dataset_actual"]
 
-st.header("Observaciones por ubicación")
+#Ejericio 3.A: Cantidad de observaciones por ubicación
+def cantidad_registros():
+    st.header("Observaciones por ubicacion")
+    num_elemntos = st.slider("Cantidad de ubicaciones a mostrar: ", min_value=1, max_value=10, value=5)
 
-num_elementos = st.slider("Cantidad de ubicaciones a mostrar: ", min_value=1, max_value=10, value=5)
-
-#Validación automática: Si hay 1 solo país único, graficamos por provincia. Si hay más, por país.
-if 'country' in df_actual.columns and df_actual['country'].nunique() > 1:
-    columna_agrupacion = 'country'
-    etiqueta_eje = 'País'
-# Si no hay 'country' o es un solo país, verificamos si existe 'stateProvince'
-elif 'stateProvince' in df_actual.columns:
-    columna_agrupacion = 'stateProvince'
-    etiqueta_eje = 'Provincia'
-# Si tampoco existe (algunos datasets son muy básicos), usamos 'locality'
-else:
-    columna_agrupacion = 'locality' 
-    etiqueta_eje = 'Localidad'
-
-conteos = df_actual[columna_agrupacion].value_counts().head(num_elementos)
-
-#Bloque de gráfico de Matplotlib
-fig, ax = plt.subplots(figsize=(10, 6))
-ax.bar(conteos.index, conteos.values, color="#4ddb34") 
-
-# Etiquetas y título 
-ax.set_xlabel(etiqueta_eje)
-ax.set_ylabel("Cantidad de Registros")
-ax.set_title(f"Top {num_elementos} {etiqueta_eje.lower()}s con más observaciones")
-plt.xticks(rotation=45) 
-
-# Renderiza Streamlit
-st.pyplot(fig)
+    if 'country' in df_actual.columns and df_actual['country'].nunique() > 1:
+        columna_agrupacion = 'country'
+        etiqueta_eje = 'País'
+    elif 'stateProvince' in df_actual.columns:
+        columna_agrupacion = 'stateProvince'
+        etiqueta_eje = 'Provincia'
+    else:
+        columna_agrupacion = 'locality' 
+        etiqueta_eje = 'Localidad'
+    conteos = df_actual[columna_agrupacion].value_counts().head(num_elemntos)
+    generar_grafico_generico(conteos.index, conteos.values, tipo_grafico="bar", titulo=f"Top {num_elemntos} {etiqueta_eje.lower()}s con más observaciones", x_etiqueta=etiqueta_eje, y_etiqueta="Cantidad de Registros", color="#4ddb34")
 
 
 #Ejercicio 3.B, se va a crear un nuevo dataframe para manipular las fechas
