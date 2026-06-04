@@ -5,8 +5,8 @@ from pathlib import Path
 import sys
 
 #Importación de funciones
-#sys.path.append(str(Path(__file__).parent.parent / "src"))
-#from utils import calcular_porcentaje_nulos_logica
+sys.path.append(str(Path(__file__).parent.parent / "src"))
+from utils import calcular_porcentaje_nulos_logica
 
 st.title("Visualización de Datos de Biodiversidad")
 
@@ -121,24 +121,20 @@ def distribucion_registros_taxonomia(df_actual):
     generar_grafico_generico(conteo_taxonomia.index, conteo_taxonomia.values, tipo_grafico="pie", titulo=f"Distribución de registros por {eleccion_usuario}",figsize=(20, 17))
 
 #Ejercicio 3.D
-
 def mostrar_grafico_completitud(df):
     st.subheader("Completitud de datos por columna")
 
-    # Se convierte el DataFrame al formato que espera calcular_porcentaje_nulos_logica
+    #Puente entre DataFrame y el iterador que espera la función 'calcular_porcentaje_nulos_logica'
     filas = df.fillna("").astype(str).to_dict(orient="records")
 
-    # Se reutiliza la función lógica de la parte 1
+    #se reutiliza la función lógica del ejercicio 2.F de la primera parte
     porcentaje_nulos = calcular_porcentaje_nulos_logica(filas, df.columns)
 
-    # Se invierte para mostrar completitud en lugar de nulos
+    #Se calcula el porcentaje de completitud a partir del porcentaje de nulos
     completitud = {col: 100 - pct for col, pct in porcentaje_nulos.items()}
-    
-    # Se filtra columnas 100% nulas y se ordena de menor a mayor
-    ordenado = sorted(
-        [(col, val) for col, val in completitud.items() if val > 0],
-        key=lambda x: x[1]
-    )
+
+    #See filtra y ordena el resultado 
+    ordenado = sorted([(col, val) for col, val in completitud.items() if val > 0],key=lambda x: x[1])
 
     columnas = [item[0] for item in ordenado]
     valores  = [item[1] for item in ordenado]
@@ -151,11 +147,10 @@ def mostrar_grafico_completitud(df):
         x_etiqueta="% de registros NO nulos",
         y_etiqueta="Columnas",
         figsize=(10, max(8, len(columnas) * 0.3)),
-        labelsize=7  # ← para el tick_params
+        labelsize=7
     )
-#Ejercicio 3.E
 
 cantidad_registros(df_actual)
 cantidad_registros_por_anio(df_actual)
 distribucion_registros_taxonomia(df_actual)
-#mostrar_grafico_completitud(df_actual)
+mostrar_grafico_completitud(df_actual)
