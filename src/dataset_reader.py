@@ -21,7 +21,7 @@ def imprimir_primeras_filas(ruta_archivo, separador="\t"):
                 return
 
 @manejar_archivo_no_encontrado   
-def obtener_columnas(path_archivo, separador="t"):
+def obtener_columnas(path_archivo, separador="\t"):
     """
     Retorna una lista completa de columnas del dataset
     """
