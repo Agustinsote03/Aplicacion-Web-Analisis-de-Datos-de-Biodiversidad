@@ -1,21 +1,6 @@
 import csv
 from pathlib import Path 
 
-def cantidad_registros(ruta_archivo, separador="\t"):
-    """
-    Retorna la cantidad de registros del dataset sin contar el encabezado.
-    """
-    ruta = Path(ruta_archivo)
-
-    with ruta.open(encoding="utf-8", newline="") as archivo:
-        reader = csv.DictReader(archivo, delimiter=separador)
-
-        contador = 0
-        for fila in reader:
-            contador += 1
-       
-    return contador
-
 def calcular_porcentaje_nulos_logica(iterador_filas, columnas):
     """
     Recibe un iterador de diccionarios (fila por fila) y las columnas.
@@ -62,9 +47,5 @@ def cantidad_registros(ruta_archivo, separador="\t"):
         contador = 0
         for fila in reader:
             contador += 1
-       
-<<<<<<< HEAD
+    
     return contador
-=======
-    return contador
->>>>>>> 0409cac4aea1b19f5b2c36da9635751cbd846b39
