@@ -278,44 +278,33 @@ def obtener_registros_fuera_de_territorio(ruta_archivo, separador, col_lat="deci
 @manejar_archivo_no_encontrado
 def validar_latitud(ruta_archivo, separador, col_lat="decimalLatitude"):
     """
-    Agrupa validaciones de latitud: existencia, formato (-90 a 90) y pertenencia a Sudamérica.
-    La variabilidad de nombres se maneja con el parámetro col_lat.
+    Agrupa validaciones de latitud: formato (-90 a 90) y pertenencia a Sudamérica.
+    Ignora registros sin coordenada (eso lo cubre el ejercicio 3.B).
     """
     registros_invalido = []
     with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
         csv_reader = csv.DictReader(archivo, delimiter=separador)
         for fila in csv_reader:
-            lat = fila.get(col_lat, "")
-            
-            # Validaciones agrupadas
-            es_formato_valido = es_coordenada_valida(lat, -90, 90)
-            esta_en_sudamerica = es_coordenada_valida(lat, LAT_MIN, LAT_MAX)
-            
-            if not lat or not es_formato_valido or not esta_en_sudamerica: 
-                registros_invalido.append(fila)
-                
+            lat = fila.get(col_lat, "").strip()
+            if lat:
+                if not es_coordenada_valida(lat, -90, 90) or not es_coordenada_valida(lat, LAT_MIN, LAT_MAX):
+                    registros_invalido.append(fila)
+
     return len(registros_invalido), registros_invalido
+
 
 @manejar_archivo_no_encontrado
 def validar_longitud(ruta_archivo, separador, col_lon="decimalLongitude"):
     """
-    Agrupa validaciones de longitud: existencia, formato (-180 a 180) y pertenencia a Sudamérica.
-    La variabilidad de nombres se maneja con el parámetro col_lon.
+    Agrupa validaciones de longitud: formato (-180 a 180) y pertenencia a Sudamérica.
+    Ignora registros sin coordenada (eso lo cubre el ejercicio 3.B).
     """
     registros_invalido = []
     with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
         csv_reader = csv.DictReader(archivo, delimiter=separador)
         for fila in csv_reader:
-            lon = fila.get(col_lon, "")
-            
-            # Validaciones agrupadas
-            es_formato_valido = es_coordenada_valida(lon, -180, 180)
-            esta_en_sudamerica = es_coordenada_valida(lon, LON_MIN, LON_MAX)
-            
-            if not lon or not es_formato_valido or not esta_en_sudamerica: 
-                registros_invalido.append(fila)
-                
+            lon = fila.get(col_lon, "").strip()
+            if lon:
+                if not es_coordenada_valida(lon, -180, 180) or not es_coordenada_valida(lon, LON_MIN, LON_MAX):
+                    registros_invalido.append(fila)
     return len(registros_invalido), registros_invalido
-
-
-
