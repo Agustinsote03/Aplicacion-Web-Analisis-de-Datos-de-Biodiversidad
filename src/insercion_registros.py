@@ -237,7 +237,7 @@ def validar_registro_iadiza(registro):
     # Fecha
     event_date = registro.get("eventDate", "").strip()
     if event_date != "":
-        es_valida, fecha = validar_y_convertir_fecha(event_date, FORMATO_FECHA)
+        es_valida, fecha = validar_y_convertir_fecha(event_date)
         if not es_valida:
             errores.append(f"eventDate inválida: '{event_date}'. Formato esperado: {FORMATO_FECHA}")
         elif fecha is not None and fecha > datetime.now():
@@ -279,7 +279,7 @@ def validar_registro_xeno_canto(registro):
     # Fecha
     event_date = registro.get("eventDate", "").strip()
     if event_date != "":
-        es_valida, fecha = validar_y_convertir_fecha(event_date, FORMATO_FECHA)
+        es_valida, fecha = validar_y_convertir_fecha(event_date)
         if not es_valida:
             errores.append(f"eventDate inválida: '{event_date}'. Formato esperado: {FORMATO_FECHA}")
         elif fecha is not None and fecha > datetime.now():
@@ -306,7 +306,7 @@ def validar_registro_inaturalist(registro):
     # Fecha
     event_date = registro.get("eventDate", "").strip()
     if event_date != "":
-        es_valida, fecha = validar_y_convertir_fecha(event_date, FORMATO_FECHA)
+        es_valida, fecha = validar_y_convertir_fecha(event_date)
         if not es_valida:
             errores.append(f"eventDate inválida: '{event_date}'. Formato esperado: {FORMATO_FECHA}")
         elif fecha is not None and fecha > datetime.now():
