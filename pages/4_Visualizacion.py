@@ -60,7 +60,15 @@ def cantidad_registros(df_actual):
         columna_agrupacion = 'locality' 
         etiqueta_eje = 'Localidad'
     conteos = df_actual[columna_agrupacion].value_counts().head(num_elementos)
-    generar_grafico_generico(conteos.index, conteos.values, tipo_grafico="bar", titulo=f"Top {num_elementos} {etiqueta_eje.lower()}s con más observaciones", x_etiqueta=etiqueta_eje, y_etiqueta="Cantidad de Registros", color="#4ddb34", figsize=(12, 6))
+    generar_grafico_generico(
+        conteos.index,
+        conteos.values,
+        tipo_grafico="bar",
+        titulo=f"Top {num_elementos} {etiqueta_eje.lower()}s con más observaciones",
+        x_etiqueta=etiqueta_eje,
+        y_etiqueta="Cantidad de Registros",
+        color="#4ddb34",
+        figsize=(12, 6))
 
 
 
@@ -91,7 +99,14 @@ def cantidad_registros_por_anio(df_actual):
     #Se muestra en una advertencia la cantidad de registros con fechas nulas o inválidas
     st.warning(f"Se encontraron {contador_nulos} registros con fechas nulas o inválidas")
 
-    generar_grafico_generico(conteos_por_anio.index, conteos_por_anio.values, tipo_grafico="line", titulo="Cantidad de registros por año", x_etiqueta="Año", y_etiqueta="Cantidad de observaciones únicas", color="#e74c3c")
+    generar_grafico_generico(conteos_por_anio.index,
+                            conteos_por_anio.values,
+                            tipo_grafico="line",
+                            titulo="Cantidad de registros por año",
+                            x_etiqueta="Año",
+                            y_etiqueta="Cantidad de observaciones únicas",
+                            color="#e74c3c"
+                            )
 
 
 #Ejercicio 3.C
@@ -118,14 +133,20 @@ def distribucion_registros_taxonomia(df_actual):
     conteo_taxonomia = columna_taxonomia.value_counts().head(10)
 
     #Se crea gráfico de torta
-    generar_grafico_generico(conteo_taxonomia.index, conteo_taxonomia.values, tipo_grafico="pie", titulo=f"Distribución de registros por {eleccion_usuario}",figsize=(20, 17))
+    generar_grafico_generico(
+        conteo_taxonomia.index,
+        conteo_taxonomia.values,
+        tipo_grafico="pie",
+        titulo=f"Distribución de registros por {eleccion_usuario}",
+        figsize=(20, 17)
+        )
 
 #Ejercicio 3.D
-def mostrar_grafico_completitud(df):
+def mostrar_grafico_completitud(df_actual):
     st.subheader("Completitud de datos por columna")
 
     #Puente entre DataFrame y el iterador que espera la función 'calcular_porcentaje_nulos_logica'
-    filas = df.fillna("").astype(str).to_dict(orient="records")
+    filas = df_actual.fillna("").astype(str).to_dict(orient="records")
 
     #se reutiliza la función lógica del ejercicio 2.F de la primera parte
     porcentaje_nulos = calcular_porcentaje_nulos_logica(filas, df.columns)
@@ -149,6 +170,7 @@ def mostrar_grafico_completitud(df):
         figsize=(10, max(8, len(columnas) * 0.3)),
         labelsize=7
     )
+
 
 cantidad_registros(df_actual)
 cantidad_registros_por_anio(df_actual)
