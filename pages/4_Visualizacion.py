@@ -9,8 +9,9 @@ import sys
 
 #Importación de funciones
 sys.path.append(str(Path(__file__).parent.parent / "src"))
-from utils import calcular_porcentaje_nulos_logica
+#from utils import calcular_porcentaje_nulos_logica
 from validador import validar_coordenadas, validar_fechas
+from config import CONFIGURACION_DATASETS
 
 
 #--------------------------------------------------Funciones Auxiliares-------------------------------------------------------#
@@ -40,7 +41,31 @@ def generar_grafico_generico(datos_x, datos_y, tipo_grafico="bar", titulo="", x_
     fig.tight_layout()
     st.pyplot(fig)
 
+def calcular_metricas_dataset(ruta_archivo, nombre_dataset, separador="\t"):
+    df = pd.read_csv(ruta_archivo, sep=separador, low_memory=False)
+    total_registros = len(df)
+    
+    if total_registros == 0:
+        return None
 
+    #se calcula el porcentaje de coordenadas válidas
+    cant_coord_inv, _ = validar_coordenadas(ruta_archivo, separador)
+    pct_coord = round((total_registros - cant_coord_inv) / total_registros * 100, 2)
+    
+    #Se calcula el porcentaje de fechas válidas
+    cant_fechas_inv, _ = validar_fechas(ruta_archivo, "eventDate", separador)
+    pct_fechas = round((total_registros - cant_fechas_inv) / total_registros * 100, 2)
+    
+    #completitud promedio con pandas directamente
+    pct_completitud = round(df.notnull().mean().mean() * 100, 2)
+    
+    return {
+        "Dataset": nombre_dataset,
+        "Total Registros": total_registros,
+        "% Coordenadas Válidas": pct_coord,
+        "% Fechas Válidas": pct_fechas,
+        "% Completitud Promedio": pct_completitud
+    }
 
 #--------------------------------Control: se verifica que haya un dataset cargado en la sesión--------------------------------#
 
@@ -181,9 +206,11 @@ def mostrar_grafico_completitud(df_actual):
     )
 
 #Ejercicio 3.E
-
+def mostrar_tabla_comparativa(datasets):
+    return
 
 cantidad_registros(df_actual)
 cantidad_registros_por_anio(df_actual)
 distribucion_registros_taxonomia(df_actual)
-mostrar_grafico_completitud(df_actual)
+#mostrar_grafico_completitud(df_actual)
+mostrar_tabla_comparativa(CONFIGURACION_DATASETS)
