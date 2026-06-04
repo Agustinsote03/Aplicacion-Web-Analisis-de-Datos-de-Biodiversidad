@@ -352,3 +352,45 @@ with tab_eliminar:
                     st.session_state.pop("modalidad_eliminar", None)
                 else:
                     st.error("No se pudo eliminar el registro")
+
+    #-- Modalidad 2: Por valor de columna --
+    elif modalidad == "Por valor de columna":
+        st.markdown("#### Eliminar por valor de columna")
+        col_eliminar = st.selectbox("Seleccioná la columna", columnas_dataset, key="col_lista")
+        valores_texto = st.text_input("Ingresá los valores a eliminar separados por coma", key="valores_lista")
+
+        if st.button("Previsualizar", key="btn_preview_lista"):
+            if not valores_texto.strip():
+                st.warning("Ingresá al menos un valor")
+            else:
+                valores = [v.strip() for v in valores_texto.split(",")]
+                df = st.session_state["dataset_actual"]
+                preview = df[df[col_eliminar].astype(str).isin(valores)]
+                if preview.empty:
+                    st.error("No se encontraron registros con esos valores")
+                    st.session_state.pop("preview_eliminar", None)
+                else:
+                    st.session_state["preview_eliminar"] = preview
+                    st.session_state["modalidad_eliminar"] = "lista"
+                    st.session_state["valores_eliminar"] = valores
+
+        if st.session_state.get("modalidad_eliminar") == "lista" and "preview_eliminar" in st.session_state:
+            st.warning(f"Se eliminarán {len(st.session_state['preview_eliminar'])} registro(s):")
+            st.dataframe(st.session_state["preview_eliminar"], use_container_width=True)
+
+            if st.button("Confirmar eliminación", key="btn_confirmar_lista"):
+                resultado = eliminar_por_lista_generica(
+                    ruta_origen, ruta_destino,
+                    col_eliminar,
+                    st.session_state["valores_eliminar"],
+                    nombre_dataset=nombre_dataset.upper(),
+                    separador=cfg["separador"]
+                )
+                if resultado:
+                    st.success(f"Se eliminaron {resultado} registro(s) correctamente")
+                    st.session_state["dataset_actual"] = cargar_dataset(nombre_dataset)
+                    st.session_state.pop("preview_eliminar", None)
+                    st.session_state.pop("modalidad_eliminar", None)
+                else:
+                    st.error("No se eliminó ningún registro")
+                    
