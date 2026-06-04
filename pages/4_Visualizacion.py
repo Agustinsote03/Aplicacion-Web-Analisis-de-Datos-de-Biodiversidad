@@ -1,3 +1,6 @@
+#-------------------------------------------------------Importaciones----------------------------------------------------------#
+
+#Importación de librerías
 import streamlit as st 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -7,8 +10,8 @@ import sys
 #Importación de funciones
 sys.path.append(str(Path(__file__).parent.parent / "src"))
 from utils import calcular_porcentaje_nulos_logica
+from validador import validar_coordenadas, validar_fechas
 
-st.title("Visualización de Datos de Biodiversidad")
 
 #--------------------------------------------------Funciones Auxiliares-------------------------------------------------------#
 def generar_grafico_generico(datos_x, datos_y, tipo_grafico="bar", titulo="", x_etiqueta="", y_etiqueta="", **kwargs):
@@ -38,12 +41,15 @@ def generar_grafico_generico(datos_x, datos_y, tipo_grafico="bar", titulo="", x_
     st.pyplot(fig)
 
 
+
 #--------------------------------Control: se verifica que haya un dataset cargado en la sesión--------------------------------#
 
 if "dataset_actual" not in st.session_state or st.session_state["dataset_actual"] is None:
     st.warning("Selecciona un dataset desde la barra lateral para visualizar los datos.")
     st.stop()
 df_actual = st.session_state["dataset_actual"]
+
+st.title("Visualización de Datos de Biodiversidad")
 
 
 #--------------------------------------------------Funciones Principales-------------------------------------------------------#
