@@ -19,6 +19,11 @@ from insercion_registros import (
     insertar_registro,
 )
 from actualizacion_registros import buscar_registros_generica, actualizar_multiples_campos_validando
+from eliminacion_registros import (
+        eliminar_por_id_generica,
+        eliminar_por_lista_generica,
+        eliminar_por_condicion_generica,
+    )
 from config import CONFIGURACION_DATASETS
  
 # Mapeo de funciones por dataset
@@ -282,3 +287,68 @@ with tab_actualizar:
                     st.session_state.pop("registro_a_editar", None)
                 else:
                     st.error("No se pudo actualizar el registro. Revisá los valores ingresados")
+
+
+#-------- 4.D - Eliminar --------#
+with tab_eliminar:
+    st.subheader("Eliminar registro")
+
+    modalidad = st.radio(
+        "Seleccioná la modalidad de eliminación",
+        ["Por identificador único", "Por valor de columna", "Por condición"],
+        horizontal=True
+    )
+
+    st.markdown("---")
+
+    columnas_dataset = list(st.session_state["dataset_actual"].columns)
+
+    #-- Modalidad 1: por ID --
+    if modalidad == "Por identificador único":
+        st.markdown("#### Eliminar por occurrenceID")
+        placeholders_id = {
+            "iadiza": "ej: IADIZA:COI:006861",
+            "xeno_canto": "ej: https://data.biodiversitydata.nl/xeno-canto/observation/XC999540",
+            "inaturalist": "ej: https://www.inaturalist.org/observations/12345",
+        }
+
+        id_eliminar = st.text_input(
+            "Ingresá el occurrenceID a eliminar",
+            placeholder=placeholders_id[nombre_dataset],
+            key="id_eliminar"
+        )
+
+        if st.button("Previsualizar", key="btn_preview_id"):
+            if not id_eliminar.strip():
+                st.warning("Ingresá un occurrenceID")
+            else:
+                preview = buscar_registros_generica(
+                    ruta_origen,
+                    {"occurrenceID": id_eliminar.strip()},
+                    separador=cfg["separador"]
+                )
+                if not preview:
+                    st.error(f"No se encontró ningún registro con occurrenceID: '{id_eliminar}'")
+                    st.session_state.pop("preview_eliminar", None)
+                else:
+                    st.session_state["preview_eliminar"] = preview
+                    st.session_state["modalidad_eliminar"] = "id"
+
+        if st.session_state.get("modalidad_eliminar") == "id" and "preview_eliminar" in st.session_state:
+            st.warning(f"Se eliminará {len(st.session_state['preview_eliminar'])} registro(s):")
+            st.dataframe(st.session_state["preview_eliminar"], use_container_width=True)
+
+            if st.button("Confirmar eliminación", key="btn_confirmar_id"):
+                resultado = eliminar_por_id_generica(
+                    ruta_origen, ruta_destino,
+                    "occurrenceID", id_eliminar.strip(),
+                    nombre_dataset=nombre_dataset.upper(),
+                    separador=cfg["separador"]
+                )
+                if resultado:
+                    st.success(f"Se eliminó {resultado} registro(s) correctamente")
+                    st.session_state["dataset_actual"] = cargar_dataset(nombre_dataset)
+                    st.session_state.pop("preview_eliminar", None)
+                    st.session_state.pop("modalidad_eliminar", None)
+                else:
+                    st.error("No se pudo eliminar el registro")
