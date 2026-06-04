@@ -55,6 +55,9 @@ def mostrar_metricas(df_validos, df_invalidos, total):
 
 
 def mostrar_selector_coloreo(df_validos, col_pais):
+    """
+    Muestra el selector de criterio de coloreo y retorna la columna elegida y el mapa de colores correspondiente.
+    """
     st.subheader("Configuración del mapa")
     opciones_color = obtener_opciones_coloreo(df_validos, col_pais)
     criterio_label = st.selectbox(
