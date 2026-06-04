@@ -89,7 +89,7 @@ with st.expander("Filtros adicionales", expanded=False):
     # Rango de fechas
     fechas_sel = None
     if "eventDate" in df.columns:
-        fechas_validas = pd.to_datetime(df["eventDate"], errors="coerce").dropna()
+        fechas_validas = pd.to_datetime(df["eventDate"], errors="coerce", utc=True).dropna()
         if not fechas_validas.empty:
             fecha_min = fechas_validas.min().date()
             fecha_max = fechas_validas.max().date()
@@ -140,10 +140,10 @@ with col_btn2:
             resultados = resultados[resultados[col_provincia].isin(provincias_sel)]
 
         if fechas_sel and len(fechas_sel) == 2:
-            resultados["eventDate_parsed"] = pd.to_datetime(resultados["eventDate"], errors="coerce")
+            resultados["eventDate_parsed"] = pd.to_datetime(resultados["eventDate"], errors="coerce", utc=True)
             resultados = resultados[
-                (resultados["eventDate_parsed"] >= pd.Timestamp(fechas_sel[0])) &
-                (resultados["eventDate_parsed"] <= pd.Timestamp(fechas_sel[1]))
+                (resultados["eventDate_parsed"] >= pd.Timestamp(fechas_sel[0], tz="UTC")) &
+                (resultados["eventDate_parsed"] <= pd.Timestamp(fechas_sel[1], tz="UTC"))
             ]
             resultados = resultados.drop(columns=["eventDate_parsed"])
 

@@ -60,7 +60,7 @@ def mostrar_selector_coloreo(df_validos, col_pais):
     """
     st.subheader("Configuración del mapa")
     opciones_color = obtener_opciones_coloreo(df_validos, col_pais)
-    criterio_label = st.selectbox("Colorear puntos por:", list(opciones_color.keys()))
+    criterio_label = st.selectbox("Colorear puntos por:", list(opciones_color.keys()), key="selector_coloreo_ficha")
     col_color = opciones_color[criterio_label]
     mapa_colores = construir_mapa_colores(df_validos, col_color)
     return criterio_label, col_color, mapa_colores
@@ -105,7 +105,8 @@ def mostrar_mapa(df_validos, col_lat, col_lon, col_color, mapa_colores, col_pais
     """
     st.subheader("Mapa de ocurrencias")
     mapa = construir_mapa(df_validos, col_lat, col_lon, col_color, mapa_colores, col_pais)
-    st_folium(mapa, width="100%", height=550, returned_objects=[])
+    mapa_data = st_folium(mapa, width="100%", height=550, returned_objects=["last_object_clicked_tooltip"])
+    return mapa_data
 
 
 def main():
@@ -133,5 +134,39 @@ def main():
     mostrar_leyenda(criterio_label, col_color, mapa_colores)
     mostrar_mapa(df_validos, col_lat, col_lon, col_color, mapa_colores, col_pais)
 
+    criterio_label, col_color, mapa_colores = mostrar_selector_coloreo(df_validos, col_pais)
+    mostrar_leyenda(criterio_label, col_color, mapa_colores)
+    mapa_data = mostrar_mapa(df_validos, col_lat, col_lon, col_color, mapa_colores, col_pais)  # guardar el retorno
+
+    # 6.C — Ficha del registro seleccionado
+    st.subheader("Ficha del registro")
+    nombre_clickeado = mapa_data.get("last_object_clicked_tooltip") if mapa_data else None
+
+    if nombre_clickeado:
+        registros = df_validos[df_validos["scientificName"] == nombre_clickeado]
+        if not registros.empty:
+            fila = registros.iloc[0]
+            campos_ficha = {
+                "Nombre científico": fila.get("scientificName", "—"),
+                "Nombre común": fila.get("vernacularName", "—"),
+                "Reino": fila.get("kingdom", "—"),
+                "Filo": fila.get("phylum", "—"),
+                "Clase": fila.get("class", "—"),
+                "Orden": fila.get("order", "—"),
+                "Familia": fila.get("family", "—"),
+                "Género": fila.get("genus", "—"),
+                "País": fila.get(col_pais, "—") if col_pais else "—",
+                "Provincia": fila.get("stateProvince", "—"),
+                "Localidad": fila.get("locality", "—"),
+                "Fecha": fila.get("eventDate", "—"),
+                "Observador": fila.get("recordedBy", "—"),
+                "ID": fila.get("occurrenceID", "—"),
+            }
+            df_ficha = pd.DataFrame(
+                {"Campo": list(campos_ficha.keys()), "Valor": list(campos_ficha.values())}
+            )
+            st.dataframe(df_ficha, use_container_width=True, hide_index=True)
+    else:
+        st.info("Hacé clic en un punto del mapa para ver su ficha.")
 
 main()
