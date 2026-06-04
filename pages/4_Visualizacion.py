@@ -15,8 +15,7 @@ def generar_grafico_generico(datos_x, datos_y, tipo_grafico="bar", titulo="", x_
     """
      Crea un gráfico de Matplotlib según los argumentos recibidos y lo renderiza en Streamlit
     """
-    fig, ax = plt.subplots(figsize=(10, 6))
-
+    fig, ax = plt.subplots(figsize=kwargs.get('figsize',(10, 6)))
     if tipo_grafico == 'bar':
         ax.bar(datos_x, datos_y, color=kwargs.get('color', '#4db6ac'))
         plt.xticks(rotation=45)
@@ -43,6 +42,9 @@ if "dataset_actual" not in st.session_state or st.session_state["dataset_actual"
     st.stop()
 df_actual = st.session_state["dataset_actual"]
 
+
+
+
 #Ejericio 3.A: Cantidad de observaciones por ubicación
 def cantidad_registros():
     st.header("Observaciones por ubicacion")
@@ -61,8 +63,9 @@ def cantidad_registros():
     generar_grafico_generico(conteos.index, conteos.values, tipo_grafico="bar", titulo=f"Top {num_elementos} {etiqueta_eje.lower()}s con más observaciones", x_etiqueta=etiqueta_eje, y_etiqueta="Cantidad de Registros", color="#4ddb34")
 
 
-#Ejercicio 3.B, se va a crear un nuevo dataframe para manipular las fechas
 
+
+#Ejercicio 3.B, se va a crear un nuevo dataframe para manipular las fechas
 def cantidad_registros_por_anio():
     nombre_id = df_actual.columns[0]
     df_fechas = df_actual[['eventDate', nombre_id]].rename(columns={'eventDate': 'fecha', nombre_id: 'codigo'})
