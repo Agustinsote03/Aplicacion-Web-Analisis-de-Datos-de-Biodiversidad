@@ -54,7 +54,7 @@ def actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna
     """
         Actualiza un campo especifico de un registro basado en su ID y genera un nuevo archivo con la actualización
     """
-    registro_actualizado = False
+    registros_actualizados = 0
     try:
         with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
             open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
@@ -68,18 +68,18 @@ def actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna
             for fila in lector:
                 if fila.get(columna_id, "").strip() == str(id_registro).strip():
                     fila[columna] = nuevo_valor
-                    registro_actualizado = True
+                    registros_actualizados += 1
             
                 escritor.writerow(fila)
 
-            if registro_actualizado:
+            if registros_actualizados:
                 registrar_operacion(nombre_dataset, "UPDATE", 1)
             else:
-                registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
+                registrar_operacion(nombre_dataset, "UPDATE", registros_actualizados, error=(registros_actualizados == 0))
     except FileNotFoundError:
         raise
 
-    return registro_actualizado
+    return registros_actualizados > 0 
 
 def actualizar_un_campo_iadiza(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor):
     return actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor,
@@ -98,7 +98,7 @@ def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modifica
     """
     Actualiza múltiples campos de un registro identificado por su ID, sin validar los nuevos valores.
     """
-    registro_actualizado = False
+    registros_actualizados = 0
     try:
         with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
             open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
@@ -114,18 +114,18 @@ def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modifica
 
                         if columna in fila:
                             fila[columna] = nuevo_valor
-                    registro_actualizado = True
+                    registros_actualizados += 1
                 escritor.writerow(fila)
 
-            if registro_actualizado:
+            if registros_actualizados:
                 registrar_operacion(nombre_dataset, "UPDATE", 1)
             else:
-                 registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
+                registrar_operacion(nombre_dataset, "UPDATE", registros_actualizados, error=(registros_actualizados == 0))
 
     except FileNotFoundError:
         raise
 
-    return registro_actualizado
+    return registros_actualizados > 0
 
 
 def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro, modificaciones, nombre_dataset, separador="\t", columna_id="occurrenceID"):
@@ -158,7 +158,7 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
                 errores.append(f"coordinateUncertaintyInMeters inválida: '{nuevo_valor}'")
     
     #Recién acá se abren los archivos y se recorren las filas
-    registro_actualizado = False    
+    registros_actualizados = 0    
 
     if errores:
         registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
@@ -188,12 +188,12 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
         if registro_actualizado:
             registrar_operacion(nombre_dataset, "UPDATE", 1)
         else:
-            registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
+            registrar_operacion(nombre_dataset, "UPDATE", registros_actualizados, error=(registros_actualizados == 0))
 
     except FileNotFoundError:
         raise
 
-    return registro_actualizado
+    return registros_actualizados > 0
 
 
 def actualizar_un_campo_validando(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor, nombre_dataset,separador="\t"):
