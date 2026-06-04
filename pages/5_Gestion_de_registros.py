@@ -393,4 +393,65 @@ with tab_eliminar:
                     st.session_state.pop("modalidad_eliminar", None)
                 else:
                     st.error("No se eliminó ningún registro")
-                    
+    
+    #-- Modalidad 3: Por condición --
+    elif modalidad == "Por condición":
+        st.markdown("#### Eliminar por condición")
+        col_condicion = st.selectbox("Seleccioná la columna", columnas_dataset, key="col_condicion")
+        operador = st.selectbox("Operador", ["==", "!=", ">", ">=", "<", "<="], key="operador")
+        valor_condicion = st.text_input("Valor de referencia", key="valor_condicion")
+
+        if st.button("Previsualizar", key="btn_preview_condicion"):
+            if not valor_condicion.strip():
+                st.warning("Ingresá un valor de referencia")
+            else:
+                df = st.session_state["dataset_actual"]
+                try:
+                    col_num = pd.to_numeric(df[col_condicion], errors="coerce")
+                    val_num = float(valor_condicion)
+                    if operador == "==":
+                        preview = df [col_num == val_num]
+                    elif operador == "!=":
+                        preview = df[col_num != val_num]
+                    elif operador == ">":
+                        preview = df[col_num > val_num]
+                    elif operador == ">=":
+                        preview = df[col_num >= val_num]
+                    elif operador == "<":
+                        preview = df[col_num < val_num]
+                    elif operador == "<=":
+                        preview = df[col_num <= val_num]
+                except ValueError:
+                    if operador == "==":
+                        preview = df[df[col_condicion].astype(str) == valor_condicion]
+                    elif operador == "!=":
+                        preview = df[df[col_condicion].astype(str) != valor_condicion]
+                    else:
+                        st.error("Para comparaciones numéricas el valor debe ser un número")
+                        preview = pd.DataFrame()
+
+                if preview.empty:
+                    st.error("No se encontraron registros que cumplan la condición")
+                    st.session_state.pop("preview_eliminar", None)
+                else:
+                    st.session_state["preview_eliminar"] = preview
+                    st.session_state["modalidad_eliminar"] = "condicion"
+
+        if st.session_state.get("modalidad_eliminar") == "condicion" and "preview_eliminar" in st.session_state:
+            st.warning(f"Se eliminarán {len(st.session_state['preview_eliminar'])} registro(s):")
+            st.dataframe(st.session_state["preview_eliminar"], use_container_width=True)
+
+            if st.button("Confirmar eliminación", key="btn_confirmar_condicion"):
+                resultado = eliminar_por_condicion_generica(
+                    ruta_origen, ruta_destino,
+                    col_condicion, operador, valor_condicion,
+                    nombre_dataset=nombre_dataset.upper(),
+                    separador=cfg["separador"]
+                )
+                if resultado:
+                    st.success(f"Se eliminaron {resultado} registro(s) correctamente")
+                    st.session_state["dataset_actual"] = cargar_dataset(nombre_dataset)
+                    st.session_state.pop("preview_eliminar", None)
+                    st.session_state.pop("modalidad_eliminar", None)
+                else:
+                    st.error("No se eliminó ningún registro")
