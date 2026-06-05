@@ -7,6 +7,12 @@ LAT_MIN= -56.0
 LAT_MAX= 13.0
 LON_MIN= -82.0
 LON_MAX = -35.0
+
+#Mapa de códigos de países válidos en América del Sur 
+codigos_validos = {"AR", "CL", "BR", "UY", "PY", "BO", "PE", "EC", "CO", "VE"}
+
+#Formato de fechas esperado
+formato = "%Y-%m-%d"
 #------------------------------------------Funciones auxiliares---------------------------------------#
 
 def es_coordenada_valida(valor, limite_min, limite_max):
@@ -25,7 +31,7 @@ def es_coordenada_valida(valor, limite_min, limite_max):
     return es_valida
 
 #Valida si un string puede convertirse a fecha segun el formato dado
-def validar_y_convertir_fecha(fecha_str, formato):
+def validar_y_convertir_fecha(fecha_str):
     #Usa try/except porque datetime.strptime muestra ValueError si falla
     try:
         fecha = datetime.strptime(fecha_str, formato)
@@ -93,27 +99,25 @@ def detectar_coordenadas_incompletas(ruta_archivo, separador, col_lat="decimalLa
         return len(registros), registros
 
 @manejar_archivo_no_encontrado
-def validar_fechas(ruta_archivo, nombre_columna, separador="\t"):
+def validar_fechas(ruta_archivo, nombre_columna, separador="\t", formato="%Y-%m-%d", contar_vacios=False):
     
     registros_invalidos = []
-    
-    formato = "%d/%m/%y"
-    #Defino el formato esperado de las fechas (dia/mes/año)
 
     with open(ruta_archivo, encoding="utf-8", newline="") as archivo:
         reader = csv.DictReader(archivo, delimiter=separador)
 
         for fila in reader:
-            fecha_str = (fila.get(nombre_columna, "")).strip()
-            #Se usa get para evitar errores si la columna no existe
+            fecha_str = (fila.get(nombre_columna, "")).strip()[:10]
+            # Tomamos solo los primeros 10 caracteres (YYYY-MM-DD)
 
             if not fecha_str:
-                registros_invalidos.append(fila)
+                if contar_vacios:
+                    registros_invalidos.append(fila)
                 continue
-                #Si el campo de fecha está vacío, se considera inválido
+                #Si la fecha está vacía, se cuenta como inválida solo si contar_vacios es True
 
-            es_valida, fecha = validar_y_convertir_fecha(fecha_str, formato)
-            #Uso de la funcio¿ón auxiliar
+            es_valida, fecha = validar_y_convertir_fecha(fecha_str)
+            #Uso de la función auxiliar
             
             if not es_valida:
                 registros_invalidos.append(fila)
@@ -147,7 +151,6 @@ def detectar_duplicados(ruta_archivo, nombre_columna, separador="\t"):
 
 @manejar_archivo_no_encontrado
 def detectar_country_codes_invalidos(ruta_archivo, separador):
-        codigos_validos = {"AR", "CL", "BR", "UY", "PY", "BO", "PE", "EC", "CO", "VE"}
         registros_invalidos = []
 
         with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
@@ -188,10 +191,7 @@ def ejecutar_analisis_calidad(ruta_archivo, separador):
     ids_totales = set()
 
     #Se incializa contador de filas
-    cont = 0
-    #Formato esperado de las fechas
-    formato = "%Y-%m-%d"
-    
+    cont = 0   
     with open(ruta_archivo, "r", encoding = "utf-8", newline="") as archivo:
         csv_reader = csv.DictReader(archivo, delimiter = separador)
 
@@ -219,7 +219,7 @@ def ejecutar_analisis_calidad(ruta_archivo, separador):
             #Se evaluan las fechas(deltipo "2015-06-23T00:00:00Z")
             fecha_str = (fila.get("eventDate","")).strip()[:10]
             if fecha_str:
-                es_valida, fecha = validar_y_convertir_fecha(fecha_str, formato)
+                es_valida, fecha = validar_y_convertir_fecha(fecha_str)
                 if not es_valida:
                     fecha_invalida.append(fila)
                 elif datetime.now() < fecha: 
@@ -243,77 +243,68 @@ def ejecutar_analisis_calidad(ruta_archivo, separador):
     
     return {"idDuplicado":ids_duplicados, "fechaInvalida":fecha_invalida,"taxonomiaInvalida":taxonomia_invalida,"coordenadaInvalida":coordenada_invalida}
 
-@manejar_archivo_no_encontrado
-def obtener_registros_fuera_de_territorio(ruta_archivo, separador):
-    registro_invalido = []
 
-    with open(ruta_archivo, "r", encoding="utf-8",newline="") as archivo:
+@manejar_archivo_no_encontrado 
+def obtener_registros_fuera_de_territorio(ruta_archivo, separador, col_lat="decimalLatitude", col_lon="decimalLongitude"): 
+    """
+    Valida que los campos de latitud y longitud se encuentren dentro de las cotas 
+    geográficas definidas para América del Sur.
+    """
+    registros_invalido = []
+    
+    with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
         csv_reader = csv.DictReader(archivo, delimiter=separador)
+        
         for fila in csv_reader:
-            lat = fila.get("decimalLatitude")
-            lon = fila.get("decimalLongitude")
-
+            # Extraemos ambas coordenadas
+            lat = fila.get(col_lat, "")
+            lon = fila.get(col_lon, "")
+            
+            # Verificamos que ambas existan 
             if lat and lon:
-                es_lat_valida = es_coordenada_valida(lat,LAT_MIN,LAT_MAX)
-                es_lon_valida = es_coordenada_valida(lon, LON_MIN,LON_MAX)
-                if not(es_lat_valida and es_lon_valida):
-                    registro_invalido.append(fila)
-
-    return len(registro_invalido), registro_invalido
+                # Usamos tu función auxiliar y las constantes globales
+                lat_en_sudamerica = es_coordenada_valida(lat, LAT_MIN, LAT_MAX)
+                lon_en_sudamerica = es_coordenada_valida(lon, LON_MIN, LON_MAX)
+                
+                # Si alguna de las dos cae fuera del territorio, el registro es inválido
+                if not lat_en_sudamerica or not lon_en_sudamerica:
+                    registros_invalido.append(fila)
+            else:
+                # Si falta alguna de las coordenadas, no se puede ubicar en el mapa
+                registros_invalido.append(fila)
+                
+    return len(registros_invalido), registros_invalido
 
 @manejar_archivo_no_encontrado
-def validar_latitud(ruta_archivo, separador):
+def validar_latitud(ruta_archivo, separador, col_lat="decimalLatitude"):
     """
-     Esta función recibe la latitud, y evalua:
-      -Que exista
-      -Que sea efectivamente una coordenada
-      -Que pertenezca al territorio de América del Sur
+    Agrupa validaciones de latitud: formato (-90 a 90) y pertenencia a Sudamérica.
+    Ignora registros sin coordenada (eso lo cubre el ejercicio 3.B).
     """
     registros_invalido = []
     with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
         csv_reader = csv.DictReader(archivo, delimiter=separador)
         for fila in csv_reader:
-            lat = fila.get("decimalLatitude","")
+            lat = fila.get(col_lat, "").strip()
             if lat:
-                es_lat_valida = es_coordenada_valida(lat,-90,90)
-                if es_lat_valida:
-                    pertenece = es_coordenada_valida(lat,LAT_MIN,LAT_MAX)
-                    if not pertenece:
-                        registros_invalido.append(fila)
-                else:
+                if not es_coordenada_valida(lat, -90, 90) or not es_coordenada_valida(lat, LAT_MIN, LAT_MAX):
                     registros_invalido.append(fila)
-            else:
-                registros_invalido.append(fila)
 
     return len(registros_invalido), registros_invalido
 
+
 @manejar_archivo_no_encontrado
-def validar_longitud(ruta_archivo, separador):
+def validar_longitud(ruta_archivo, separador, col_lon="decimalLongitude"):
     """
-     Esta función recibe la longitud, y evalua:
-      -Que exista
-      -Que sea efectivamente una coordenada
-      -Que pertenezca al territorio de América del Sur
+    Agrupa validaciones de longitud: formato (-180 a 180) y pertenencia a Sudamérica.
+    Ignora registros sin coordenada (eso lo cubre el ejercicio 3.B).
     """
     registros_invalido = []
     with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
         csv_reader = csv.DictReader(archivo, delimiter=separador)
         for fila in csv_reader:
-            lon = fila.get("decimalLongitude","")
+            lon = fila.get(col_lon, "").strip()
             if lon:
-                es_lon_valida = es_coordenada_valida(lon,-180,180)
-                if es_lon_valida:
-                    pertenece = es_coordenada_valida(lon,LON_MIN,LON_MAX)
-                    if not pertenece:
-                        registros_invalido.append(fila)
-                else:
+                if not es_coordenada_valida(lon, -180, 180) or not es_coordenada_valida(lon, LON_MIN, LON_MAX):
                     registros_invalido.append(fila)
-            else:
-                registros_invalido.append(fila)
-
     return len(registros_invalido), registros_invalido
-
-
-
-
-
