@@ -4,7 +4,7 @@ import pandas as pd
 from pathlib import Path
 from datetime import datetime
 from dataset_loader import seleccionar_dataset, mostrar_info_dataset, cargar_dataset
-from utils import buscar_registros_logica
+from busqueda import buscar_por_texto, buscar_por_filtros, obtener_columna_pais, obtener_columna_provincia
 #Sidebar: selector e información de datasets
 seleccionar_dataset()
 mostrar_info_dataset()
@@ -50,15 +50,8 @@ if modo == "Búsqueda por texto libre":
     st.markdown("---")
 
     if st.button("Buscar por texto", key="buscar_texto_btn"):
-        if texto_busqueda.strip():
-            filas = df.fillna("").astype(str).to_dict(orient="records")
-            filtros = {col_busqueda: texto_busqueda.strip()}
-            lista_valores = buscar_registros_logica(filas, list(df.columns), filtros, modo="contiene")
-            resultados = pd.DataFrame(lista_valores)
-        else:
-            resultados = df.copy()
+        resultados = buscar_por_texto(df, col_busqueda, texto_busqueda)
         st.session_state["resultados_busqueda"] = resultados
-        
 
 elif modo == "Filtros avanzados":
     st.subheader("Filtros avanzados")
@@ -72,16 +65,12 @@ elif modo == "Filtros avanzados":
         observadores = sorted(df["recordedBy"].dropna().unique().tolist())
         observador_sel = st.multiselect("Observador", observadores)
 
-    if "countryCode" in df.columns:
-        col_pais = "countryCode"
-    elif "country" in df.columns:
-        col_pais = "country"
+    col_pais = obtener_columna_pais(df)
     if col_pais:
         paises = sorted(df[col_pais].dropna().unique().tolist())
         paises_sel = st.multiselect("País", paises)
 
-    if "stateProvince" in df.columns:
-        col_provincia = "stateProvince"
+    col_provincia = obtener_columna_provincia(df)
     if col_provincia:
         provincias = sorted(df[col_provincia].dropna().unique().tolist())
         provincias_sel = st.multiselect("Provincia", provincias)
@@ -96,28 +85,7 @@ elif modo == "Filtros avanzados":
     st.markdown("---")
 
     if st.button("Buscar por filtros", key="buscar_filtros_btn"):
-        resultados = df.copy()
-
-        if especies_sel:
-            resultados = resultados[resultados["scientificName"].isin(especies_sel)]
-
-        if observador_sel:
-            resultados = resultados[resultados["recordedBy"].isin(observador_sel)]
-
-        if paises_sel and col_pais:
-            resultados = resultados[resultados[col_pais].isin(paises_sel)]
-
-        if provincias_sel and col_provincia:
-            resultados = resultados[resultados[col_provincia].isin(provincias_sel)]
-
-        if fechas_sel and len(fechas_sel) == 2:
-            resultados["eventDate_parsed"] = pd.to_datetime(resultados["eventDate"], errors="coerce", utc=True)
-            resultados = resultados[
-                (resultados["eventDate_parsed"] >= pd.Timestamp(fechas_sel[0], tz="UTC")) &
-                (resultados["eventDate_parsed"] <= pd.Timestamp(fechas_sel[1], tz="UTC"))
-            ]
-            resultados = resultados.drop(columns=["eventDate_parsed"])
-
+        resultados = buscar_por_filtros(df, especies_sel, observador_sel, col_pais, paises_sel, col_provincia, provincias_sel, fechas_sel)
         st.session_state["resultados_busqueda"] = resultados
 
 st.markdown("---")
