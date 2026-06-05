@@ -5,7 +5,7 @@ from datetime import datetime
 from dataset_loader import seleccionar_dataset, mostrar_info_dataset, cargar_dataset
 from config import CONFIGURACION_DATASETS
 from dataset_reader import porcentaje_nulos_por_columna
-from validador import es_coordenada_valida, es_fecha_valida
+from validador import es_coordenada_valida, validar_y_convertir_fecha
 
 # EJERCICIO 5.4
 def obtener_info_archivo(nombre, cfg):
