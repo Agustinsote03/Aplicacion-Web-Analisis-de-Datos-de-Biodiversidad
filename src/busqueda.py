@@ -69,3 +69,22 @@ def obtener_columnas_relevantes(df, col_pais, col_provincia):
         col_pais, col_provincia, "locality", "eventDate",
         "decimalLatitude", "decimalLongitude"
     ] if c is not None and c in df.columns]
+
+def paginar_resultados(df, pagina, registros_por_pagina=20):
+    """
+    Retorna el slice del DataFrame correspondiente a la página solicitada.
+    """
+    inicio = (pagina - 1) * registros_por_pagina
+    fin = inicio + registros_por_pagina
+    return df.iloc[inicio:fin]
+
+def calcular_resumen(resultados, col_pais, col_provincia):
+    """
+    Calcula el resumen estadístico del subconjunto de registros encontrados.
+    """
+    return {
+        "especies_unicas": resultados["scientificName"].nunique() if "scientificName" in resultados.columns else 0,
+        "paises_repr": resultados[col_pais].nunique() if col_pais and col_pais in resultados.columns else 0,
+        "provincias_repr": resultados[col_provincia].nunique() if col_provincia and col_provincia in resultados.columns else 0,
+        "observadores": resultados["recordedBy"].nunique() if "recordedBy" in resultados.columns else 0
+    }

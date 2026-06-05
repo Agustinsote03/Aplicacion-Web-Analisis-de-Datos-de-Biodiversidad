@@ -4,7 +4,7 @@ import pandas as pd
 from pathlib import Path
 from datetime import datetime
 from dataset_loader import seleccionar_dataset, mostrar_info_dataset, cargar_dataset
-from busqueda import buscar_por_texto, buscar_por_filtros, obtener_columna_pais, obtener_columna_provincia
+from busqueda import buscar_por_texto, buscar_por_filtros, obtener_columna_pais, obtener_columna_provincia, obtener_columnas_relevantes, paginar_resultados, calcular_resumen
 #Sidebar: selector e información de datasets
 seleccionar_dataset()
 mostrar_info_dataset()
@@ -101,11 +101,7 @@ if "resultados_busqueda" in st.session_state:
         st.info("No se encontraron registros.")
     else:
         # Columnas relevantes
-        columnas_relevantes = [c for c in [
-            "occurrenceID", "scientificName", "recordedBy",
-            col_pais, col_provincia, "locality", "eventDate",
-            "decimalLatitude", "decimalLongitude"
-        ] if c is not None and c in resultados.columns]
+        columnas_relevantes = obtener_columnas_relevantes(resultados, col_pais, col_provincia)
 
         # Ordenamiento
         col_orden = st.selectbox("Ordenar por columna", columnas_relevantes, key="orden_col")
@@ -116,10 +112,7 @@ if "resultados_busqueda" in st.session_state:
         registros_por_pagina = 20
         total_paginas = max(1, (len(resultados_ordenados) - 1) // registros_por_pagina + 1)
         pagina = st.number_input("Página", min_value=1, max_value=total_paginas, value=1, step=1, key="pagina")
-        inicio = (pagina - 1) * registros_por_pagina
-        fin = inicio + registros_por_pagina
-
-        df_pagina = resultados_ordenados[columnas_relevantes].iloc[inicio:fin]
+        df_pagina = paginar_resultados(resultados_ordenados[columnas_relevantes], pagina, registros_por_pagina)
         st.dataframe(df_pagina, use_container_width=True)
 
         # Detalle de un registro
@@ -145,23 +138,17 @@ if "resultados_busqueda" in st.session_state:
         st.subheader("Resumen estadístico")
         st.markdown("Información sobre el subconjunto de registros encontrados.")
 
+        resumen = calcular_resumen(resultados, col_pais, col_provincia)
         col1, col2, col3, col4 = st.columns(4)
 
         with col1:
-            especies_unicas = resultados["scientificName"].nunique() if "scientificName" in resultados.columns else 0
-            st.metric("Especies únicas", especies_unicas)
-
+            st.metric("Especies únicas", resumen["especies_unicas"])
         with col2:
-            paises_repr = resultados[col_pais].nunique() if col_pais and col_pais in resultados.columns else 0
-            st.metric("Países representados", paises_repr)
-
+            st.metric("Países representados", resumen["paises_repr"])
         with col3:
-            provincias_repr = resultados[col_provincia].nunique() if col_provincia and col_provincia in resultados.columns else 0
-            st.metric("Provincias representadas", provincias_repr)
-
+            st.metric("Provincias representadas", resumen["provincias_repr"])
         with col4:
-            observadores = resultados["recordedBy"].nunique() if "recordedBy" in resultados.columns else 0
-            st.metric("Observadores", observadores)
+            st.metric("Observadores", resumen["observadores"])
 
     #------------EJERCICIO 6.A: BOTÓN VER FICHA------------#
         st.markdown("---")
