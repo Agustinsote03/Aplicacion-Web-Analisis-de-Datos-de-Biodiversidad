@@ -217,11 +217,6 @@ def main():
         registros = df_validos[df_validos["scientificName"] == nombre_clickeado]
         if not registros.empty:
             fila = registros.iloc[0]
-
-    if nombre_clickeado:
-        registros = df_validos[df_validos["scientificName"] == nombre_clickeado]
-        if not registros.empty:
-            fila = registros.iloc[0]
             campos_ficha = {
                 "Nombre científico": fila.get("scientificName", "—"),
                 "Nombre común": fila.get("vernacularName", "—"),
