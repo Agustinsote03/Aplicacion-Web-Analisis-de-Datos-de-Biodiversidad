@@ -36,7 +36,7 @@ Archivo de extensión que contiene los valores originales tal como fueron provis
 ## Atributos del dataset
 
 | Atributo | Descripción | Ejemplo de valor |
-
+|----------|-------------|------------------|
 | `gbifID` | Identificador único asignado por GBIF al registro | `1660908055` |
 | `license` | Licencia de uso del dato | `CC_BY_NC_4_0` |
 | `modified` | Fecha de última modificación del registro original | `2015-05-19T00:00:00Z` |
@@ -47,15 +47,15 @@ Archivo de extensión que contiene los valores originales tal como fueron provis
 | `catalogNumber` | Número de catálogo de la colección | `006861` |
 | `recordedBy` | Persona que realizó el registro/colecta | `R.G. Spurr` |
 | `occurrenceStatus` | Estado de la ocurrencia | `PRESENT` |
-| `eventDate` | Fecha del evento de colecta | *(vacío en muchos registros)* |
-| `year` / `month` / `day` | Año, mes y día del evento desagregados | *(vacío en muchos registros)* |
+| `eventDate` | Fecha del evento de colecta | (vacío en muchos registros) |
+| `year` / `month` / `day` | Año, mes y día del evento desagregados | (vacío en muchos registros) |
 | `countryCode` | Código de país ISO 3166-1 alpha-2 | `AR` |
 | `stateProvince` | Provincia o estado | `Río Negro` |
 | `county` | Departamento o partido | `Pilcaniyeu` |
 | `locality` | Descripción textual de la localidad | `Lago Los Juncos, Est. Perito Moreno 900m` |
-| `decimalLatitude` | Latitud en grados decimales | *(vacío en la mayoría de los registros)* |
-| `decimalLongitude` | Longitud en grados decimales | *(vacío en la mayoría de los registros)* |
-| `coordinateUncertaintyInMeters` | Incertidumbre de la coordenada en metros | *(vacío)* |
+| `decimalLatitude` | Latitud en grados decimales | (vacío en la mayoría de los registros) |
+| `decimalLongitude` | Longitud en grados decimales | (vacío en la mayoría de los registros) |
+| `coordinateUncertaintyInMeters` | Incertidumbre de la coordenada en metros | (vacío) |
 | `scientificName` | Nombre científico completo de la especie (con autor) | `Chloephaga picta (J.F.Gmelin, 1789)` |
 | `kingdom` | Reino | `Animalia` |
 | `family` | Familia | `Anatidae` |
@@ -63,8 +63,6 @@ Archivo de extensión que contiene los valores originales tal como fueron provis
 | `specificEpithet` | Epíteto específico | `picta` |
 | `taxonRank` | Rango taxonómico del registro | `SPECIES` |
 | `species` | Nombre de la especie sin autor | `Chloephaga picta` |
-
-
 --------
 
 ## Descripción
