@@ -4,9 +4,12 @@ raw_datasets/*
 !raw_datasets/.gitkeep
 # Ignorando las bases de datos procesadas
 processed_datasets/*
-# Excluyendo el .gitkeep 
+# Excluyendo el .gitkeep
 !processed_datasets/.gitkeep
 # Ignorando contenido del log
 logs/*.log
 
-__pycache__
+__pycache__/
+.venv/
+.ipynb_checkpoints/
+src/__pycache__/
