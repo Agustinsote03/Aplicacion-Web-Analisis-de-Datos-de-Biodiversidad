@@ -54,6 +54,9 @@ def actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna
     """
         Actualiza un campo especifico de un registro basado en su ID y genera un nuevo archivo con la actualización
     """
+
+    if Path(ruta_original) == Path(ruta_nueva):
+        raise ValueError("La ruta de origen y destino no pueden ser la misma.")
     registros_actualizados = 0
     #Contador en lugar de booleano para poder registrar cantidad de registros actualizados
 
