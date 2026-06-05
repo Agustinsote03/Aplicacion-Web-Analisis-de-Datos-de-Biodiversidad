@@ -59,3 +59,13 @@ def buscar_por_filtros(df, especies_sel, observador_sel, col_pais, paises_sel, c
         resultados = resultados.drop(columns=["eventDate_parsed"])
 
     return resultados
+
+def obtener_columnas_relevantes(df, col_pais, col_provincia):
+    """
+    Retorna la lista de columnas relevantes disponibles en el dataset.
+    """
+    return [c for c in [
+        "occurrenceID", "scientificName", "recordedBy",
+        col_pais, col_provincia, "locality", "eventDate",
+        "decimalLatitude", "decimalLongitude"
+    ] if c is not None and c in df.columns]
