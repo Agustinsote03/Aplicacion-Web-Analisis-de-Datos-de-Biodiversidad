@@ -32,6 +32,12 @@ def generar_grafico_generico(datos_x, datos_y, tipo_grafico="bar", titulo="", x_
     elif tipo_grafico == 'pie':
         ax.pie(datos_y, labels=datos_x, autopct='%1.1f%%', shadow=True)
     
+    elif tipo_grafico == 'barh':
+        ax.barh(datos_x, datos_y, color=kwargs.get('color', '#4db6ac'))
+        labelsize = kwargs.get('labelsize', None)
+        if labelsize:
+            ax.tick_params(axis='y', labelsize=labelsize)
+
     ax.set_title(titulo)
     if tipo_grafico != "pie":
         ax.set_xlabel(x_etiqueta)
@@ -225,5 +231,5 @@ def mostrar_tabla_comparativa(datasets):
 cantidad_registros(df_actual)
 cantidad_registros_por_anio(df_actual)
 distribucion_registros_taxonomia(df_actual)
-#mostrar_grafico_completitud(df_actual)
+mostrar_grafico_completitud(df_actual)
 mostrar_tabla_comparativa(CONFIGURACION_DATASETS)
