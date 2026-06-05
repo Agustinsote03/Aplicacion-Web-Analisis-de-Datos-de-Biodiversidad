@@ -51,18 +51,14 @@ if modo == "Búsqueda por texto libre":
 
     if st.button("Buscar por texto", key="buscar_texto_btn"):
         if texto_busqueda.strip():
-
-            filas= df.fillna("").astype(str).to_dict(orient="records")
-            columnas= df[
-                df[col_busqueda].astype(str).str.contains(
-                    texto_busqueda.strip(), case=False, na=False
-                )
-            ]
-            filtros = {col_busqueda : texto_busqueda.strip()}
-            lista_valores = buscar_registros_logica(filas, columnas, filtros, modo="contiene")
+            filas = df.fillna("").astype(str).to_dict(orient="records")
+            filtros = {col_busqueda: texto_busqueda.strip()}
+            lista_valores = buscar_registros_logica(filas, list(df.columns), filtros, modo="contiene")
+            resultados = pd.DataFrame(lista_valores)
         else:
             resultados = df.copy()
-        st.session_state["resultados_busqueda"] = resultados = pd.DataFrame(lista_valores)
+        st.session_state["resultados_busqueda"] = resultados
+        
 
 elif modo == "Filtros avanzados":
     st.subheader("Filtros avanzados")
