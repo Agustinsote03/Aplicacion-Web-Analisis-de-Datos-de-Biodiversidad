@@ -13,3 +13,5 @@ __pycache__/
 .venv/
 .ipynb_checkpoints/
 src/__pycache__/
+#Ignorando los checkpoints
+.ipynb_checkpoints/*
