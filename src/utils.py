@@ -83,7 +83,7 @@ def buscar_registros_logica(filas, columnas, filtros = None, modo="exacto", **kw
     - modo: "exacto" o "contiene"
     """
     if filtros:
-        filtros_validos = {col: val for col, val in filtros if col in columnas}
+        filtros_validos = {col: val for col, val in filtros.items() if col in columnas}
         
         registros_encontrados = []
         for fila in filas:

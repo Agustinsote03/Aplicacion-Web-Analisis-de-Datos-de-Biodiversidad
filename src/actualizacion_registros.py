@@ -12,7 +12,8 @@ def buscar_registros_generica(ruta_archivo, filtros, separador="\t"):
     """
     with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
         lector = csv.DictReader(archivo, delimiter=separador)
-        return buscar_registros_logica(lector, filtros)
+        columnas = lector.fieldnames
+        return buscar_registros_logica(lector, columnas, filtros)
 
 def buscar_registros_iadiza(ruta_archivo, filtros):
     """
