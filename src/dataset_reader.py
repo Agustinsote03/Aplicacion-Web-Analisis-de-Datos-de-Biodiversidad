@@ -1,6 +1,7 @@
 import csv 
-from utils import cantidad_registros, manejar_archivo_no_encontrado
-from pathlib import Path
+#Se importa 'manejar_archivo_no_encontrado' que todavia no está en esta rama
+from utils import cantidad_registros, manejar_archivo_no_encontrado, calcular_porcentaje_nulos_logica
+from pathlib import Path 
 
 @manejar_archivo_no_encontrado
 def imprimir_primeras_filas(ruta_archivo, separador="\t"):
@@ -21,7 +22,7 @@ def imprimir_primeras_filas(ruta_archivo, separador="\t"):
                 return
 
 @manejar_archivo_no_encontrado   
-def obtener_columnas(path_archivo, separador="t"):
+def obtener_columnas(path_archivo, separador="\t"):
     """
     Retorna una lista completa de columnas del dataset
     """
@@ -150,7 +151,9 @@ def frecuencia_valores_columna(ruta_archivo, nombre_columna, separador="\t"):
 
         for fila in reader:
             valor = fila[nombre_columna]
-
+            if valor == "" or valor is None:
+                valor = "(nulo)"
+                
             if valor in frecuencias:
                 frecuencias[valor] += 1
             else:
@@ -243,31 +246,15 @@ def resumen_columna(ruta_archivo, nombre_columna, tipo, separador="\t"):
         raise ValueError(f"Tipo no válido: '{tipo}'. Los tipos aceptados son: 'numeric', 'coordinate', 'text'")
     
 @manejar_archivo_no_encontrado
-def columnas_totalmente_nulas(ruta_archivo, separador="\t"):
+def porcentaje_nulos_2F(ruta_archivo, separador="\t"):
     """
-    Retorna una lista con el nombre de las columnas que tienen todos sus valores nulos
+    Se encarga únicamente de abrir el archivo con csv y delegar 
+    el cálculo a la función matemática.
     """
-    ruta = Path(ruta_archivo)
-
-    with ruta.open(encoding="utf-8", newline="") as archivo:
-        reader = csv.DictReader(archivo, delimiter=separador)
-
-        columnas = reader.fieldnames
-        # Lista de nombres de columnas
-
-        columnas_nulas = {col: True for col in columnas}
-        # Arranca suponiendo que todas las columnas son nulas
-
-        for fila in reader:
-            for col in columnas:
-                if fila[col] != "":
-                    columnas_nulas[col] = False
-                    # Si se encuentra un valor no nulo, marca la columna como no nula
-
-        resultado = []
-        for col, es_nula in columnas_nulas.items():
-            if es_nula:
-                resultado.append(col)
-                # Devuelve las columnas que quedaron en True
-
-    return resultado
+    # Usamos open clásico, sin pathlib
+    with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
+        lector = csv.DictReader(archivo, delimiter=separador)
+        columnas = lector.fieldnames
+        
+        # Le pasamos el iterador directamente a la lógica
+        return calcular_porcentaje_nulos_logica(lector, columnas)

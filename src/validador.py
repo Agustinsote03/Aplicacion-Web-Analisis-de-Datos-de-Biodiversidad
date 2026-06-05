@@ -7,6 +7,12 @@ LAT_MIN= -56.0
 LAT_MAX= 13.0
 LON_MIN= -82.0
 LON_MAX = -35.0
+
+#Mapa de códigos de países válidos en América del Sur 
+codigos_validos = {"AR", "CL", "BR", "UY", "PY", "BO", "PE", "EC", "CO", "VE"}
+
+#Formato de fechas esperado
+formato = "%Y-%m-%d"
 #------------------------------------------Funciones auxiliares---------------------------------------#
 
 def es_coordenada_valida(valor, limite_min, limite_max):
@@ -25,7 +31,7 @@ def es_coordenada_valida(valor, limite_min, limite_max):
     return es_valida
 
 #Valida si un string puede convertirse a fecha segun el formato dado
-def validar_y_convertir_fecha(fecha_str, formato):
+def validar_y_convertir_fecha(fecha_str):
     #Usa try/except porque datetime.strptime muestra ValueError si falla
     try:
         fecha = datetime.strptime(fecha_str, formato)
@@ -93,27 +99,25 @@ def detectar_coordenadas_incompletas(ruta_archivo, separador, col_lat="decimalLa
         return len(registros), registros
 
 @manejar_archivo_no_encontrado
-def validar_fechas(ruta_archivo, nombre_columna, separador="\t"):
+def validar_fechas(ruta_archivo, nombre_columna, separador="\t", formato="%Y-%m-%d", contar_vacios=False):
     
     registros_invalidos = []
-    
-    formato = "%d/%m/%y"
-    #Defino el formato esperado de las fechas (dia/mes/año)
 
     with open(ruta_archivo, encoding="utf-8", newline="") as archivo:
         reader = csv.DictReader(archivo, delimiter=separador)
 
         for fila in reader:
-            fecha_str = (fila.get(nombre_columna, "")).strip()
-            #Se usa get para evitar errores si la columna no existe
+            fecha_str = (fila.get(nombre_columna, "")).strip()[:10]
+            # Tomamos solo los primeros 10 caracteres (YYYY-MM-DD)
 
             if not fecha_str:
-                registros_invalidos.append(fila)
+                if contar_vacios:
+                    registros_invalidos.append(fila)
                 continue
-                #Si el campo de fecha está vacío, se considera inválido
+                #Si la fecha está vacía, se cuenta como inválida solo si contar_vacios es True
 
-            es_valida, fecha = validar_y_convertir_fecha(fecha_str, formato)
-            #Uso de la funcio¿ón auxiliar
+            es_valida, fecha = validar_y_convertir_fecha(fecha_str)
+            #Uso de la función auxiliar
             
             if not es_valida:
                 registros_invalidos.append(fila)
@@ -147,7 +151,6 @@ def detectar_duplicados(ruta_archivo, nombre_columna, separador="\t"):
 
 @manejar_archivo_no_encontrado
 def detectar_country_codes_invalidos(ruta_archivo, separador):
-        codigos_validos = {"AR", "CL", "BR", "UY", "PY", "BO", "PE", "EC", "CO", "VE"}
         registros_invalidos = []
 
         with open(ruta_archivo, "r", encoding="utf-8", newline="") as archivo:
@@ -188,10 +191,7 @@ def ejecutar_analisis_calidad(ruta_archivo, separador):
     ids_totales = set()
 
     #Se incializa contador de filas
-    cont = 0
-    #Formato esperado de las fechas
-    formato = "%Y-%m-%d"
-    
+    cont = 0   
     with open(ruta_archivo, "r", encoding = "utf-8", newline="") as archivo:
         csv_reader = csv.DictReader(archivo, delimiter = separador)
 
@@ -219,7 +219,7 @@ def ejecutar_analisis_calidad(ruta_archivo, separador):
             #Se evaluan las fechas(deltipo "2015-06-23T00:00:00Z")
             fecha_str = (fila.get("eventDate","")).strip()[:10]
             if fecha_str:
-                es_valida, fecha = validar_y_convertir_fecha(fecha_str, formato)
+                es_valida, fecha = validar_y_convertir_fecha(fecha_str)
                 if not es_valida:
                     fecha_invalida.append(fila)
                 elif datetime.now() < fecha: 

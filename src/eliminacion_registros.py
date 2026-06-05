@@ -10,7 +10,9 @@ def eliminar_por_id_generica(ruta_original, ruta_nueva, columna, valor, nombre_d
     """
         Elimina del dataset el registro que coincida con el valor indicado en la columna dada.
     """
-    eliminado = False
+    eliminados = 0
+    #Contador en lugar de booleano para poder registrar cantidad de registros eliminados
+
 
     with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
          open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
@@ -25,19 +27,19 @@ def eliminar_por_id_generica(ruta_original, ruta_nueva, columna, valor, nombre_d
 
             # Busca el occurrenceID
             if str(fila.get(columna, "")).strip() == str(valor).strip():
-                eliminado = True
+                eliminados += 1
                 # Elimina la fila correctamente
                 continue  
 
             escritor.writerow(fila)
 
-    if eliminado:
-        registrar_operacion(nombre_dataset, "DELETE", 1)
+    if eliminados:
+        registrar_operacion(nombre_dataset, "DELETE", eliminados)
     else:
         registrar_operacion(nombre_dataset, "DELETE", 0, error=True)
     #Si se elimino algun registro se registra la operacion, sino se registra un error
 
-    return eliminado
+    return eliminados
 
 def eliminar_por_id_iadiza(ruta_original, ruta_nueva, columna, valor):
     """
@@ -372,3 +374,4 @@ def sanitizar_dataset_evolucionada_inaturalist(ruta_original, ruta_nueva):
     Igual que sanitizar_dataset pero además muestra un reporte detallado por pantalla para iNaturalist
     """
     return sanitizar_dataset_evolucionada_generica(ruta_original, ruta_nueva, separador=",", col_lat="decimalLatitude", col_lon="decimalLongitude")
+
