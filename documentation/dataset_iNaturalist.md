@@ -35,30 +35,29 @@ Archivo EML (Ecological Metadata Language) que describe el dataset en detalle: t
 ## Atributos del dataset
 
 | Atributo | Descripción | Ejemplo de valor |
-
-| `id` | Identificador interno del registro (índice 0, usado como clave) | `123456789` |
+|----------|-------------|------------------|
+| `id` | Identificador interno del registro | `123456789` |
 | `occurrenceID` | Identificador único de la ocurrencia | `https://www.inaturalist.org/observations/123456789` |
-| `basisOfRecord` | Base del registro (valor por defecto) | `HumanObservation` |
-| `modified` | Fecha de última modificación del registro | `2024-03-15T10:22:00Z` |
-| `institutionCode` | Código de la institución (valor por defecto) | `iNaturalist` |
-| `recordedBy` | Nombre del usuario que registró la observación | `@nombreusuario` |
-| `identifiedBy` | Nombre del usuario que identificó la especie | `@identificador` |
+| `basisOfRecord` | Base del registro | `HumanObservation` |
+| `modified` | Fecha de última modificación | `2024-03-15T10:22:00Z` |
+| `institutionCode` | Código de la institución | `iNaturalist` |
+| `recordedBy` | Usuario que registró la observación | `@nombreusuario` |
+| `identifiedBy` | Usuario que identificó la especie | `@identificador` |
 | `eventDate` | Fecha de la observación | `2023-11-05` |
 | `eventTime` | Hora de la observación | `14:30:00` |
 | `decimalLatitude` | Latitud en grados decimales | `-34.5897` |
 | `decimalLongitude` | Longitud en grados decimales | `-58.3974` |
-| `coordinateUncertaintyInMeters` | Incertidumbre de la coordenada en metros | `10` |
+| `coordinateUncertaintyInMeters` | Incertidumbre en metros | `10` |
 | `countryCode` | Código de país ISO 3166-1 alpha-2 | `AR` |
 | `stateProvince` | Provincia o estado | `Buenos Aires` |
-
-| `identificationRemarks` | Comentarios sobre la identificación taxonómica | *(texto libre)* |
+| `identificationRemarks` | Comentarios sobre la identificación | *(texto libre)* |
 | `taxonID` | Identificador del taxón en iNaturalist | `12704` |
 | `scientificName` | Nombre científico de la especie | `Ara chloropterus` |
 | `taxonRank` | Rango taxonómico | `species` |
 | `kingdom` | Reino | `Animalia` |
 | `family` | Familia | `Psittacidae` |
 | `genus` | Género | `Ara` |
-| `license` | Licencia del registro individual | `CC_BY_NC_4_0` |
+| `license` | Licencia del registro | `CC_BY_NC_4_0` |
 
 -------
 
