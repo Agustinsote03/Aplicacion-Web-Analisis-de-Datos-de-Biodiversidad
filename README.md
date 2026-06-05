@@ -165,25 +165,6 @@ Las dependencias se encuentran en `requirements.txt`. Las principales son:
 
 - `streamlit` — interfaz gráfica
 - `jupyter` — ejecución de notebooks
-
-> Este proyecto **no utiliza pandas** ni otras librerías de análisis de datos en los ejercicios 2 a 7, tal como indica la consigna. El procesamiento se realiza con las librerías estándar de Python (`csv`, `pathlib`, `datetime`).
-
--------
-
-## Notas de implementación
-
-### Ejercicio 3 — Validación
-
-- **Validación de fechas (3.C):** el formato de fecha esperado por la función es `"%d/%m/%y"`. Los tres datasets utilizan formatos distintos (por ejemplo `"2025-05-03"` o `"2018-03-31T08:09:00-03:00"`), por lo que la mayoría de los registros son marcados como inválidos. Esto es un comportamiento esperado dado el formato configurado.
-
-- **Validación de country code (3.F):** Xeno-canto no utiliza el campo `countryCode` sino `country` con el nombre completo del país (por ejemplo `"Argentina"`). Por este motivo todos sus registros son marcados como inválidos en esta validación.
-
-### Ejercicio 4 — Inserción de registros
-
-Las funciones de inserción están implementadas principalmente para el dataset IADIZA, ya que cada dataset tiene una estructura y un formato de IDs distinto:
-
-- **IADIZA:** `catalogNumber` autoincremental con formato `XXXXXX` (6 dígitos) y `occurrenceID` con formato `IADIZA:COI:XXXXXX`.
-- **Xeno-canto:** `id` con formato `XXXXXX@XC` y `catalogNumber` con formato `XCXXXXXX`.
-- **iNaturalist:** `id` autoincremental numérico y `occurrenceID` como URL (`https://www.inaturalist.org/observations/XXXXXX`).
-
-Para extender la inserción a los otros datasets se deberán implementar funciones específicas para cada uno respetando sus formatos de ID.
+- `pandas` — manipulación de datasets
+- `streamlit folium` — visualización de mapas
+- `matplotlib` — gráficos
