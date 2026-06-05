@@ -38,7 +38,4 @@ with st.sidebar:
     seleccionar_dataset()
     mostrar_info_dataset()
 
-st.title("Aplicacion de Biodiversidad")
-st.write("Selecciona una pagina desde el menu lateral")
-
 pg.run()
