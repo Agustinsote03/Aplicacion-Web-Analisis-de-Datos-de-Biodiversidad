@@ -52,3 +52,20 @@ def cantidad_registros(ruta_archivo, separador="\t"):
             contador += 1
     
     return contador
+
+def buscar_registros_logica(filas, filtros):
+    """
+    Lógica pura de búsqueda por múltiples columnas exactas.
+    Recibe un iterador de diccionarios y un diccionario de filtros.
+    Reutiliza la lógica del Ejercicio 5.A.
+    """
+    registros_encontrados = []
+    for fila in filas:
+        cumple_filtros = True
+        for columna, valor_buscado in filtros.items():
+            if fila.get(columna) != str(valor_buscado):
+                cumple_filtros = False
+                break
+        if cumple_filtros:
+            registros_encontrados.append(fila)
+    return registros_encontrados
