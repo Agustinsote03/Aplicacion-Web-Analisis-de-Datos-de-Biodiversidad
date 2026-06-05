@@ -11,6 +11,7 @@ import sys
 sys.path.append(str(Path(__file__).parent.parent / "src"))
 #from utils import calcular_porcentaje_nulos_logica
 from validador import validar_coordenadas, validar_fechas
+from utils import calcular_porcentaje_nulos_logica
 from config import CONFIGURACION_DATASETS
 
 #--------------------------------------------------Funciones Auxiliares-------------------------------------------------------#
@@ -182,7 +183,7 @@ def mostrar_grafico_completitud(df_actual):
     filas = df_actual.fillna("").astype(str).to_dict(orient="records")
 
     #se reutiliza la función lógica del ejercicio 2.F de la primera parte
-    porcentaje_nulos = calcular_porcentaje_nulos_logica(filas, df.columns)
+    porcentaje_nulos = calcular_porcentaje_nulos_logica(filas, df_actual.columns)
 
     #Se calcula el porcentaje de completitud a partir del porcentaje de nulos
     completitud = {col: 100 - pct for col, pct in porcentaje_nulos.items()}
