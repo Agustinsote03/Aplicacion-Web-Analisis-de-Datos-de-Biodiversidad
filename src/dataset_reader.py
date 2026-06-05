@@ -258,3 +258,27 @@ def porcentaje_nulos_2F(ruta_archivo, separador="\t"):
         
         # Le pasamos el iterador directamente a la lógica
         return calcular_porcentaje_nulos_logica(lector, columnas)
+    
+@manejar_archivo_no_encontrado
+def columnas_totalmente_nulas(ruta_archivo, separador="\t"):
+    """
+    Retorna una lista de columnas cuyos valores son nulos en todos los registros.
+    """
+    ruta = Path(ruta_archivo)
+
+    with ruta.open(encoding="utf-8", newline="") as archivo:
+        reader = csv.DictReader(archivo, delimiter=separador)
+        columnas = reader.fieldnames
+        conteo_nulos = {col: 0 for col in columnas}
+        total = 0
+
+        for fila in reader:
+            total += 1
+            for col in columnas:
+                if fila[col] == "":
+                    conteo_nulos[col] += 1
+
+    if total == 0:
+        return list(columnas)
+
+    return [col for col in columnas if conteo_nulos[col] == total]

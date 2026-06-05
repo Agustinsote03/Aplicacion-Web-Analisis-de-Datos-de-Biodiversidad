@@ -1,5 +1,6 @@
 jupyter
 streamlit
-pandas 
-streamlit folium 
+pandas
+streamlit-folium
 matplotlib
+folium
