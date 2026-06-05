@@ -25,89 +25,31 @@ if "nombre_dataset" not in st.session_state:
 df = st.session_state["dataset_actual"]
 columnas = list(df.columns)
 
-#Detectar columnas de país y provincia antes de los filtros
+#--------EJERCICIO 2.A y 2.B: MODO DE BÚSQUEDA--------#
+modo = st.radio("Modo de búsqueda", ["Búsqueda por texto libre", "Filtros avanzados"], horizontal=True)
+
+st.markdown("---")
+
+# Variables con valores por defecto
+col_busqueda = columnas[0]
+texto_busqueda = ""
+especies_sel = []
+observador = ""
 col_pais = None
-if "countryCode" in df.columns:
-    col_pais = "countryCode"
-elif "country" in df.columns:
-    col_pais = "country"
+paises_sel = []
+col_provincia = None
+provincias_sel = []
+fechas_sel = None
 
-col_provincia = "stateProvince" if "stateProvince" in df.columns else None
+if modo == "Búsqueda por texto libre":
+    st.subheader("Búsqueda por texto libre")
+    st.markdown("Seleccioná una columna e ingresá el texto que querés buscar.")
+    col_busqueda = st.selectbox("Seleccioná la columna", columnas)
+    texto_busqueda = st.text_input("Texto a buscar")
 
-#Detectar si hay filtros adicionales activos para deshabilitar este campo
-hay_filtros = st.session_state.get("hay_filtros_activos", False)
+    st.markdown("---")
 
-#--------EJERCICIO 2.A: BÚSQUEDA POR TEXTO LIBRE--------#
-st.subheader("Búsqueda por texto libre")
-st.markdown("Seleccioná una columna e ingresá el texto que querés buscar.")
-
-col_busqueda = st.selectbox("Seleccioná la columna", columnas)
-texto_busqueda = st.text_input("Texto a buscar")
-
-if hay_filtros:
-    st.info("Desactivá los filtros adicionales para usar la búsqueda por texto libre.")
-
-hay_texto = bool(texto_busqueda.strip())
-
-st.markdown("---")
-
-#-------EJERICIO 2.B: FILTROS ADICIONALES-------#
-with st.expander("Filtros adicionales", expanded=False):
-    st.markdown("Podés combinar uno o más filtros. El resultado mostrará solo los registros que cumplan todas las condiciones activas.")
-
-    # Nombre científico
-    especies_sel = []
-    if "scientificName" in df.columns:
-        especies = sorted(df["scientificName"].dropna().unique().tolist())
-        especies_sel = st.multiselect("Nombre científico", especies)
-
-    # Observador
-    observador = ""
-    if "recordedBy" in df.columns:
-        observador = st.text_input("Observador")
-
-    # País (puede llamarse countryCode o country según el dataset)
-    col_pais = None
-    paises_sel = []
-    if "countryCode" in df.columns:
-        col_pais = "countryCode"
-    elif "country" in df.columns:
-        col_pais = "country"
-    if col_pais:
-        paises = sorted(df[col_pais].dropna().unique().tolist())
-        paises_sel = st.multiselect("País", paises)
-
-    # Provincia
-    col_provincia = None
-    provincias_sel = []
-    if "stateProvince" in df.columns:
-        col_provincia = "stateProvince"
-    if col_provincia:
-        provincias = sorted(df[col_provincia].dropna().unique().tolist())
-        provincias_sel = st.multiselect("Provincia", provincias)
-
-    # Rango de fechas
-    fechas_sel = None
-    if "eventDate" in df.columns:
-        fechas_validas = pd.to_datetime(df["eventDate"], errors="coerce", utc=True).dropna()
-        if not fechas_validas.empty:
-            fecha_min = fechas_validas.min().date()
-            fecha_max = fechas_validas.max().date()
-            usar_fechas = st.checkbox("Filtrar por rango de fechas")
-            if usar_fechas:
-                fechas_sel = st.date_input("Rango de fechas", value=(fecha_min, fecha_max))
-
-    if hay_texto:
-        st.info("Borrá el texto de la búsqueda libre para usar los filtros adicionales.")
-
-st.markdown("---")
-
-# Botones uno al lado del otro
-col_btn1, col_btn2 = st.columns(2)
-
-with col_btn1:
-    if st.button("Buscar por texto", key="buscar_texto_btn", disabled=hay_filtros):
-        st.session_state["hay_filtros_activos"] = False
+    if st.button("Buscar por texto", key="buscar_texto_btn"):
         if texto_busqueda.strip():
             resultados = df[
                 df[col_busqueda].astype(str).str.contains(
@@ -118,9 +60,43 @@ with col_btn1:
             resultados = df.copy()
         st.session_state["resultados_busqueda"] = resultados
 
-with col_btn2:
-    if st.button("Buscar por filtros", key="buscar_filtros_btn", disabled=hay_texto):
-        st.session_state["hay_filtros_activos"] = True
+elif modo == "Filtros avanzados":
+    st.subheader("Filtros avanzados")
+    st.markdown("Podés combinar uno o más filtros. El resultado mostrará solo los registros que cumplan todas las condiciones activas.")
+
+    if "scientificName" in df.columns:
+        especies = sorted(df["scientificName"].dropna().unique().tolist())
+        especies_sel = st.multiselect("Nombre científico", especies)
+
+    if "recordedBy" in df.columns:
+        observador = st.text_input("Observador")
+
+    if "countryCode" in df.columns:
+        col_pais = "countryCode"
+    elif "country" in df.columns:
+        col_pais = "country"
+    if col_pais:
+        paises = sorted(df[col_pais].dropna().unique().tolist())
+        paises_sel = st.multiselect("País", paises)
+
+    if "stateProvince" in df.columns:
+        col_provincia = "stateProvince"
+    if col_provincia:
+        provincias = sorted(df[col_provincia].dropna().unique().tolist())
+        provincias_sel = st.multiselect("Provincia", provincias)
+
+    if "eventDate" in df.columns:
+        fechas_validas = pd.to_datetime(df["eventDate"], errors="coerce", utc=True).dropna()
+        if not fechas_validas.empty:
+            fecha_min = fechas_validas.min().date()
+            fecha_max = fechas_validas.max().date()
+            usar_fechas = st.checkbox("Filtrar por rango de fechas")
+            if usar_fechas:
+                fechas_sel = st.date_input("Rango de fechas", value=(fecha_min, fecha_max))
+
+    st.markdown("---")
+
+    if st.button("Buscar por filtros", key="buscar_filtros_btn"):
         resultados = df.copy()
 
         if especies_sel:
@@ -186,7 +162,7 @@ if "resultados_busqueda" in st.session_state:
         # Detalle de un registro
         st.markdown("#### Ver detalle de un registro")
         indice = st.number_input("Número de fila", min_value=0, max_value=len(resultados_ordenados)-1, value=0, step=1, key="detalle_idx")
-        st.dataframe(resultados_ordenados.iloc[[indice]][columnas_relevantes], use_container_width=True)
+        st.dataframe(resultados_ordenados.iloc[[indice]], use_container_width=True)
 
         #--------EJERCICIO 2.D: EXPORTAR CSV--------#
         st.markdown("---")
@@ -201,7 +177,7 @@ if "resultados_busqueda" in st.session_state:
             key="exportar_btn"
         )
     
-    #--------EJERCICIO 2.E: RESUMEN ESTADÍSTICO--------#
+        #--------EJERCICIO 2.E: RESUMEN ESTADÍSTICO--------#
         st.markdown("---")
         st.subheader("Resumen estadístico")
         st.markdown("Información sobre el subconjunto de registros encontrados.")

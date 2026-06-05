@@ -54,6 +54,9 @@ def actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna
     """
         Actualiza un campo especifico de un registro basado en su ID y genera un nuevo archivo con la actualización
     """
+
+    if Path(ruta_original) == Path(ruta_nueva):
+        raise ValueError("La ruta de origen y destino no pueden ser la misma.")
     registros_actualizados = 0
     #Contador en lugar de booleano para poder registrar cantidad de registros actualizados
 
@@ -84,27 +87,23 @@ def actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna
     return registros_actualizados > 0 
 
 def actualizar_un_campo_iadiza(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor):
+    """
+        Actualiza un campo específico de un registro en el dataset IADIZA.
+    """
     return actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor,
                                         nombre_dataset="iadiza", separador="\t")
 
 def actualizar_un_campo_xeno_canto(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor):
+    """
+        Actualiza un campo específico de un registro en el dataset XENO_CANTO.
+    """
     return actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor,
                                         nombre_dataset="xeno_canto", separador=",")
 
 def actualizar_un_campo_inaturalist(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor):
-    return actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor,
-                                        nombre_dataset="inaturalist", separador=",")
-
-
-def actualizar_un_campo_iadiza(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor):
-    return actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor,
-                                        nombre_dataset="iadiza", separador="\t")
-
-def actualizar_un_campo_xeno_canto(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor):
-    return actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor,
-                                        nombre_dataset="xeno_canto", separador=",")
-
-def actualizar_un_campo_inaturalist(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor):
+    """
+        Actualiza un campo específico de un registro en el dataset INATURALIST.
+    """
     return actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor,
                                         nombre_dataset="inaturalist", separador=",")
 
@@ -165,7 +164,7 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
             if not es_coordenada_valida(str(nuevo_valor), -180, 180):
                 errores.append(f"decimalLongitude inválida: '{nuevo_valor}'")
         elif columna == "eventDate":
-            es_valida, fecha = validar_y_convertir_fecha(str(nuevo_valor), FORMATO_FECHA)
+            es_valida, fecha = validar_y_convertir_fecha(str(nuevo_valor))
             if not es_valida:
                 errores.append(f"eventDate inválida: '{nuevo_valor}'")
             elif fecha and fecha > datetime.now():
@@ -176,7 +175,6 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
     
     #Recién acá se abren los archivos y se recorren las filas
     registros_actualizados = 0    
-    registros_actualizados = 0
     #Contador en lugar de booleano para poder registrar cantidad de registros actualizados
 
     if errores:

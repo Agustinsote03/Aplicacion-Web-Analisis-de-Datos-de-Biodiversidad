@@ -9,7 +9,7 @@ import sys
 
 #Importación de funciones
 sys.path.append(str(Path(__file__).parent.parent / "src"))
-#from utils import calcular_porcentaje_nulos_logica
+from utils import calcular_porcentaje_nulos_logica
 from validador import validar_coordenadas, validar_fechas
 from utils import calcular_porcentaje_nulos_logica
 from config import CONFIGURACION_DATASETS
