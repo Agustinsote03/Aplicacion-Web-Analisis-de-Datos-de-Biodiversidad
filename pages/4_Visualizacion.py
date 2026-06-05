@@ -11,7 +11,7 @@ import sys
 sys.path.append(str(Path(__file__).parent.parent / "src"))
 #from utils import calcular_porcentaje_nulos_logica
 from validador import validar_coordenadas, validar_fechas
-
+from config import CONFIGURACION_DATASETS
 
 #--------------------------------------------------Funciones Auxiliares-------------------------------------------------------#
 def generar_grafico_generico(datos_x, datos_y, tipo_grafico="bar", titulo="", x_etiqueta="", y_etiqueta="", **kwargs):
@@ -206,7 +206,20 @@ def mostrar_grafico_completitud(df_actual):
 
 #Ejercicio 3.E
 def mostrar_tabla_comparativa(datasets):
-    return
+    st.header("Comparativa de datasets")
+    
+    filas = []
+    for nombre, cfg in datasets.items():
+        fila = calcular_metricas_dataset(cfg["ruta"], nombre, cfg.get("separador", "\t"))
+        if fila:
+            filas.append(fila)
+    
+    if not filas:
+        st.warning("No hay datasets disponibles.")
+        return
+    
+    df_comp = pd.DataFrame(filas).set_index("Dataset")
+    st.dataframe(df_comp, use_container_width=True)
 
 cantidad_registros(df_actual)
 cantidad_registros_por_anio(df_actual)
