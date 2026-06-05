@@ -53,19 +53,42 @@ def cantidad_registros(ruta_archivo, separador="\t"):
     
     return contador
 
-def buscar_registros_logica(filas, filtros):
+
+def cumple_filtro(valor_fila, valor_buscado, modo="exacto"):
     """
-    Lógica pura de búsqueda por múltiples columnas exactas.
-    Recibe un iterador de diccionarios y un diccionario de filtros.
-    Reutiliza la lógica del Ejercicio 5.A.
+    Evalúa si un valor de una fila cumple con el filtro.
+    Modos:
+      - "exacto": coincidencia exacta (2.B)
+      - "contiene": coincidencia de carácteres
     """
-    registros_encontrados = []
-    for fila in filas:
-        cumple_filtros = True
-        for columna, valor_buscado in filtros.items():
-            if fila.get(columna) != str(valor_buscado):
-                cumple_filtros = False
-                break
-        if cumple_filtros:
-            registros_encontrados.append(fila)
+    if not valor_fila and not valor_buscado:
+        return True
+    if not valor_fila or not valor_buscado:
+        return False
+    
+    valor_fila = str(valor_fila).strip()
+    valor_buscado = str(valor_buscado).strip()
+    
+    if modo == "contiene":
+        return valor_buscado.lower() in valor_fila.lower()
+    return valor_fila.lower() == valor_buscado.lower()
+
+
+def buscar_registros_logica(filas, columnas, filtros = None, modo="exacto", **kwargs):
+    """
+    Lógica pura de búsqueda reutilizable.
+    - filas: iterador de diccionarios
+    - columnas: columnas válidas del dataset
+    - filtros: {columna: valor_buscado}
+    - modo: "exacto" o "contiene"
+    """
+    if filtros:
+        filtros_validos = {col: val for col, val in filtros if col in columnas}
+        
+        registros_encontrados = []
+        for fila in filas:
+            if all(cumple_filtro(fila.get(col, ""), val, modo) for col, val in filtros_validos.items()):
+                registros_encontrados.append(fila)
+    else:
+        registros_encontrados = list(filas)
     return registros_encontrados
