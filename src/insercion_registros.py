@@ -1,6 +1,11 @@
 import csv
 from pathlib import Path
-from validador import *
+from validador import (
+    es_coordenada_valida,
+    validar_y_convertir_fecha,
+    es_incertidumbre_valida,
+)
+from datetime import datetime
 from logger import registrar_operacion
 from utils import manejar_archivo_no_encontrado
 
