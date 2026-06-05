@@ -411,7 +411,7 @@ def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset, prepa
     Valida e inserta un único registro al final del dataset, guardando el resultado en un nuevo archivo.
     Si el registro es inválido no se realiza ninguna inserción.
     """
-    es_valido = validar_fn(registro)
+    es_valido, errores = validar_fn(registro)
 
     if not es_valido:
         registrar_operacion(nombre_dataset, "INSERT", 0, error=True)
@@ -424,7 +424,7 @@ def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset, prepa
         registro_completo = preparar_fn(registro, ruta_origen, columnas)
 
         with open(ruta_destino, "w", encoding="utf-8", newline="") as f_out:
-            writer = csv.DictWriter(f_out, fieldnames=columnas, delimiter=separador)
+            writer = csv.DictWriter(f_out, fieldnames=columnas, delimiter=separador, extrasaction='ignore')
             writer.writeheader()
 
             for fila in reader:

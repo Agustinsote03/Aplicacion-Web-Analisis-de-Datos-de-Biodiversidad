@@ -374,3 +374,4 @@ def sanitizar_dataset_evolucionada_inaturalist(ruta_original, ruta_nueva):
     Igual que sanitizar_dataset pero además muestra un reporte detallado por pantalla para iNaturalist
     """
     return sanitizar_dataset_evolucionada_generica(ruta_original, ruta_nueva, separador=",", col_lat="decimalLatitude", col_lon="decimalLongitude")
+

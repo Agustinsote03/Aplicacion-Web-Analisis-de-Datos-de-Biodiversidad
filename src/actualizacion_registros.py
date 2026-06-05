@@ -96,6 +96,19 @@ def actualizar_un_campo_inaturalist(ruta_original, ruta_nueva, id_registro, colu
                                         nombre_dataset="inaturalist", separador=",")
 
 
+def actualizar_un_campo_iadiza(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor):
+    return actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor,
+                                        nombre_dataset="iadiza", separador="\t")
+
+def actualizar_un_campo_xeno_canto(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor):
+    return actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor,
+                                        nombre_dataset="xeno_canto", separador=",")
+
+def actualizar_un_campo_inaturalist(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor):
+    return actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor,
+                                        nombre_dataset="inaturalist", separador=",")
+
+
 def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modificaciones, nombre_dataset,separador="\t", columna_id="occurrenceID"):
     """
     Actualiza múltiples campos de un registro identificado por su ID, sin validar los nuevos valores.
