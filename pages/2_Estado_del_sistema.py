@@ -44,69 +44,58 @@ def leer_logs():
 
 logs = leer_logs()
 
-if not logs:
-    st.warning("El log está vacío")
+if len(logs) == 0:
+    st.warning("El log está vacío o no se ha creado todavía el archivo operations.log")
 else:
     df_logs = pd.DataFrame(logs)
+    
+    # Limpieza de datos (fechas inválidas)
+    df_logs["Fecha_parsed"] = pd.to_datetime(df_logs["Fecha"], errors="coerce")
+    logs_corruptos = df_logs[df_logs["Fecha_parsed"].isna()]
+    
+    if not logs_corruptos.empty:
+        st.warning(f" Se omitieron {len(logs_corruptos)} línea(s) del log por formato de fecha corrupto")
+        
+    df_logs = df_logs.dropna(subset=["Fecha_parsed"])
 
     # -- 4.E - Métricas resumidas --
     st.subheader("Resumen de operaciones")
-
-    total_insert = len(df_logs[df_logs["Operación"] == "INSERT"])
-    total_update = len(df_logs[df_logs["Operación"] == "UPDATE"])
-    total_delete = len(df_logs[df_logs["Operación"] == "DELETE"])
-    total_error = len(df_logs[df_logs["Estado"] == "ERROR"])
-
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Inserciones", total_insert)
-    col2.metric("Actualizaciones", total_update)
-    col3.metric("Eliminaciones", total_delete)
-    col4.metric("Errores", total_error)
+    
+    col1.metric("Total Inserciones", len(df_logs[df_logs["Operación"] == "INSERT"]))
+    col2.metric("Total Actualizaciones", len(df_logs[df_logs["Operación"] == "UPDATE"]))
+    col3.metric("Total Eliminaciones", len(df_logs[df_logs["Operación"] == "DELETE"]))
+    col4.metric("Total Errores", len(df_logs[df_logs["Estado"] == "ERROR"]))
 
     st.markdown("---")
+    st.subheader("Filtrar Registros")
 
-    # -- 4.E - Filtros --
-    st.subheader("Filtrar operaciones")
+    # Widgets de filtrado
+    col_filtros1, col_filtros2 = st.columns(2)
+    
+    with col_filtros1:
+        opciones_op = ["INSERT", "UPDATE", "DELETE", "ERROR"]
+        filtro_op = st.multiselect("Tipo de Operación", opciones_op, default=opciones_op)
+        
+    with col_filtros2:
+        rango_fechas = st.date_input("Rango de fechas", [])
 
-    col_f1, col_f2 = st.columns(2)
+    # Aplicación de filtros
+    df_filtrado = df_logs[
+        (df_logs["Operación"].isin(filtro_op)) | 
+        ((df_logs["Estado"] == "ERROR") & ("ERROR" in filtro_op))
+    ]
 
-    with col_f1:
-        tipos = ["Todos"] + sorted(df_logs["Operación"].unique().tolist())
-        tipo_seleccionado = st.selectbox("Filtrar por tipo de operación", tipos)
+    # Verificamos si el usuario seleccionó ambas fechas (inicio y fin)
+    if len(rango_fechas) == 2:
+        fecha_inicio, fecha_fin = rango_fechas
+        mascara_fechas = df_filtrado["Fecha_parsed"].dt.date.between(fecha_inicio, fecha_fin)
+        df_filtrado = df_filtrado[mascara_fechas]
 
-    with col_f2:
-        try:
-            fechas = pd.to_datetime(df_logs["Fecha"], errors="coerce").dropna()
-            fecha_min = fechas.min().date()
-            fecha_max = fechas.max().date()
-            rango_fechas = st.date_input(
-                "Fitrar por rango de fechas",
-                value=(fecha_min, fecha_max)
-            )
-        except Exception:
-            rango_fechas = None
-
-    # Aplicar filtros
-    df_filtrado = df_logs.copy()
-
-    if tipo_seleccionado != "Todos":
-        # Incluir también los ERROR del tipo seleccionado
-        if tipo_seleccionado == "ERROR":
-            df_filtrado = df_filtrado[df_filtrado["Estado"] == "ERROR"]
-        else:
-            df_filtrado = df_filtrado[df_filtrado["Operación"] == tipo_seleccionado]
-
-    if rango_fechas and len(rango_fechas) == 2:
-        df_filtrado["Fecha_parsed"] = pd.to_datetime(df_filtrado["Fecha"], errors="coerce")
-        df_filtrado = df_filtrado[
-            (df_filtrado["Fecha_parsed"].isna()) |  # mantiene los registros que no se pudieron parsear
-            (
-                (df_filtrado["Fecha_parsed"].dt.date >= rango_fechas[0]) &
-                (df_filtrado["Fecha_parsed"].dt.date <= rango_fechas[1])
-            )
-        ]
-        df_filtrado = df_filtrado.drop(columns=["Fecha_parsed"])
-
-    st.markdown("---")
-    st.subheader(f"Operaciones registradas: {len(df_filtrado)}")
-    st.dataframe(df_filtrado, use_container_width=True)
+    # Mostrar resultados
+    st.markdown(f"**{len(df_filtrado)} registro(s)**")
+    
+    if df_filtrado.empty:
+        st.info("No hay registros que coincidan con los filtros aplicados.")
+    else:
+        st.table(df_filtrado.drop(columns=["Fecha_parsed"]))
