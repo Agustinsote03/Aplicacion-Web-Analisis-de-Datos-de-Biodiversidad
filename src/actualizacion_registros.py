@@ -84,14 +84,23 @@ def actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna
     return registros_actualizados > 0 
 
 def actualizar_un_campo_iadiza(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor):
+    """
+        Actualiza un campo específico de un registro en el dataset IADIZA.
+    """
     return actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor,
                                         nombre_dataset="iadiza", separador="\t")
 
 def actualizar_un_campo_xeno_canto(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor):
+    """
+        Actualiza un campo específico de un registro en el dataset XENO_CANTO.
+    """
     return actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor,
                                         nombre_dataset="xeno_canto", separador=",")
 
 def actualizar_un_campo_inaturalist(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor):
+    """
+        Actualiza un campo específico de un registro en el dataset INATURALIST.
+    """
     return actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor,
                                         nombre_dataset="inaturalist", separador=",")
 

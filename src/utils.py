@@ -27,6 +27,9 @@ def calcular_porcentaje_nulos_logica(iterador_filas, columnas):
 
 
 def manejar_archivo_no_encontrado(func):
+    """
+        Decorador para manejar la excepción FileNotFoundError y proporcionar un mensaje de error más claro.
+    """
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)

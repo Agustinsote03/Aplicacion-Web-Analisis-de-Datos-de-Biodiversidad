@@ -342,14 +342,23 @@ def max_numero_dataset(ruta_archivo, separador, columna, extraer_numero):
     return max_num
 
 def max_catalog_number_iadiza(ruta_archivo, separador="\t"):
+    """
+    Obtiene el máximo número de catalogNumber en el dataset IADIZA, considerando solo los valores que son dígitos.
+    """
     return max_numero_dataset(ruta_archivo, separador, "catalogNumber",
         lambda v: int(v) if v.isdigit() else None)
 
 def max_catalog_number_xeno_canto(ruta_archivo, separador=","):
+    """
+    Obtiene el máximo número de catalogNumber en el dataset XENO_CANTO, considerando solo los valores que empiezan con "XC" seguidos de dígitos.
+    """
     return max_numero_dataset(ruta_archivo, separador, "catalogNumber",
         lambda v: int(v[2:]) if v.startswith("XC") and v[2:].isdigit() else None)
 
 def max_catalog_number_inaturalist(ruta_archivo, separador=","):
+    """
+    Obtiene el máximo número de catalogNumber en el dataset INATURALIST, considerando solo los valores que son dígitos.
+    """
     return max_numero_dataset(ruta_archivo, separador, "id",
         lambda v: int(v) if v.isdigit() else None)
 
@@ -373,6 +382,9 @@ def preparar_estructura_generica(registro, ruta_archivo, columnas, separador, ob
     return registro_completo
 
 def preparar_estructura_iadiza(registro, ruta_archivo, columnas, nombre_dataset, separador="\t"):
+    """
+    Prepara la estructura completa de un nuevo registro para el dataset IADIZA, asignando los IDs correspondientes.
+    """
     return preparar_estructura_generica(
         registro, ruta_archivo, columnas, separador,
         obtener_max_num=lambda r, s: max_catalog_number_iadiza(r, s),
@@ -384,6 +396,9 @@ def preparar_estructura_iadiza(registro, ruta_archivo, columnas, nombre_dataset,
     )
 
 def preparar_estructura_xeno_canto(registro, ruta_archivo, columnas, separador=","):
+    """
+    Prepara la estructura completa de un nuevo registro para el dataset XENO_CANTO, asignando los IDs correspondientes.
+    """
     return preparar_estructura_generica(
         registro, ruta_archivo, columnas, separador,
         obtener_max_num=lambda r, s: max_catalog_number_xeno_canto(r, s),
@@ -395,6 +410,9 @@ def preparar_estructura_xeno_canto(registro, ruta_archivo, columnas, separador="
     )
 
 def preparar_estructura_inaturalist(registro, ruta_archivo, columnas, separador=","):
+    """
+    Prepara la estructura completa de un nuevo registro para el dataset INATURALIST, asignando los IDs correspondientes.
+    """
     return preparar_estructura_generica(
         registro, ruta_archivo, columnas, separador,
         obtener_max_num=lambda r, s: max_catalog_number_inaturalist(r, s),
