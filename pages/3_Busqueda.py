@@ -34,7 +34,7 @@ st.markdown("---")
 col_busqueda = columnas[0]
 texto_busqueda = ""
 especies_sel = []
-observador = ""
+observador_sel = []
 col_pais = None
 paises_sel = []
 col_provincia = None
@@ -73,7 +73,8 @@ elif modo == "Filtros avanzados":
         especies_sel = st.multiselect("Nombre científico", especies)
 
     if "recordedBy" in df.columns:
-        observador = st.text_input("Observador")
+        observadores = sorted(df["recordedBy"].dropna().unique().tolist())
+        observador_sel = st.multiselect("Observador", observadores)
 
     if "countryCode" in df.columns:
         col_pais = "countryCode"
@@ -94,9 +95,7 @@ elif modo == "Filtros avanzados":
         if not fechas_validas.empty:
             fecha_min = fechas_validas.min().date()
             fecha_max = fechas_validas.max().date()
-            usar_fechas = st.checkbox("Filtrar por rango de fechas")
-            if usar_fechas:
-                fechas_sel = st.date_input("Rango de fechas", value=(fecha_min, fecha_max))
+            fechas_sel = st.date_input("Rango de fechas", value=(fecha_min, fecha_max))
 
     st.markdown("---")
 
@@ -106,12 +105,8 @@ elif modo == "Filtros avanzados":
         if especies_sel:
             resultados = resultados[resultados["scientificName"].isin(especies_sel)]
 
-        if observador.strip():
-            resultados = resultados[
-                resultados["recordedBy"].astype(str).str.contains(
-                    observador.strip(), case=False, na=False
-                )
-            ]
+        if observador_sel:
+            resultados = resultados[resultados["recordedBy"].isin(observador_sel)]
 
         if paises_sel and col_pais:
             resultados = resultados[resultados[col_pais].isin(paises_sel)]
