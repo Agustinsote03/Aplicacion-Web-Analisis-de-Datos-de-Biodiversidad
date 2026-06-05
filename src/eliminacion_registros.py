@@ -210,7 +210,6 @@ def validar_fila(fila, col_lat="decimalLatitude", col_lon="decimalLongitude"):
     Valida los campos de una fila del dataset y retorna una lista con los motivos de invalidez.
     """
     codigos_pais_validos = {"AR","CL","BR","UY","PY","BO","PE","EC","CO","VE"}
-    formato_fecha = "%Y-%m-%d"
     motivos = []
 
     lat = fila.get(col_lat, "").strip()
@@ -226,7 +225,7 @@ def validar_fila(fila, col_lat="decimalLatitude", col_lon="decimalLongitude"):
 
     fecha_str = fila.get("eventDate", "").strip()[:10]
     if fecha_str:
-        es_valida, fecha = validar_y_convertir_fecha(fecha_str, formato_fecha)
+        es_valida, fecha = validar_y_convertir_fecha(fecha_str)
         if not es_valida:
             motivos.append("fecha inválida")
         elif fecha and fecha > datetime.now():
