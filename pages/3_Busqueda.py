@@ -4,7 +4,7 @@ import pandas as pd
 from pathlib import Path
 from datetime import datetime
 from dataset_loader import seleccionar_dataset, mostrar_info_dataset, cargar_dataset
-
+from utils import buscar_registros_logica
 #Sidebar: selector e información de datasets
 seleccionar_dataset()
 mostrar_info_dataset()
@@ -51,14 +51,18 @@ if modo == "Búsqueda por texto libre":
 
     if st.button("Buscar por texto", key="buscar_texto_btn"):
         if texto_busqueda.strip():
-            resultados = df[
+
+            filas= df.fillna("").astype(str).to_dict(orient="records")
+            columnas= df[
                 df[col_busqueda].astype(str).str.contains(
                     texto_busqueda.strip(), case=False, na=False
                 )
             ]
+            filtros = {col_busqueda : texto_busqueda.strip()}
+            lista_valores = buscar_registros_logica(filas, columnas, filtros, modo="contiene")
         else:
             resultados = df.copy()
-        st.session_state["resultados_busqueda"] = resultados
+        st.session_state["resultados_busqueda"] = resultados = pd.DataFrame(lista_valores)
 
 elif modo == "Filtros avanzados":
     st.subheader("Filtros avanzados")
