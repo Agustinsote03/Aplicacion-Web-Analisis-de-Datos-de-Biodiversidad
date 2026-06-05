@@ -35,7 +35,7 @@ Archivo EML (Ecological Metadata Language) que describe el dataset en detalle: t
 ### `Occurrence.txt`
 
 | Atributo | Descripción | Ejemplo de valor |
-
+|----------|-------------|------------------|
 | `id` | Identificador interno del registro (clave) | `999540@XC` |
 | `occurrenceID` | URL única de la observación en el sistema | `https://data.biodiversitydata.nl/xeno-canto/observation/XC999540` |
 | `catalogNumber` | Número de catálogo de Xeno-canto | `XC999540` |
@@ -56,16 +56,15 @@ Archivo EML (Ecological Metadata Language) que describe el dataset en detalle: t
 | `associatedTaxa` | Especies de fondo presentes en la grabación | `has background sounds: Vanellus chilensis\|Phacellodomus ruber` |
 | `license` | Licencia del registro individual | `CC BY-NC` |
 
-
 ### `Multimedia.txt` (atributos principales)
 
 | Atributo | Descripción | Ejemplo de valor |
-
+|----------|-------------|------------------|
 | `coreid` | ID del registro de ocurrencia asociado | `999540@XC` |
 | `associatedObservationReference` | URL de la observación asociada | `https://xeno-canto.org/999540` |
 | `identifier` | URL directa al archivo de audio | `https://xeno-canto.org/999540/download` |
 | `type` | Tipo de medio | `Sound` |
-| `Rating` | Calificación de la grabación (escala de Xeno-canto) | `A` / `B` / `C` |
+| `Rating` | Calificación de la grabación | `A` / `B` / `C` |
 | `creator` | Autor de la grabación | `Franco Vushurovich` |
 | `accessURI` | URI de acceso al recurso multimedia | URL al archivo de audio |
 | `format` | Formato del archivo de audio | `audio/mpeg` |
