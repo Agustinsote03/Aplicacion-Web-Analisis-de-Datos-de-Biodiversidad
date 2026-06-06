@@ -64,17 +64,16 @@ sin necesidad de redefinir su estructura.
 """)
 
 st.header("Instrucciones basicas de uso")
-st.write("""
-Para utilizar la aplicación:
+st.write(""" 
+    Para utilizar la aplicación:
 
-- En la barra lateral (sidebar) podés navegar entre las distintas páginas:
+    - En la barra lateral (sidebar) podés navegar entre las distintas páginas:
     - **Inicio**: información general de la aplicación.
-    - **Estado del sistema**: muestra el estado de carga o funcionamiento de los datos.
-    - **Búsqueda**: permitirá buscar registros de biodiversidad (en desarrollo).
-    - **Visualización**: permitirá ver gráficos y mapas (en desarrollo).
-
-- En esta etapa, las páginas de Búsqueda y Visualización aún no están implementadas, 
-por lo que funcionan como secciones informativas.
+    - **Estado del sistema**: muestra el historial de operaciones realizadas.
+    - **Búsqueda**: buscá registros por texto libre o filtros avanzados.
+    - **Visualización**: gráficos de distribución, tendencias temporales y comparativas.
+    - **Gestión de registros**: insertá, actualizá o eliminá registros de los datasets.
+    - **Datasets**: información técnica y calidad de datos de cada dataset.
 
 - A medida que avances en la aplicación, podrás consultar información sobre especies, 
 ubicaciones y registros biológicos.
