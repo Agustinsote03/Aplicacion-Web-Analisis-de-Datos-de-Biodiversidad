@@ -6,6 +6,7 @@ from datetime import datetime
 from utils import buscar_registros_logica, manejar_archivo_no_encontrado
 FORMATO_FECHA = "%Y-%m-%d"
 
+@manejar_archivo_no_encontrado
 def buscar_registros_generica(ruta_archivo, filtros, separador="\t"):
     """ 
     Busca y retorna registros de un dataset que cumplan con los criterios de filtrado 
@@ -33,6 +34,7 @@ def buscar_registros_inaturalist(ruta_archivo, filtros):
     """
     return buscar_registros_generica(ruta_archivo, filtros, separador=",")
 
+@manejar_archivo_no_encontrado
 def actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor, nombre_dataset, separador="\t", columna_id="occurrenceID"):
     """
         Actualiza un campo especifico de un registro basado en su ID y genera un nuevo archivo con la actualización
@@ -43,29 +45,26 @@ def actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna
     registros_actualizados = 0
     #Contador en lugar de booleano para poder registrar cantidad de registros actualizados
 
-    try:
-        with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
-            open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
+    with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
+        open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
             
-            lector = csv.DictReader(archivo_original, delimiter=separador)
+        lector = csv.DictReader(archivo_original, delimiter=separador)
 
-            escritor = csv.DictWriter((archivo_nuevo), fieldnames=lector.fieldnames, delimiter=separador)
+        escritor = csv.DictWriter((archivo_nuevo), fieldnames=lector.fieldnames, delimiter=separador)
 
-            escritor.writeheader()
+        escritor.writeheader()
 
-            for fila in lector:
-                if fila.get(columna_id, "").strip() == str(id_registro).strip():
-                    fila[columna] = nuevo_valor
-                    registros_actualizados += 1
+        for fila in lector:
+            if fila.get(columna_id, "").strip() == str(id_registro).strip():
+                fila[columna] = nuevo_valor
+                registros_actualizados += 1
             
-                escritor.writerow(fila)
+            escritor.writerow(fila)
 
-            if registros_actualizados > 0:
-                registrar_operacion(nombre_dataset, "UPDATE", registros_actualizados)
-            else:
-                registrar_operacion(nombre_dataset, "UPDATE", registros_actualizados, error=(registros_actualizados == 0))
-    except FileNotFoundError:
-        raise
+    if registros_actualizados > 0:
+        registrar_operacion(nombre_dataset, "UPDATE", registros_actualizados)
+    else:
+        registrar_operacion(nombre_dataset, "UPDATE", registros_actualizados, error=(registros_actualizados == 0))
 
     return registros_actualizados > 0 
 
@@ -90,7 +89,7 @@ def actualizar_un_campo_inaturalist(ruta_original, ruta_nueva, id_registro, colu
     return actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna, nuevo_valor,
                                         nombre_dataset="inaturalist", separador=",")
 
-
+@manejar_archivo_no_encontrado
 def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modificaciones, nombre_dataset,separador="\t", columna_id="occurrenceID"):
     """
     Actualiza múltiples campos de un registro identificado por su ID, sin validar los nuevos valores.
@@ -98,35 +97,31 @@ def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modifica
     registros_actualizados = 0
     #Contador en lugar de booleano para poder registrar cantidad de registros actualizados
 
-    try:
-        with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
-            open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
+    with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
+        open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
 
-            lector = csv.DictReader(archivo_original, delimiter=separador)
-            escritor = csv.DictWriter(archivo_nuevo, fieldnames=lector.fieldnames, delimiter=separador)
+        lector = csv.DictReader(archivo_original, delimiter=separador)
+        escritor = csv.DictWriter(archivo_nuevo, fieldnames=lector.fieldnames, delimiter=separador)
 
-            escritor.writeheader()
+        escritor.writeheader()
 
-            for fila in lector:
-                if fila.get(columna_id, "").strip() == str(id_registro).strip():
-                    for columna, nuevo_valor in modificaciones.items():
+        for fila in lector:
+            if fila.get(columna_id, "").strip() == str(id_registro).strip():
+                for columna, nuevo_valor in modificaciones.items():
 
-                        if columna in fila:
-                            fila[columna] = nuevo_valor
-                    registros_actualizados += 1
-                escritor.writerow(fila)
+                    if columna in fila:
+                        fila[columna] = nuevo_valor
+                registros_actualizados += 1
+            escritor.writerow(fila)
 
-            if registros_actualizados > 0:
-                registrar_operacion(nombre_dataset, "UPDATE", registros_actualizados)
-            else:
-                registrar_operacion(nombre_dataset, "UPDATE", registros_actualizados, error=(registros_actualizados == 0))
-
-    except FileNotFoundError:
-        raise
+        if registros_actualizados > 0:
+            registrar_operacion(nombre_dataset, "UPDATE", registros_actualizados)
+        else:
+            registrar_operacion(nombre_dataset, "UPDATE", registros_actualizados, error=(registros_actualizados == 0))
 
     return registros_actualizados > 0
 
-
+@manejar_archivo_no_encontrado
 def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro, modificaciones, nombre_dataset, separador="\t", columna_id="occurrenceID"):
     """
     Actualiza múltiples campos de un registro identificado por su ID, validando los nuevos valores antes de aplicar los cambios.
@@ -165,33 +160,29 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
         return False
     
     # Abrimos archivo original(lectura) y nuevo(escritura)
-    try:
-        with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
-            open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
+    with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
+        open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
 
-            # Leemos el CSV como diccionarios
-            lector = csv.DictReader(archivo_original, delimiter=separador)
-            #Preparamos el archivo de salida con las mismas columnas
-            escritor = csv.DictWriter(archivo_nuevo, fieldnames=lector.fieldnames, delimiter=separador)
+        # Leemos el CSV como diccionarios
+        lector = csv.DictReader(archivo_original, delimiter=separador)
+        #Preparamos el archivo de salida con las mismas columnas
+        escritor = csv.DictWriter(archivo_nuevo, fieldnames=lector.fieldnames, delimiter=separador)
 
-            escritor.writeheader() #Escribimos encabezado
+        escritor.writeheader() #Escribimos encabezado
 
-            # Recorremos todos los registros
-            for fila in lector:
-                if str(fila.get(columna_id, "")).strip() == str(id_registro).strip():
-                    for columna, nuevo_valor in modificaciones.items():
-                        if columna in fila:
-                            fila[columna] = nuevo_valor
-                    registros_actualizados += 1
-                escritor.writerow(fila)
+        # Recorremos todos los registros
+        for fila in lector:
+            if str(fila.get(columna_id, "")).strip() == str(id_registro).strip():
+                for columna, nuevo_valor in modificaciones.items():
+                    if columna in fila:
+                        fila[columna] = nuevo_valor
+                registros_actualizados += 1
+            escritor.writerow(fila)
 
-        if registros_actualizados > 0:
-            registrar_operacion(nombre_dataset, "UPDATE", registros_actualizados)
-        else:
-            registrar_operacion(nombre_dataset, "UPDATE", registros_actualizados, error=(registros_actualizados == 0))
-
-    except FileNotFoundError:
-        raise
+    if registros_actualizados > 0:
+        registrar_operacion(nombre_dataset, "UPDATE", registros_actualizados)
+    else:
+        registrar_operacion(nombre_dataset, "UPDATE", registros_actualizados, error=(registros_actualizados == 0))
 
     return registros_actualizados > 0
 
