@@ -234,6 +234,7 @@ with tab_actualizar:
                 st.session_state.pop("registro_a_editar", None)
             else:
                 st.session_state["registro_a_editar"] = resultados[0]
+                st.session_state["id_a_actualizar"] = id_busqueda.strip() 
                 st.success("Registro encontrado")
             
     # 4.C - Formulario editable
@@ -271,7 +272,7 @@ with tab_actualizar:
                 resultado = actualizar_multiples_campos_validando(
                     ruta_origen,
                     ruta_destino,
-                    id_busqueda.strip(),
+                    st.session_state.get("id_a_actualizar", ""),  # ← CORREGIDO
                     modificaciones,
                     nombre_dataset.upper(),
                     separador=cfg["separador"]
