@@ -86,8 +86,8 @@ def validar_coordenadas(ruta_archivo, separador, col_lat="decimalLatitude", col_
         #Se recorre cada fila del archivo
 
         for fila in csv_reader:
-            lat = fila.get(col_lat, "") or fila.get("latitudeDecimal", "")
-            lon = fila.get(col_lon, "") or fila.get("longitudeDecimal", "")
+            lat = fila.get(col_lat, "").strip()
+            lon = fila.get(col_lon, "").strip()
             
             lat_valida = es_coordenada_valida(lat, -90, 90)
             lon_valida = es_coordenada_valida(lon, -180, 180)
