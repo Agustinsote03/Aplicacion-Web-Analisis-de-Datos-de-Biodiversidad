@@ -340,14 +340,6 @@ def sanitizar_dataset_evolucionada_generica(ruta_original, ruta_nueva, separador
 
     porcentaje = (eliminados / total * 100) if total > 0 else 0
 
-    print(f"\n----Reporte de sanitización----")
-    print(f"Total de registros: {total}")
-    print(f"Registros eliminados: {eliminados}")
-    print(f"Porcentaje eliminado: {porcentaje:.2f}%") #porcentaje:.2f solo muestra dos decimales
-    print(f"\nMotivos de eliminación:")
-    for motivo, cantidad in motivos_conteo.items():
-        print(f"  - {motivo}: {cantidad} registros")
-
     return {
         "total": total,
         "eliminados": eliminados,
