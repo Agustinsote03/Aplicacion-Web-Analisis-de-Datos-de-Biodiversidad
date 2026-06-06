@@ -1,7 +1,7 @@
 import csv
 from pathlib import Path
 from datetime import datetime
-from validador import (es_coordenada_valida, validar_y_convertir_fecha, es_incertidumbre_valida)
+from validador import (es_coordenada_valida, validar_y_convertir_fecha, es_incertidumbre_valida, codigos_validos)
 from logger import registrar_operacion
 from utils import manejar_archivo_no_encontrado 
 
@@ -209,7 +209,6 @@ def validar_fila(fila, col_lat="decimalLatitude", col_lon="decimalLongitude"):
     """
     Valida los campos de una fila del dataset y retorna una lista con los motivos de invalidez.
     """
-    codigos_pais_validos = {"AR","CL","BR","UY","PY","BO","PE","EC","CO","VE"}
     motivos = []
 
     lat = fila.get(col_lat, "").strip()
@@ -232,7 +231,7 @@ def validar_fila(fila, col_lat="decimalLatitude", col_lon="decimalLongitude"):
             motivos.append("fecha futura")
 
     country_code = fila.get("countryCode", "").strip().upper()
-    if country_code and country_code not in codigos_pais_validos:
+    if country_code and country_code not in codigos_validos:
         motivos.append(f"countryCode inválido: {country_code}")
 
     incertidumbre = fila.get("coordinateUncertaintyInMeters", "").strip()
@@ -339,14 +338,6 @@ def sanitizar_dataset_evolucionada_generica(ruta_original, ruta_nueva, separador
             escritor.writerow(fila)
 
     porcentaje = (eliminados / total * 100) if total > 0 else 0
-
-    print(f"\n----Reporte de sanitización----")
-    print(f"Total de registros: {total}")
-    print(f"Registros eliminados: {eliminados}")
-    print(f"Porcentaje eliminado: {porcentaje:.2f}%") #porcentaje:.2f solo muestra dos decimales
-    print(f"\nMotivos de eliminación:")
-    for motivo, cantidad in motivos_conteo.items():
-        print(f"  - {motivo}: {cantidad} registros")
 
     return {
         "total": total,

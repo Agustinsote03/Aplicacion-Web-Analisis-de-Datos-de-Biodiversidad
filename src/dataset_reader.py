@@ -193,7 +193,7 @@ def resumen_columna(ruta_archivo, nombre_columna, tipo, separador="\t"):
         for v in valores:
             try:
                 numeros.append(float(v))
-            except ValueError:
+            except (ValueError, TypeError):
                 continue
 
         if not numeros:
@@ -216,7 +216,7 @@ def resumen_columna(ruta_archivo, nombre_columna, tipo, separador="\t"):
         for v in valores:
             try:
                 numeros.append(float(v))
-            except ValueError:
+            except (ValueError, TypeError):
                 continue
 
         if not numeros:

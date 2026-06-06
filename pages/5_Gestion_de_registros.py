@@ -365,7 +365,6 @@ with tab_eliminar:
                 st.warning("Ingresá al menos un valor")
             else:
                 valores = [v.strip() for v in valores_texto.split(",")]
-                df = st.session_state["dataset_actual"]
                 preview = df[df[col_eliminar].astype(str).isin(valores)]
                 if preview.empty:
                     st.error("No se encontraron registros con esos valores")
@@ -406,7 +405,6 @@ with tab_eliminar:
             if not valor_condicion.strip():
                 st.warning("Ingresá un valor de referencia")
             else:
-                df = st.session_state["dataset_actual"]
                 try:
                     col_num = pd.to_numeric(df[col_condicion], errors="coerce")
                     val_num = float(valor_condicion)
