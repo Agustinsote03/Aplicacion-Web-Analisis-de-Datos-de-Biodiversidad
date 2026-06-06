@@ -4,6 +4,7 @@ from validador import (
     es_coordenada_valida,
     validar_y_convertir_fecha,
     es_incertidumbre_valida,
+    codigos_validos
 )
 from datetime import datetime
 from logger import registrar_operacion
@@ -221,7 +222,6 @@ def crear_registro_vacio(columnas):
     """
     return {col: "" for col in columnas if col not in COLUMNAS_ID}
 
-CODIGOS_PAIS_VALIDOS = {"AR","CL","BR","UY","PY","BO","PE","EC","CO","VE"}
 FORMATO_FECHA = "%Y-%m-%d"
 
 def validar_registro_iadiza(registro):
@@ -250,8 +250,8 @@ def validar_registro_iadiza(registro):
 
     # countryCode
     country_code = registro.get("countryCode", "").strip().upper()
-    if country_code != "" and country_code not in CODIGOS_PAIS_VALIDOS:
-        errores.append(f"countryCode inválido: '{country_code}'. Valores permitidos: {CODIGOS_PAIS_VALIDOS}")
+    if country_code != "" and country_code not in codigos_validos:
+        errores.append(f"countryCode inválido: '{country_code}'. Valores permitidos: {codigos_validos}")
 
     # Incertidumbre
     incertidumbre = registro.get("coordinateUncertaintyInMeters", "").strip()
@@ -319,8 +319,8 @@ def validar_registro_inaturalist(registro):
 
     # countryCode
     country_code = registro.get("countryCode", "").strip().upper()
-    if country_code != "" and country_code not in CODIGOS_PAIS_VALIDOS:
-        errores.append(f"countryCode inválido: '{country_code}'. Valores permitidos: {CODIGOS_PAIS_VALIDOS}")
+    if country_code != "" and country_code not in codigos_validos:
+        errores.append(f"countryCode inválido: '{country_code}'. Valores permitidos: {codigos_validos}")
 
     # Incertidumbre
     incertidumbre = registro.get("coordinateUncertaintyInMeters", "").strip()

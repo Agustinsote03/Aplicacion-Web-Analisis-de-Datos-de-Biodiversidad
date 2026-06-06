@@ -1,7 +1,7 @@
 import csv
 from pathlib import Path
 from datetime import datetime
-from validador import (es_coordenada_valida, validar_y_convertir_fecha, es_incertidumbre_valida)
+from validador import (es_coordenada_valida, validar_y_convertir_fecha, es_incertidumbre_valida, codigos_validos)
 from logger import registrar_operacion
 from utils import manejar_archivo_no_encontrado 
 
@@ -209,7 +209,6 @@ def validar_fila(fila, col_lat="decimalLatitude", col_lon="decimalLongitude"):
     """
     Valida los campos de una fila del dataset y retorna una lista con los motivos de invalidez.
     """
-    codigos_pais_validos = {"AR","CL","BR","UY","PY","BO","PE","EC","CO","VE"}
     motivos = []
 
     lat = fila.get(col_lat, "").strip()
@@ -232,7 +231,7 @@ def validar_fila(fila, col_lat="decimalLatitude", col_lon="decimalLongitude"):
             motivos.append("fecha futura")
 
     country_code = fila.get("countryCode", "").strip().upper()
-    if country_code and country_code not in codigos_pais_validos:
+    if country_code and country_code not in codigos_validos:
         motivos.append(f"countryCode inválido: {country_code}")
 
     incertidumbre = fila.get("coordinateUncertaintyInMeters", "").strip()
