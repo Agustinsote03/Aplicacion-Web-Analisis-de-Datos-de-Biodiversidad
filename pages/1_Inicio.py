@@ -5,7 +5,7 @@ sys.path.append(str(Path(__file__).parent.parent / "src"))
 
 st.title("BioAR")
 
-st.header("Proposito de la aplicacion")
+st.header("Propósito de la aplicación")
 st.write("""
 ## Bienvenido/a
 
@@ -20,7 +20,7 @@ es muy importante tanto para la investigación como para la conservación del am
 A lo largo de la aplicación vas a encontrar distintas secciones pensadas para ayudarte a explorar estos datos paso a paso.
 """)
 
-st.header("Importancia del analisis de biodiversidad")
+st.header("Importancia del análisis de biodiversidad")
 st.write("""
 El análisis de datos de biodiversidad es una herramienta esencial en la investigación ambiental y ecológica. 
 Permite comprender cómo interactúan las especies entre sí y con su entorno, así como detectar alteraciones 
@@ -59,19 +59,19 @@ De esta manera, los datos pueden ser reutilizados y aprovechados por diferentes 
 sin necesidad de redefinir su estructura.
 """)
 
-st.header("Instrucciones basicas de uso")
+st.header("Instrucciones básicas de uso")
 st.write(""" 
-    Para utilizar la aplicación:
+Para utilizar la aplicación:
 
-    - En la barra lateral (sidebar) podés navegar entre las distintas páginas:
-    - **Inicio**: información general de la aplicación.
-    - **Estado del sistema**: muestra el historial de operaciones realizadas.
-    - **Búsqueda**: buscá registros por texto libre o filtros avanzados.
-    - **Visualización**: gráficos de distribución, tendencias temporales y comparativas.
-    - **Gestión de registros**: insertá, actualizá o eliminá registros de los datasets.
-    - **Datasets**: información técnica y calidad de datos de cada dataset.
+En la barra lateral (sidebar) podés navegar entre las distintas páginas:
+- **Inicio**: información general de la aplicación.
+- **Estado del sistema**: muestra el historial de operaciones realizadas.
+- **Búsqueda**: buscá registros por texto libre o filtros avanzados.
+- **Visualización**: gráficos de distribución, tendencias temporales y comparativas.
+- **Gestión de registros**: insertá, actualizá o eliminá registros de los datasets.
+- **Datasets**: información técnica y calidad de datos de cada dataset.
 
-- A medida que avances en la aplicación, podrás consultar información sobre especies, 
+A medida que avances en la aplicación, podrás consultar información sobre especies, 
 ubicaciones y registros biológicos.
 """)
 
