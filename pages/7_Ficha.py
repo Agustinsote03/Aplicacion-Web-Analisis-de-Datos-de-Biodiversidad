@@ -5,7 +5,6 @@ import pandas as pd
 
 sys.path.append(str(Path(__file__).parent.parent / "src"))
 from config import CONFIGURACION_DATASETS
-from dataset_loader import seleccionar_dataset, mostrar_info_dataset
 from ficha_mapa import (
     detectar_columnas_coordenadas,
     detectar_columna_pais,
@@ -185,8 +184,6 @@ def mostrar_multimedia(fila, nombre_dataset):
                 cols[i % 3].image(url)
 
 def main():
-    seleccionar_dataset()
-    mostrar_info_dataset()
 
     st.title("Ficha de datos")
     st.markdown("Esta página muestra el detalle de los registros seleccionados en la búsqueda.")

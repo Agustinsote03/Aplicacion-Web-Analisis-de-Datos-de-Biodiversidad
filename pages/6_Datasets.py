@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from pathlib import Path
 from datetime import datetime
-from dataset_loader import seleccionar_dataset, mostrar_info_dataset, cargar_dataset
+from dataset_loader import cargar_dataset
 from config import CONFIGURACION_DATASETS
 from dataset_reader import porcentaje_nulos_por_columna
 from validador import es_coordenada_valida, validar_y_convertir_fecha
@@ -271,8 +271,6 @@ def main():
     Función principal de la página P6 — Datasets.
     Llama al sidebar y luego a cada sección en orden.
     """
-    seleccionar_dataset()
-    mostrar_info_dataset()
 
     st.title("Datasets")
     st.markdown("""

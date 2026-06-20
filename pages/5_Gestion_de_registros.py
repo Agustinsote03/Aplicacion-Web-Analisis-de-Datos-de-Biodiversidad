@@ -5,7 +5,7 @@ from pathlib import Path
  
 sys.path.append(str(Path(__file__).parent.parent / "src"))
  
-from dataset_loader import seleccionar_dataset, mostrar_info_dataset, cargar_dataset
+from dataset_loader import cargar_dataset
 from insercion_registros import (
     crear_estructura_registro_iadiza,
     crear_estructura_registro_xeno_canto,
@@ -116,9 +116,6 @@ campos_obligatorios = {
     "inaturalist": ["scientificName", "decimalLatitude", "decimalLongitude", "eventDate", "countryCode"],
 }
  
-# Sidebar
-seleccionar_dataset()
-mostrar_info_dataset()
  
 st.title("Gestión de Registros")
 st.markdown("""
