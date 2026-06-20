@@ -3,11 +3,7 @@ import sys
 import pandas as pd
 from pathlib import Path
 from datetime import datetime
-from dataset_loader import seleccionar_dataset, mostrar_info_dataset, cargar_dataset
 from busqueda import buscar_por_texto, buscar_por_filtros, obtener_columna_pais, obtener_columna_provincia, obtener_columnas_relevantes, paginar_resultados, calcular_resumen
-#Sidebar: selector e información de datasets
-seleccionar_dataset()
-mostrar_info_dataset()
 
 st.title("Búsqueda")
 st.markdown("""
