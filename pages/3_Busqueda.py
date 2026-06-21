@@ -61,12 +61,12 @@ elif modo == "Filtros avanzados":
         observadores = sorted(df["recordedBy"].dropna().unique().tolist())
         observador_sel = st.multiselect("Observador", observadores)
 
-    col_pais = obtener_columna_pais(df)
+    col_pais = obtener_columna_pais(columnas)
     if col_pais:
         paises = sorted(df[col_pais].dropna().unique().tolist())
         paises_sel = st.multiselect("País", paises)
 
-    col_provincia = obtener_columna_provincia(df)
+    col_provincia = obtener_columna_provincia(columnas)
     if col_provincia:
         provincias = sorted(df[col_provincia].dropna().unique().tolist())
         provincias_sel = st.multiselect("Provincia", provincias)
