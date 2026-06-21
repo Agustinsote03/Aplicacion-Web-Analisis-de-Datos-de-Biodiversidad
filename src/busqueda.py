@@ -41,8 +41,10 @@ def buscar_por_filtros(df, especies_sel, observador_sel, col_pais, paises_sel, c
     if especies_sel:
         resultados = resultados[resultados["scientificName"].isin(especies_sel)]
 
-    if observador_sel:
-        resultados = resultados[resultados["recordedBy"].isin(observador_sel)]
+    if observador_sel and "recordedBy" in resultados.columns:
+        resultados = resultados[
+            resultados["recordedBy"].astype(str).str.contains(observador_sel.strip(), case=False, na=False)
+        ]
 
     if paises_sel and col_pais:
         resultados = resultados[resultados[col_pais].isin(paises_sel)]
