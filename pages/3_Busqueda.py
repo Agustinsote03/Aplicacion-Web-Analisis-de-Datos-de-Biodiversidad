@@ -58,8 +58,7 @@ elif modo == "Filtros avanzados":
         especies_sel = st.multiselect("Nombre científico", especies)
 
     if "recordedBy" in columnas:
-        observadores = sorted(df["recordedBy"].dropna().unique().tolist())
-        observador_sel = st.multiselect("Observador", observadores)
+        observador_sel = st.text_input("Observador") if "recorderBy" in columnas else ""
 
     col_pais = obtener_columna_pais(columnas)
     if col_pais:
