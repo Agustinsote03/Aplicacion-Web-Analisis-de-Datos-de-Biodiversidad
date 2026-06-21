@@ -11,14 +11,6 @@ def obtener_columna_pais(columnas):
         return "country"
     return None
 
-def obtener_columna_provincia(columnas):
-    """
-    Detecta y retorna el nombre de la columna de provincia disponible en el dataset.
-    """
-    if "stateProvince" in columnas:
-        return "stateProvince"
-    return None
-
 def buscar_por_texto(df, col_busqueda, texto):
     """
     Busca registros donde la columna contenga el texto ingresado (case-insensitive).

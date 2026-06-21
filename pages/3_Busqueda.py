@@ -3,7 +3,7 @@ import sys
 import pandas as pd
 from pathlib import Path
 from datetime import datetime
-from busqueda import buscar_por_texto, buscar_por_filtros, obtener_columna_pais, obtener_columna_provincia, obtener_columnas_relevantes, paginar_resultados, calcular_resumen
+from busqueda import buscar_por_texto, buscar_por_filtros, obtener_columna_pais, obtener_columnas_relevantes, paginar_resultados, calcular_resumen
 
 st.title("Búsqueda")
 st.markdown("""
@@ -65,8 +65,8 @@ elif modo == "Filtros avanzados":
         paises = sorted(df[col_pais].dropna().unique().tolist())
         paises_sel = st.multiselect("País", paises)
 
-    col_provincia = obtener_columna_provincia(columnas)
-    if col_provincia:
+    if "stateProvince" in df.columns:
+        col_provincia = "stateProvince"
         provincias = sorted(df[col_provincia].dropna().unique().tolist())
         provincias_sel = st.multiselect("Provincia", provincias)
 
