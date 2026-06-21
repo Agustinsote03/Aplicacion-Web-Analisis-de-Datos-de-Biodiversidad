@@ -53,11 +53,11 @@ elif modo == "Filtros avanzados":
     st.subheader("Filtros avanzados")
     st.markdown("Podés combinar uno o más filtros. El resultado mostrará solo los registros que cumplan todas las condiciones activas.")
 
-    if "scientificName" in df.columns:
+    if "scientificName" in columnas:
         especies = sorted(df["scientificName"].dropna().unique().tolist())
         especies_sel = st.multiselect("Nombre científico", especies)
 
-    if "recordedBy" in df.columns:
+    if "recordedBy" in columnas:
         observadores = sorted(df["recordedBy"].dropna().unique().tolist())
         observador_sel = st.multiselect("Observador", observadores)
 
@@ -71,7 +71,7 @@ elif modo == "Filtros avanzados":
         provincias = sorted(df[col_provincia].dropna().unique().tolist())
         provincias_sel = st.multiselect("Provincia", provincias)
 
-    if "eventDate" in df.columns:
+    if "eventDate" in columnas:
         fechas_validas = pd.to_datetime(df["eventDate"], errors="coerce", utc=True).dropna()
         if not fechas_validas.empty:
             fecha_min = fechas_validas.min().date()
