@@ -1,21 +1,21 @@
 import pandas as pd
 from utils import buscar_registros_logica
 
-def obtener_columna_pais(df):
+def obtener_columna_pais(columnas):
     """
     Detecta y retorna el nombre de la columna de país disponible en el dataset.
     """
-    if "countryCode" in df.columns:
+    if "countryCode" in columnas:
         return "countryCode"
-    elif "country" in df.columns:
+    elif "country" in columnas:
         return "country"
     return None
 
-def obtener_columna_provincia(df):
+def obtener_columna_provincia(columnas):
     """
     Detecta y retorna el nombre de la columna de provincia disponible en el dataset.
     """
-    if "stateProvince" in df.columns:
+    if "stateProvince" in columnas:
         return "stateProvince"
     return None
 
