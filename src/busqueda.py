@@ -1,5 +1,7 @@
 import pandas as pd
 from utils import buscar_registros_logica
+from config import CONFIGURACION_DATASETS
+
 
 def obtener_columna_pais(columnas):
     """
@@ -57,12 +59,23 @@ def buscar_por_filtros(df, especies_sel, observador_sel, col_pais, paises_sel, c
 def obtener_columnas_relevantes(df, col_pais, col_provincia):
     """
     Retorna la lista de columnas relevantes disponibles en el dataset.
+    Busca columnas por palabra clave en lugar de nombres exactos para soportar datasets nuevos sin modificar el código.
     """
-    return [c for c in [
-        "occurrenceID", "scientificName", "recordedBy",
-        col_pais, col_provincia, "locality", "eventDate",
-        "decimalLatitude", "decimalLongitude"
-    ] if c is not None and c in df.columns]
+    palabras_clave = ["id", "scientificname", "recordedby", "locality", 
+                       "eventdate", "latitude", "longitude"]
+    
+    columnas_relevantes = []
+    
+    for col in df.columns:
+        col_lower = col.lower()
+        if any(palabra in col_lower for palabra in palabras_clave):
+            columnas_relevantes.append(col)
+
+    for col in [col_pais, col_provincia]:
+        if col is not None and col in df.columns:
+            columnas_relevantes.append(col)
+
+    return columnas_relevantes
 
 def paginar_resultados(df, pagina, registros_por_pagina=20):
     """
