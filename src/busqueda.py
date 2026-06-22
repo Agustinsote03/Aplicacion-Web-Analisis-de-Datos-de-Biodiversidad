@@ -78,29 +78,27 @@ def buscar_por_filtros(df, especies_sel, observador_texto, col_pais, paises_sel,
 def obtener_columnas_relevantes(df, col_pais, col_provincia):
     """
     Retorna la lista de columnas relevantes disponibles en el dataset.
-    Busca columnas por palabra clave en lugar de nombres exactos para soportar datasets nuevos sin modificar el código.
+    Usa detectar_columnas_coordenadas para resolver las variantes de lat/lon
     """
-    palabras_clave = ["id", "scientificname", "recordedby", "locality", 
-                       "eventdate", "latitude", "longitude"]
-    
-    columnas_relevantes = []
-    
-    for col in df.columns:
-        col_lower = col.lower()
-        if any(palabra in col_lower for palabra in palabras_clave):
-            columnas_relevantes.append(col)
+    col_lat, col_lon = detectar_columnas_coordenadas(df)
 
+<<<<<<< HEAD
     for col in [col_pais, col_provincia]:
         if col is not None and col in df.columns:
             columnas_relevantes.append(col)
     col_lat, col_lon = detectar_columnas_coordenadas(df)
 
     return columnas_relevantes
+=======
+>>>>>>> origin/main
     columnas_candidatas = [
         "occurrenceID", "scientificName", "recordedBy",
         col_pais, col_provincia, "locality", "eventDate",
         col_lat, col_lon
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/main
     ]
 
 def paginar_resultados(df, pagina, registros_por_pagina=20):
