@@ -82,24 +82,12 @@ def obtener_columnas_relevantes(df, col_pais, col_provincia):
     """
     col_lat, col_lon = detectar_columnas_coordenadas(df)
 
-<<<<<<< HEAD
-    for col in [col_pais, col_provincia]:
-        if col is not None and col in df.columns:
-            columnas_relevantes.append(col)
-    col_lat, col_lon = detectar_columnas_coordenadas(df)
-
-    return columnas_relevantes
-=======
->>>>>>> origin/main
     columnas_candidatas = [
         "occurrenceID", "scientificName", "recordedBy",
         col_pais, col_provincia, "locality", "eventDate",
         col_lat, col_lon
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/main
     ]
+    return [c for c in columnas_candidatas if c is not None and c in df.columns]
 
 def paginar_resultados(df, pagina, registros_por_pagina=20):
     """
