@@ -1,5 +1,5 @@
 import pandas as pd
-from utils import buscar_registros_logica
+from utils import buscar_registros_logica, cumple_alguno, cumple_filtro
 from config import CONFIGURACION_DATASETS
 from ficha_mapa import detectar_columnas_coordenadas
 
@@ -26,25 +26,44 @@ def buscar_por_texto(df, col_busqueda, texto):
     return df.copy()
 
 
-def buscar_por_filtros(df, especies_sel, observador_sel, col_pais, paises_sel, col_provincia, provincias_sel, fechas_sel):
+def buscar_por_filtros(df, especies_sel, observador_texto, col_pais, paises_sel, col_provincia, provincias_sel, fechas_sel):
     """
     Filtra el dataset aplicando múltiples condiciones combinadas.
+
+    Reutiliza las funciones de comparación de la etapa 1 (utils.py) en
+    TODOS los filtros de igualdad/texto del modo "Filtros avanzados".
+
+    El filtro de fechas es la única excepción y se mantiene con
+    operaciones de pandas (>=, <=) porque es un rango continuo, una
+    comparación de naturaleza distinta a la igualdad/contención que
+    resuelven cumple_filtro y cumple_alguno: no tiene sentido forzarlo
+    a esa capa de lógica solo por uniformidad.
     """
     resultados = df.copy()
 
     if especies_sel:
-        resultados = resultados[resultados["scientificName"].isin(especies_sel)]
+        mascara_especie = resultados["scientificName"].fillna("").apply(
+            lambda valor: cumple_alguno(valor, especies_sel, modo="exacto")
+        )
+        resultados = resultados[mascara_especie]
 
-    if observador_sel and "recordedBy" in resultados.columns:
-        resultados = resultados[
-            resultados["recordedBy"].astype(str).str.contains(observador_sel.strip(), case=False, na=False)
-        ]
+    if observador_texto and observador_texto.strip():
+        mascara_observador = resultados["recordedBy"].fillna("").apply(
+            lambda valor: cumple_filtro(valor, observador_texto, modo="contiene")
+        )
+        resultados = resultados[mascara_observador]
 
     if paises_sel and col_pais:
-        resultados = resultados[resultados[col_pais].isin(paises_sel)]
+        mascara_pais = resultados[col_pais].fillna("").apply(
+            lambda valor: cumple_alguno(valor, paises_sel, modo="exacto")
+        )
+        resultados = resultados[mascara_pais]
 
     if provincias_sel and col_provincia:
-        resultados = resultados[resultados[col_provincia].isin(provincias_sel)]
+        mascara_provincia = resultados[col_provincia].fillna("").apply(
+            lambda valor: cumple_alguno(valor, provincias_sel, modo="exacto")
+        )
+        resultados = resultados[mascara_provincia]
 
     if fechas_sel and len(fechas_sel) == 2:
         resultados["eventDate_parsed"] = pd.to_datetime(resultados["eventDate"], errors="coerce", utc=True)
@@ -63,10 +82,23 @@ def obtener_columnas_relevantes(df, col_pais, col_provincia):
     """
     col_lat, col_lon = detectar_columnas_coordenadas(df)
 
+<<<<<<< HEAD
+    for col in [col_pais, col_provincia]:
+        if col is not None and col in df.columns:
+            columnas_relevantes.append(col)
+    col_lat, col_lon = detectar_columnas_coordenadas(df)
+
+    return columnas_relevantes
+=======
+>>>>>>> origin/main
     columnas_candidatas = [
         "occurrenceID", "scientificName", "recordedBy",
         col_pais, col_provincia, "locality", "eventDate",
         col_lat, col_lon
+<<<<<<< HEAD
+
+=======
+>>>>>>> origin/main
     ]
 
 def paginar_resultados(df, pagina, registros_por_pagina=20):
