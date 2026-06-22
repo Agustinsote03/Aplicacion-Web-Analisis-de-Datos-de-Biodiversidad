@@ -58,7 +58,7 @@ elif modo == "Filtros avanzados":
         especies_sel = st.multiselect("Nombre científico", especies)
 
     if "recordedBy" in columnas:
-        observador_sel = st.text_input("Observador") if "recorderBy" in columnas else ""
+        observador_sel = st.text_input("Observador")
 
     col_pais = obtener_columna_pais(columnas)
     if col_pais:
