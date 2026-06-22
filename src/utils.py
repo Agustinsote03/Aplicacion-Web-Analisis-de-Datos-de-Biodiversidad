@@ -73,6 +73,18 @@ def cumple_filtro(valor_fila, valor_buscado, modo="exacto"):
         return valor_buscado.lower() in valor_fila.lower()
     return valor_fila.lower() == valor_buscado.lower()
 
+def cumple_alguno(valor_fila, valores_buscados, modo="exacto"):
+    """
+    Generaliza cumple_filtro para el caso de selección múltiple, evalúa si valor_fila cumple cumple_filtro con
+    AL MENOS UNO de los valores_buscados (semántica "O").
+
+    Si valores_buscados está vacío, se considera que el filtro no está
+    activo y por lo tanto cualquier valor_fila lo cumple (retorna True),
+    igual que cumple_filtro cuando no hay valor_buscado.
+    """
+    if not valores_buscados:
+        return True
+    return any(cumple_filtro(valor_fila, valor, modo) for valor in valores_buscados)
 
 def buscar_registros_logica(filas, columnas, filtros = None, modo="exacto", **kwargs):
     """
