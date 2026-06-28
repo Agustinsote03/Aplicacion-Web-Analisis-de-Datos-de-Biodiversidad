@@ -88,7 +88,6 @@ st.title("Visualización de Datos de Biodiversidad")
 #Ejericio 3.A: Cantidad de observaciones por ubicación
 def cantidad_registros(df_actual):
     st.header("Observaciones por ubicacion")
-    num_elementos = st.slider("Cantidad de ubicaciones a mostrar: ", min_value=1, max_value=10, value=5)
 
     if 'country' in df_actual.columns and df_actual['country'].nunique() > 1:
         columna_agrupacion = 'country'
@@ -97,8 +96,20 @@ def cantidad_registros(df_actual):
         columna_agrupacion = 'stateProvince'
         etiqueta_eje = 'Provincia'
     else:
-        columna_agrupacion = 'locality' 
+        columna_agrupacion = 'locality'
         etiqueta_eje = 'Localidad'
+
+    cantidad_valores_unicos = df_actual[columna_agrupacion].nunique()
+    maximo_slider = max(1, cantidad_valores_unicos)
+    valor_default = min(5, maximo_slider)
+
+    num_elementos = st.slider(
+        "Cantidad de ubicaciones a mostrar: ",
+        min_value=1,
+        max_value=maximo_slider,
+        value=valor_default
+    )
+
     conteos = df_actual[columna_agrupacion].value_counts().head(num_elementos)
     generar_grafico_generico(
         conteos.index,
@@ -109,8 +120,6 @@ def cantidad_registros(df_actual):
         y_etiqueta="Cantidad de Registros",
         color="#4ddb34",
         figsize=(12, 6))
-
-
 
 
 #Ejercicio 3.B, se va a crear un nuevo dataframe para manipular las fechas
