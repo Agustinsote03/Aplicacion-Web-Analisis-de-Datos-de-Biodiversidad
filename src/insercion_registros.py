@@ -1,14 +1,10 @@
 import csv
 from pathlib import Path
-from validador import (
-    es_coordenada_valida,
-    validar_y_convertir_fecha,
-    es_incertidumbre_valida,
-    codigos_validos
-)
+from validador import (es_coordenada_valida,validar_y_convertir_fecha, es_incertidumbre_valida, codigos_validos)
 from datetime import datetime
 from logger import registrar_operacion
 from utils import manejar_archivo_no_encontrado
+
 
 #-----------------FUNCIONES AUXILIARES---------------------#
 # Se ingresa un nuevo registro por teclado solicitando al usuario los campos principales del dataset 
