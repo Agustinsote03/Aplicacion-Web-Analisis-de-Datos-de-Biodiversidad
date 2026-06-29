@@ -192,7 +192,6 @@ with tab_insertar:
                     registro,
                     nombre_dataset.upper(),
                     preparar_fn=preparar,
-                    validar_fn=funciones["validar"],
                 )
                 st.success("Registro insertado correctamente.")
                 # Recargamos el dataset en session_state para reflejar el cambio

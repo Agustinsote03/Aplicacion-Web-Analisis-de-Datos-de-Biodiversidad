@@ -220,22 +220,25 @@ def crear_registro_vacio(columnas):
 
 FORMATO_FECHA = "%Y-%m-%d"
 
-def validar_registro_iadiza(registro):
+def _validar_campos_comunes(registro, col_lat, col_lon, validar_country=False,
+                             validar_uncertainty=False, validar_status=False):
     """
-    Valida los campos de un registro IADIZA.
-    Reutiliza las funciones auxiliares ya desarrolladas.
+    Centraliza las validaciones compartidas entre los distintos datasets.
+    Recibe los nombres de las columnas de coordenadas (que varían por dataset)
+    y flags para activar validaciones opcionales.
+    Retorna una lista de errores (vacía si todo es válido).
     """
     errores = []
 
     # Coordenadas
-    lat = registro.get("decimalLatitude", "")
-    lon = registro.get("decimalLongitude", "")
+    lat = registro.get(col_lat, "")
+    lon = registro.get(col_lon, "")
     if lat != "" and not es_coordenada_valida(lat, -90, 90):
-        errores.append(f"decimalLatitude inválida: '{lat}'. Debe estar entre -90 y 90")
+        errores.append(f"{col_lat} inválida: '{lat}'. Debe estar entre -90 y 90")
     if lon != "" and not es_coordenada_valida(lon, -180, 180):
-        errores.append(f"decimalLongitude inválida: '{lon}'. Debe estar entre -180 y 180")
+        errores.append(f"{col_lon} inválida: '{lon}'. Debe estar entre -180 y 180")
 
-    # Fecha
+    # Fecha (igual en los 3 datasets)
     event_date = registro.get("eventDate", "").strip()
     if event_date != "":
         es_valida, fecha = validar_y_convertir_fecha(event_date)
@@ -244,87 +247,62 @@ def validar_registro_iadiza(registro):
         elif fecha is not None and fecha > datetime.now():
             errores.append(f"eventDate inválida: '{event_date}'. La fecha no puede ser futura")
 
-    # countryCode
-    country_code = registro.get("countryCode", "").strip().upper()
-    if country_code != "" and country_code not in codigos_validos:
-        errores.append(f"countryCode inválido: '{country_code}'. Valores permitidos: {codigos_validos}")
+    # countryCode (IADIZA e iNaturalist)
+    if validar_country:
+        country_code = registro.get("countryCode", "").strip().upper()
+        if country_code != "" and country_code not in codigos_validos:
+            errores.append(f"countryCode inválido: '{country_code}'. Valores permitidos: {codigos_validos}")
 
-    # Incertidumbre
-    incertidumbre = registro.get("coordinateUncertaintyInMeters", "").strip()
-    if incertidumbre != "" and not es_incertidumbre_valida(incertidumbre):
-        errores.append(f"coordinateUncertaintyInMeters inválida: '{incertidumbre}'. Debe ser un número entre 0 y 100")
+    # coordinateUncertaintyInMeters (IADIZA e iNaturalist)
+    if validar_uncertainty:
+        incertidumbre = registro.get("coordinateUncertaintyInMeters", "").strip()
+        if incertidumbre != "" and not es_incertidumbre_valida(incertidumbre):
+            errores.append(f"coordinateUncertaintyInMeters inválida: '{incertidumbre}'. Debe ser un número entre 0 y 100")
 
-    # occurrenceStatus
-    status = registro.get("occurrenceStatus", "").strip()
-    if status != "" and status.upper() not in {"PRESENT", "ABSENT"}:
-        errores.append(f"occurrenceStatus inválido: '{status}'. Valores permitidos: PRESENT, ABSENT")
+    # occurrenceStatus (solo IADIZA)
+    if validar_status:
+        status = registro.get("occurrenceStatus", "").strip()
+        if status != "" and status.upper() not in {"PRESENT", "ABSENT"}:
+            errores.append(f"occurrenceStatus inválido: '{status}'. Valores permitidos: PRESENT, ABSENT")
 
+    return errores
+
+
+def validar_registro_iadiza(registro):
+    """
+    Valida los campos de un registro IADIZA.
+    """
+    errores = _validar_campos_comunes(
+        registro,
+        col_lat="decimalLatitude", col_lon="decimalLongitude",
+        validar_country=True, validar_uncertainty=True, validar_status=True
+    )
     return len(errores) == 0, errores
 
 
 def validar_registro_xeno_canto(registro):
     """
     Valida los campos de un registro Xeno-canto.
-    Reutiliza las funciones auxiliares ya desarrolladas.
+    Xeno-canto usa latitudeDecimal/longitudeDecimal y no tiene countryCode ni uncertainty.
     """
-    errores = []
-
-    # Coordenadas (Xeno-canto usa nombres distintos)
-    lat = registro.get("latitudeDecimal", "")
-    lon = registro.get("longitudeDecimal", "")
-    if lat != "" and not es_coordenada_valida(lat, -90, 90):
-        errores.append(f"latitudeDecimal inválida: '{lat}'. Debe estar entre -90 y 90")
-    if lon != "" and not es_coordenada_valida(lon, -180, 180):
-        errores.append(f"longitudeDecimal inválida: '{lon}'. Debe estar entre -180 y 180")
-
-    # Fecha
-    event_date = registro.get("eventDate", "").strip()
-    if event_date != "":
-        es_valida, fecha = validar_y_convertir_fecha(event_date)
-        if not es_valida:
-            errores.append(f"eventDate inválida: '{event_date}'. Formato esperado: {FORMATO_FECHA}")
-        elif fecha is not None and fecha > datetime.now():
-            errores.append(f"eventDate inválida: '{event_date}'. La fecha no puede ser futura")
-
+    errores = _validar_campos_comunes(
+        registro,
+        col_lat="latitudeDecimal", col_lon="longitudeDecimal",
+        validar_country=False, validar_uncertainty=False, validar_status=False
+    )
     return len(errores) == 0, errores
 
 
 def validar_registro_inaturalist(registro):
     """
     Valida los campos de un registro iNaturalist.
-    Reutiliza las funciones auxiliares ya desarrolladas.
     """
-    errores = []
-
-    # Coordenadas
-    lat = registro.get("decimalLatitude", "")
-    lon = registro.get("decimalLongitude", "")
-    if lat != "" and not es_coordenada_valida(lat, -90, 90):
-        errores.append(f"decimalLatitude inválida: '{lat}'. Debe estar entre -90 y 90")
-    if lon != "" and not es_coordenada_valida(lon, -180, 180):
-        errores.append(f"decimalLongitude inválida: '{lon}'. Debe estar entre -180 y 180")
-
-    # Fecha
-    event_date = registro.get("eventDate", "").strip()
-    if event_date != "":
-        es_valida, fecha = validar_y_convertir_fecha(event_date)
-        if not es_valida:
-            errores.append(f"eventDate inválida: '{event_date}'. Formato esperado: {FORMATO_FECHA}")
-        elif fecha is not None and fecha > datetime.now():
-            errores.append(f"eventDate inválida: '{event_date}'. La fecha no puede ser futura")
-
-    # countryCode
-    country_code = registro.get("countryCode", "").strip().upper()
-    if country_code != "" and country_code not in codigos_validos:
-        errores.append(f"countryCode inválido: '{country_code}'. Valores permitidos: {codigos_validos}")
-
-    # Incertidumbre
-    incertidumbre = registro.get("coordinateUncertaintyInMeters", "").strip()
-    if incertidumbre != "" and not es_incertidumbre_valida(incertidumbre):
-        errores.append(f"coordinateUncertaintyInMeters inválida: '{incertidumbre}'. Debe ser un número entre 0 y 100")
-
+    errores = _validar_campos_comunes(
+        registro,
+        col_lat="decimalLatitude", col_lon="decimalLongitude",
+        validar_country=True, validar_uncertainty=True, validar_status=False
+    )
     return len(errores) == 0, errores
-
 
 @manejar_archivo_no_encontrado
 def max_numero_dataset(ruta_archivo, separador, columna, extraer_numero):
@@ -425,17 +403,11 @@ def preparar_estructura_inaturalist(registro, ruta_archivo, columnas, separador=
     )
 
 @manejar_archivo_no_encontrado
-def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset, preparar_fn, validar_fn, separador="\t"):
+def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset, preparar_fn, separador="\t"):
     """
-    Valida e inserta un único registro al final del dataset, guardando el resultado en un nuevo archivo.
-    Si el registro es inválido no se realiza ninguna inserción.
+    Inserta un único registro al final del dataset, guardando el resultado en un nuevo archivo.
+    Asume que el registro ya fue validado por quien llama a esta función.
     """
-    es_valido, errores = validar_fn(registro)
-
-    if not es_valido:
-        registrar_operacion(nombre_dataset, "INSERT", 0, error=True)
-        return  
-
     with open(ruta_origen, "r", encoding="utf-8", newline="") as f_in:
         reader = csv.DictReader(f_in, delimiter=separador)
         columnas = reader.fieldnames
@@ -452,7 +424,6 @@ def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset, prepa
             writer.writerow(registro_completo)
 
     registrar_operacion(nombre_dataset, "INSERT", 1)
-    # Si el registro es válido se registra la operación con éxito indicando que se insertó 1 registro
 
 # Función para insertar múltiples registros ingresados por teclado
 @manejar_archivo_no_encontrado
