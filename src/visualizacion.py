@@ -53,15 +53,19 @@ def calcular_conteos_por_ubicacion(df_actual, columna_agrupacion, num_elementos)
     return df_actual[columna_agrupacion].value_counts().head(num_elementos)
 
 
+
 def calcular_registros_por_anio(df_actual):
     """
     Calcula la cantidad de registros únicos por año a partir de eventDate.
     Retorna (conteos_por_anio, cantidad_de_fechas_invalidas).
     """
-    nombre_id = df_actual.columns[0]
-    df_fechas = df_actual[['eventDate', nombre_id]].rename(columns={'eventDate': 'fecha', nombre_id: 'codigo'})
-    df_fechas['fecha'] = pd.to_datetime(df_fechas['fecha'], errors='coerce', utc=True)
-    df_fechas['anio_calculado'] = df_fechas['fecha'].dt.year
+    # Se usa occurrenceID en lugar de la primera columna (gbifID en IADIZA está vacío,
+    # lo que hace que nunique() devuelva 0 y el gráfico aparezca vacío)
+    df_fechas = df_actual[['eventDate', 'occurrenceID']].rename(columns={'eventDate': 'fecha', 'occurrenceID': 'codigo'})
+    # Se extrae el año directamente del string en lugar de parsear la fecha completa,
+    # porque IADIZA usa formatos variados ("1985", "1985-01", "1985-01-01/1985-01-31", etc.)
+    # que pd.to_datetime no puede manejar y convierte a NaT
+    df_fechas['anio_calculado'] = df_fechas['fecha'].astype(str).str.extract(r'(\d{4})').astype(float)
 
     contador_nulos = df_fechas['anio_calculado'].isnull().sum()
     df_fechas = df_fechas.dropna(subset=['anio_calculado'])
