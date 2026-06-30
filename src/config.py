@@ -7,7 +7,7 @@ ruta_procesados = ruta_raiz / "processed_datasets"
 CONFIGURACION_DATASETS = {
     "iadiza": {
         "ruta": ruta_de_datasets / "Colección Ornitológica del IADIZA-CCT CONICET Mendoza IADIZA-COI" / "occurrence.txt",
-        "ruta_procesado": ruta_procesados / "Colección Ornitológica del IADIZA-CCT CONICET Mendoza IADIZA-COI" / "occurrence.txt",
+        "ruta_procesado": ruta_procesados / "IADIZA" / "occurrence.txt",
         "separador": "\t",
         "col_lat": "decimalLatitude",
         "col_lon": "decimalLongitude",

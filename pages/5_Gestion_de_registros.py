@@ -192,7 +192,6 @@ with tab_insertar:
                     registro,
                     nombre_dataset.upper(),
                     preparar_fn=preparar,
-                    validar_fn=funciones["validar"],
                 )
                 st.success("Registro insertado correctamente.")
                 # Recargamos el dataset en session_state para reflejar el cambio
@@ -336,7 +335,8 @@ with tab_eliminar:
             st.warning(f"Se eliminará {len(st.session_state['preview_eliminar'])} registro(s):")
             st.dataframe(st.session_state["preview_eliminar"], use_container_width=True)
 
-            if st.button("Confirmar eliminación", key="btn_confirmar_id"):
+            confirmar_id = st.checkbox("Confirmo que deseo eliminar este registro", key="confirmar_id")
+            if st.button("Confirmar eliminación", key="btn_confirmar_id", disabled=not confirmar_id):
                 resultado = eliminar_por_id_generica(
                     ruta_origen, ruta_destino,
                     "occurrenceID", id_eliminar.strip(),
@@ -375,7 +375,8 @@ with tab_eliminar:
             st.warning(f"Se eliminarán {len(st.session_state['preview_eliminar'])} registro(s):")
             st.dataframe(st.session_state["preview_eliminar"], use_container_width=True)
 
-            if st.button("Confirmar eliminación", key="btn_confirmar_lista"):
+            confirmar_lista = st.checkbox("Confirmo que deseo eliminar estos registros", key="confirmar_lista")
+            if st.button("Confirmar eliminación", key="btn_confirmar_lista", disabled=not confirmar_lista):
                 resultado = eliminar_por_lista_generica(
                     ruta_origen, ruta_destino,
                     col_eliminar,
@@ -437,7 +438,8 @@ with tab_eliminar:
             st.warning(f"Se eliminarán {len(st.session_state['preview_eliminar'])} registro(s):")
             st.dataframe(st.session_state["preview_eliminar"], use_container_width=True)
 
-            if st.button("Confirmar eliminación", key="btn_confirmar_condicion"):
+            confirmar_condicion = st.checkbox("Confirmo que deseo eliminar estos registros", key="confirmar_condicion")
+            if st.button("Confirmar eliminación", key="btn_confirmar_condicion", disabled=not confirmar_condicion):
                 resultado = eliminar_por_condicion_generica(
                     ruta_origen, ruta_destino,
                     col_condicion, operador, valor_condicion,

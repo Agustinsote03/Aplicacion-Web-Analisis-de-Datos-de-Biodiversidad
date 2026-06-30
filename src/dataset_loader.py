@@ -2,14 +2,24 @@ import pandas as pd
 from config import CONFIGURACION_DATASETS
 import streamlit as st 
 from datetime import datetime
+from pathlib import Path 
 
 def cargar_dataset(nombre_dataset):
     """
-    Recibe el nombre de un dataset, lo carga como DataFrame de pandas.
-    y retorna el DataFrame resultante
+    Recibe el nombre de un dataset y lo carga como DataFrame de pandas
+    desde processed_datasets (los datos ya sanitizados en la primera etapa).
+    Si el archivo procesado todavía no existe, lo genera a partir del dataset crudo (raw_datasets) para que la app no se rompa.
     """
     cfg = CONFIGURACION_DATASETS[nombre_dataset]
-    df = pd.read_csv(cfg["ruta"], sep=cfg["separador"], encoding="utf-8", low_memory=False)
+    ruta_procesado = Path(cfg["ruta_procesado"])
+
+    try:
+        df = pd.read_csv(ruta_procesado, sep=cfg["separador"], encoding="utf-8", low_memory=False)
+    except FileNotFoundError:
+        ruta_procesado.parent.mkdir(parents=True, exist_ok=True)
+        df = pd.read_csv(cfg["ruta"], sep=cfg["separador"], encoding="utf-8", low_memory=False)
+        df.to_csv(ruta_procesado, sep=cfg["separador"], index=False, encoding="utf-8")
+
     return df
 
 def seleccionar_dataset():

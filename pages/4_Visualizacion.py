@@ -1,7 +1,7 @@
 #-------------------------------------------------------Importaciones----------------------------------------------------------#
 
 #Importación de librerías
-import streamlit as st 
+import streamlit as st
 import matplotlib.pyplot as plt
 import pandas as pd
 from pathlib import Path
@@ -9,29 +9,30 @@ import sys
 
 #Importación de funciones
 sys.path.append(str(Path(__file__).parent.parent / "src"))
-from utils import calcular_porcentaje_nulos_logica
-from validador import validar_coordenadas, validar_fechas
-from utils import calcular_porcentaje_nulos_logica
+from visualizacion import (
+    calcular_metricas_dataset,
+    determinar_columna_agrupacion,
+    calcular_conteos_por_ubicacion,
+    calcular_registros_por_anio,
+    calcular_distribucion_taxonomia,
+    calcular_completitud_columnas,
+)
 from config import CONFIGURACION_DATASETS
 
 #--------------------------------------------------Funciones Auxiliares-------------------------------------------------------#
 def generar_grafico_generico(datos_x, datos_y, tipo_grafico="bar", titulo="", x_etiqueta="", y_etiqueta="", **kwargs):
-
     """
-     Crea un gráfico de Matplotlib según los argumentos recibidos y lo renderiza en Streamlit
+    Crea un gráfico de Matplotlib según los argumentos recibidos y lo renderiza en Streamlit
     """
-    fig, ax = plt.subplots(figsize=kwargs.get('figsize',(10, 6)))
+    fig, ax = plt.subplots(figsize=kwargs.get('figsize', (10, 6)))
     if tipo_grafico == 'bar':
         ax.bar(datos_x, datos_y, color=kwargs.get('color', '#4db6ac'))
         plt.xticks(rotation=45)
-
     elif tipo_grafico == 'line':
         ax.plot(datos_x, datos_y, marker='o', color=kwargs.get('color', '#e74c3c'))
         plt.xticks(rotation=45)
-
     elif tipo_grafico == 'pie':
         ax.pie(datos_y, labels=datos_x, autopct='%1.1f%%', shadow=True)
-    
     elif tipo_grafico == 'barh':
         ax.barh(datos_x, datos_y, color=kwargs.get('color', '#4db6ac'))
         labelsize = kwargs.get('labelsize', None)
@@ -42,36 +43,17 @@ def generar_grafico_generico(datos_x, datos_y, tipo_grafico="bar", titulo="", x_
     if tipo_grafico != "pie":
         ax.set_xlabel(x_etiqueta)
         ax.set_ylabel(y_etiqueta)
-    
 
     fig.tight_layout()
     st.pyplot(fig)
 
-def calcular_metricas_dataset(ruta_archivo, nombre_dataset, separador="\t"):
-    df = pd.read_csv(ruta_archivo, sep=separador, low_memory=False)
-    total_registros = len(df)
-    
-    if total_registros == 0:
-        return None
+if "dataset_actual" not in st.session_state or st.session_state["dataset_actual"] is None:
+    st.warning("Selecciona un dataset desde la barra lateral para visualizar los datos.")
+    st.stop()
+df_actual = st.session_state["dataset_actual"]
 
-    #se calcula el porcentaje de coordenadas válidas
-    cant_coord_inv, _ = validar_coordenadas(ruta_archivo, separador)
-    pct_coord = round((total_registros - cant_coord_inv) / total_registros * 100, 2)
-    
-    #Se calcula el porcentaje de fechas válidas
-    cant_fechas_inv, _ = validar_fechas(ruta_archivo, "eventDate", separador)
-    pct_fechas = round((total_registros - cant_fechas_inv) / total_registros * 100, 2)
-    
-    #completitud promedio con pandas directamente
-    pct_completitud = round(df.notnull().mean().mean() * 100, 2)
-    
-    return {
-        "Dataset": nombre_dataset,
-        "Total Registros": total_registros,
-        "% Coordenadas Válidas": pct_coord,
-        "% Fechas Válidas": pct_fechas,
-        "% Completitud Promedio": pct_completitud
-    }
+st.title("Visualización de Datos de Biodiversidad")
+
 
 #--------------------------------Control: se verifica que haya un dataset cargado en la sesión--------------------------------#
 
@@ -85,19 +67,11 @@ st.title("Visualización de Datos de Biodiversidad")
 
 #--------------------------------------------------Funciones Principales-------------------------------------------------------#
 
-#Ejericio 3.A: Cantidad de observaciones por ubicación
-def cantidad_registros(df_actual):
+#Ejercicio 3.A
+def mostrar_observaciones_por_ubicacion(df_actual):
     st.header("Observaciones por ubicacion")
 
-    if 'country' in df_actual.columns and df_actual['country'].nunique() > 1:
-        columna_agrupacion = 'country'
-        etiqueta_eje = 'País'
-    elif 'stateProvince' in df_actual.columns:
-        columna_agrupacion = 'stateProvince'
-        etiqueta_eje = 'Provincia'
-    else:
-        columna_agrupacion = 'locality'
-        etiqueta_eje = 'Localidad'
+    columna_agrupacion, etiqueta_eje = determinar_columna_agrupacion(df_actual)
 
     cantidad_valores_unicos = df_actual[columna_agrupacion].nunique()
     maximo_slider = max(1, cantidad_valores_unicos)
@@ -110,7 +84,8 @@ def cantidad_registros(df_actual):
         value=valor_default
     )
 
-    conteos = df_actual[columna_agrupacion].value_counts().head(num_elementos)
+    conteos = calcular_conteos_por_ubicacion(df_actual, columna_agrupacion, num_elementos)
+
     generar_grafico_generico(
         conteos.index,
         conteos.values,
@@ -122,49 +97,31 @@ def cantidad_registros(df_actual):
         figsize=(12, 6))
 
 
-#Ejercicio 3.B, se va a crear un nuevo dataframe para manipular las fechas
-def cantidad_registros_por_anio(df_actual):
-    nombre_id = df_actual.columns[0]
-    df_fechas = df_actual[['eventDate', nombre_id]].rename(columns={'eventDate': 'fecha', nombre_id: 'codigo'})
-    df_fechas['fecha'] = pd.to_datetime(df_fechas['fecha'], errors='coerce', utc=True)
-    df_fechas['anio_calculado'] = df_fechas['fecha'].dt.year
-    contador_nulos = df_fechas['anio_calculado'].isnull().sum()
+#Ejercicio 3.B
+def mostrar_registros_por_anio(df_actual):
+    conteos_por_anio, contador_nulos = calcular_registros_por_anio(df_actual)
 
-    #Se limpia el dataframe
-    df_fechas = df_fechas.dropna(subset=['anio_calculado'])
+    if conteos_por_anio.empty:
+        st.warning(f"No hay registros con fechas válidas para mostrar. {contador_nulos} registros tienen fecha nula o inválida.")
+        return
 
-    #Se cambia el formato de las fechas a uno más simple
-    df_fechas['fecha'] = pd.to_datetime(df_fechas['fecha'], errors='coerce', utc=True)
-    df_fechas['anio_calculado'] = df_fechas['fecha'].dt.year
-
-    #Se aplica un filtrado de fechas, para quedarnos solo con las fechas coherentes
-    mascara_validos = df_fechas['anio_calculado'].between(1900, 2026)
-    df_fechas = df_fechas[mascara_validos]
-
-    #Se agrupan los datos por año y se cuentan la cantidad de registros únicos que hay para cada año, descartando duplicados
-    conteos_por_anio = df_fechas.groupby('anio_calculado')['codigo'].nunique()
-    contador_nulos = df_fechas['anio_calculado'].isnull().sum()
-
-    #Se muestra en una advertencia la cantidad de registros con fechas nulas o inválidas
     st.warning(f"Se encontraron {contador_nulos} registros con fechas nulas o inválidas")
 
-    generar_grafico_generico(conteos_por_anio.index,
-                            conteos_por_anio.values,
-                            tipo_grafico="line",
-                            titulo="Cantidad de registros por año",
-                            x_etiqueta="Año",
-                            y_etiqueta="Cantidad de observaciones únicas",
-                            color="#e74c3c"
-                            )
-
+    generar_grafico_generico(
+        conteos_por_anio.index,
+        conteos_por_anio.values,
+        tipo_grafico="line",
+        titulo="Cantidad de registros por año",
+        x_etiqueta="Año",
+        y_etiqueta="Cantidad de observaciones únicas",
+        color="#e74c3c"
+    )
 
 #Ejercicio 3.C
-
-def distribucion_registros_taxonomia(df_actual):
+def mostrar_distribucion_taxonomia(df_actual):
     st.header("Distribución de registros según taxonomía")
     opciones_taxonomia = {'Clase': 'class', 'Orden': 'order', 'Familia': 'family'}
 
-    # Se filtran solo las opciones cuya columna existe en el dataset
     opciones_disponibles = {k: v for k, v in opciones_taxonomia.items() if v in df_actual.columns}
 
     if not opciones_disponibles:
@@ -176,38 +133,23 @@ def distribucion_registros_taxonomia(df_actual):
         list(opciones_disponibles.keys())
     )
     columna_seleccionada = opciones_taxonomia[eleccion_usuario]
-    columna_taxonomia = df_actual[columna_seleccionada]
-    
-    #Se cuentan los registros por cada valor único de la columna taxonomica seleccionada
-    conteo_taxonomia = columna_taxonomia.value_counts().head(10)
 
-    #Se crea gráfico de torta
+    conteo_taxonomia = calcular_distribucion_taxonomia(df_actual, columna_seleccionada)
+
     generar_grafico_generico(
         conteo_taxonomia.index,
         conteo_taxonomia.values,
         tipo_grafico="pie",
         titulo=f"Distribución de registros por {eleccion_usuario}",
         figsize=(20, 17)
-        )
+    )
+
 
 #Ejercicio 3.D
 def mostrar_grafico_completitud(df_actual):
     st.subheader("Completitud de datos por columna")
 
-    #Puente entre DataFrame y el iterador que espera la función 'calcular_porcentaje_nulos_logica'
-    filas = df_actual.fillna("").astype(str).to_dict(orient="records")
-
-    #se reutiliza la función lógica del ejercicio 2.F de la primera parte
-    porcentaje_nulos = calcular_porcentaje_nulos_logica(filas, df_actual.columns)
-
-    #Se calcula el porcentaje de completitud a partir del porcentaje de nulos
-    completitud = {col: 100 - pct for col, pct in porcentaje_nulos.items()}
-
-    #See filtra y ordena el resultado 
-    ordenado = sorted([(col, val) for col, val in completitud.items() if val > 0],key=lambda x: x[1])
-
-    columnas = [item[0] for item in ordenado]
-    valores  = [item[1] for item in ordenado]
+    columnas, valores = calcular_completitud_columnas(df_actual)
 
     generar_grafico_generico(
         columnas,
@@ -220,25 +162,27 @@ def mostrar_grafico_completitud(df_actual):
         labelsize=7
     )
 
+
 #Ejercicio 3.E
 def mostrar_tabla_comparativa(datasets):
     st.header("Comparativa de datasets")
-    
+
     filas = []
     for nombre, cfg in datasets.items():
         fila = calcular_metricas_dataset(cfg["ruta"], nombre, cfg.get("separador", "\t"))
         if fila:
             filas.append(fila)
-    
+
     if not filas:
         st.warning("No hay datasets disponibles.")
         return
-    
+
     df_comp = pd.DataFrame(filas).set_index("Dataset")
     st.dataframe(df_comp, use_container_width=True)
 
-cantidad_registros(df_actual)
-cantidad_registros_por_anio(df_actual)
-distribucion_registros_taxonomia(df_actual)
+
+mostrar_observaciones_por_ubicacion(df_actual)
+mostrar_registros_por_anio(df_actual)
+mostrar_distribucion_taxonomia(df_actual)
 mostrar_grafico_completitud(df_actual)
 mostrar_tabla_comparativa(CONFIGURACION_DATASETS)
