@@ -1,7 +1,7 @@
 import csv
 from pathlib import Path
 from logger import registrar_operacion
-from validador import es_coordenada_valida, validar_y_convertir_fecha, es_incertidumbre_valida
+from validador import es_coordenada_valida, validar_y_convertir_fecha, es_incertidumbre_valida, codigos_validos
 from datetime import datetime
 from utils import buscar_registros_logica, manejar_archivo_no_encontrado
 FORMATO_FECHA = "%Y-%m-%d"
@@ -132,15 +132,20 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
     #Lista para guardar errores de validacion
 
     for columna, nuevo_valor in modificaciones.items():
-        if columna in ["countryCode", "stateProvince"]:
-            if not isinstance(nuevo_valor, str) or nuevo_valor.strip() == "":
-                errores.append(f"{columna} invalido")
-        elif columna == "decimalLatitude":
+        if columna == "countryCode":
+            # Antes solo chequeaba que no estuviera vacío; ahora valida contra los códigos
+            # de país permitidos, igual que al insertar
+            codigo = str(nuevo_valor).strip().upper()
+            if codigo != "" and codigo not in codigos_validos:
+                errores.append(f"countryCode inválido: '{nuevo_valor}'")
+        elif columna in ("decimalLatitude", "latitudeDecimal"):
+            # latitudeDecimal es el nombre que usa Xeno-canto; antes no se validaba
             if not es_coordenada_valida(str(nuevo_valor), -90, 90):
-                errores.append(f"decimalLatitude inválida: '{nuevo_valor}'")
-        elif columna == "decimalLongitude":
+                errores.append(f"{columna} inválida: '{nuevo_valor}'")
+        elif columna in ("decimalLongitude", "longitudeDecimal"):
+            # longitudeDecimal es el nombre que usa Xeno-canto; antes no se validaba
             if not es_coordenada_valida(str(nuevo_valor), -180, 180):
-                errores.append(f"decimalLongitude inválida: '{nuevo_valor}'")
+                errores.append(f"{columna} inválida: '{nuevo_valor}'")
         elif columna == "eventDate":
             es_valida, fecha = validar_y_convertir_fecha(str(nuevo_valor))
             if not es_valida:
@@ -150,6 +155,12 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
         elif columna == "coordinateUncertaintyInMeters":
             if not es_incertidumbre_valida(str(nuevo_valor)):
                 errores.append(f"coordinateUncertaintyInMeters inválida: '{nuevo_valor}'")
+        elif columna == "occurrenceStatus":
+            # Antes no se validaba; solo aplica a IADIZA
+            estado = str(nuevo_valor).strip().upper()
+            if estado != "" and estado not in {"PRESENT", "ABSENT"}:
+                errores.append(f"occurrenceStatus inválido: '{nuevo_valor}'")
+    
     
     #Recién acá se abren los archivos y se recorren las filas
     registros_actualizados = 0    

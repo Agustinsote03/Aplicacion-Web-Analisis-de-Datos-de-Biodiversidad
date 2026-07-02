@@ -101,6 +101,10 @@ def mostrar_observaciones_por_ubicacion(df_actual):
 def mostrar_registros_por_anio(df_actual):
     conteos_por_anio, contador_nulos = calcular_registros_por_anio(df_actual)
 
+    if conteos_por_anio.empty:
+        st.warning(f"No hay registros con fechas válidas para mostrar. {contador_nulos} registros tienen fecha nula o inválida.")
+        return
+
     st.warning(f"Se encontraron {contador_nulos} registros con fechas nulas o inválidas")
 
     generar_grafico_generico(
@@ -112,7 +116,6 @@ def mostrar_registros_por_anio(df_actual):
         y_etiqueta="Cantidad de observaciones únicas",
         color="#e74c3c"
     )
-
 
 #Ejercicio 3.C
 def mostrar_distribucion_taxonomia(df_actual):
