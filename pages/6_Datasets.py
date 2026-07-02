@@ -20,6 +20,7 @@ def obtener_info_archivo(nombre, cfg):
         tamanio_mb = round(ruta.stat().st_size / (1024 * 1024), 4)
         fecha_mod = datetime.fromtimestamp(ruta.stat().st_mtime).strftime("%Y-%m-%d %H:%M:%S")
         return {
+            "Dataset": nombre,
             "Nombre del archivo": ruta.name,
             "Tamaño (MB)": tamanio_mb,
             "Última modificación": fecha_mod,
@@ -27,6 +28,7 @@ def obtener_info_archivo(nombre, cfg):
         }
     else:
         return {
+            "Dataset": nombre,
             "Nombre del archivo": cfg["ruta"],
             "Tamaño (MB)": "N/D",
             "Última modificación": "N/D",
