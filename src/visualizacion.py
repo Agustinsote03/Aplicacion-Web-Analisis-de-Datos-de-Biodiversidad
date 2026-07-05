@@ -1,5 +1,4 @@
 import pandas as pd
-from validador import validar_coordenadas, validar_fechas
 from utils import calcular_porcentaje_nulos_logica
 from config import CONFIGURACION_DATASETS
 from datetime import datetime
@@ -32,14 +31,11 @@ def calcular_metricas_dataset(ruta_archivo, nombre_dataset, separador="\t"):
 
     pct_coord = round(coords_validas / total_registros * 100, 2)
 
-    # Fechas válidas
-    fechas = pd.to_datetime(
-        df["eventDate"].astype(str).str[:10],
-        format="%Y-%m-%d",
-        errors="coerce"
-    ) if "eventDate" in df.columns else pd.Series()
-    hoy = pd.Timestamp(datetime.now().date())
-    fechas_validas = (fechas.notna() & (fechas <= hoy)).sum() if not fechas.empty else 0
+    # Fechas válidas - se extrae el año con regex para soportar formatos variados
+    # (IADIZA usa "1985", "1985-01", "1985-01-01/1985-01-31", etc.)
+    anios = df["eventDate"].astype(str).str.extract(r'(\d{4})')[0].astype(float) if "eventDate" in df.columns else pd.Series()
+    anio_actual = datetime.now().year
+    fechas_validas = (anios.notna() & anios.between(1900, anio_actual)).sum() if not anios.empty else 0
     pct_fechas = round(fechas_validas / total_registros * 100, 2)
 
     pct_completitud = round(df.notnull().mean().mean() * 100, 2)
@@ -74,18 +70,18 @@ def calcular_conteos_por_ubicacion(df_actual, columna_agrupacion, num_elementos)
     return df_actual[columna_agrupacion].value_counts().head(num_elementos)
 
 
-
 def calcular_registros_por_anio(df_actual):
     """
     Calcula la cantidad de registros únicos por año a partir de eventDate.
-    Retorna (conteos_por_anio, cantidad_de_fechas_invalidas).
+    Usa occurrenceID en lugar de la primera columna (gbifID en IADIZA está vacío,
+    lo que hace que nunique() devuelva 0 y el gráfico aparezca vacío).
+    Extrae el año directamente del string en lugar de parsear la fecha completa,
+    porque IADIZA usa formatos variados ("1985", "1985-01", "1985-01-01/1985-01-31", etc.)
+    que pd.to_datetime no puede manejar y convierte a NaT.
     """
-    # Se usa occurrenceID en lugar de la primera columna (gbifID en IADIZA está vacío,
-    # lo que hace que nunique() devuelva 0 y el gráfico aparezca vacío)
-    df_fechas = df_actual[['eventDate', 'occurrenceID']].rename(columns={'eventDate': 'fecha', 'occurrenceID': 'codigo'})
-    # Se extrae el año directamente del string en lugar de parsear la fecha completa,
-    # porque IADIZA usa formatos variados ("1985", "1985-01", "1985-01-01/1985-01-31", etc.)
-    # que pd.to_datetime no puede manejar y convierte a NaT
+    df_fechas = df_actual[['eventDate', 'occurrenceID']].rename(
+        columns={'eventDate': 'fecha', 'occurrenceID': 'codigo'}
+    )
     df_fechas['anio_calculado'] = df_fechas['fecha'].astype(str).str.extract(r'(\d{4})').astype(float)
 
     contador_nulos = df_fechas['anio_calculado'].isnull().sum()
