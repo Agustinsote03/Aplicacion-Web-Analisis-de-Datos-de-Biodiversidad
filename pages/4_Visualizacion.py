@@ -91,6 +91,9 @@ def mostrar_observaciones_por_ubicacion(df_actual):
 
 #Ejercicio 3.B
 def mostrar_registros_por_anio(df_actual):
+
+    st.header("Registros por año")
+    
     conteos_por_anio, contador_nulos = calcular_registros_por_anio(df_actual)
 
     if conteos_por_anio.empty:
