@@ -1,7 +1,8 @@
 import pandas as pd
 from validador import validar_coordenadas, validar_fechas
 from utils import calcular_porcentaje_nulos_logica
-
+from config import CONFIGURACION_DATASETS
+from datetime import datetime
 
 def calcular_metricas_dataset(ruta_archivo, nombre_dataset, separador="\t"):
     """
@@ -14,11 +15,32 @@ def calcular_metricas_dataset(ruta_archivo, nombre_dataset, separador="\t"):
     if total_registros == 0:
         return None
 
-    cant_coord_inv, _ = validar_coordenadas(ruta_archivo, separador)
-    pct_coord = round((total_registros - cant_coord_inv) / total_registros * 100, 2)
+    # Obtener nombres de columnas de coordenadas según el dataset
+    cfg = CONFIGURACION_DATASETS[nombre_dataset]
+    col_lat = cfg.get("col_lat", "decimalLatitude")
+    col_lon = cfg.get("col_lon", "decimalLongitude")
 
-    cant_fechas_inv, _ = validar_fechas(ruta_archivo, "eventDate", separador)
-    pct_fechas = round((total_registros - cant_fechas_inv) / total_registros * 100, 2)
+    # Calcular coordenadas válidas directamente sobre el DataFrame
+    lat = pd.to_numeric(df[col_lat], errors="coerce") if col_lat in df.columns else pd.Series()
+    lon = pd.to_numeric(df[col_lon], errors="coerce") if col_lon in df.columns else pd.Series()
+
+    coords_validas = (
+        lat.notna() & lon.notna() &
+        lat.between(-90, 90) &
+        lon.between(-180, 180)
+    ).sum() if not lat.empty else 0
+
+    pct_coord = round(coords_validas / total_registros * 100, 2)
+
+    # Fechas válidas
+    fechas = pd.to_datetime(
+        df["eventDate"].astype(str).str[:10],
+        format="%Y-%m-%d",
+        errors="coerce"
+    ) if "eventDate" in df.columns else pd.Series()
+    hoy = pd.Timestamp(datetime.now().date())
+    fechas_validas = (fechas.notna() & (fechas <= hoy)).sum() if not fechas.empty else 0
+    pct_fechas = round(fechas_validas / total_registros * 100, 2)
 
     pct_completitud = round(df.notnull().mean().mean() * 100, 2)
 
@@ -29,7 +51,6 @@ def calcular_metricas_dataset(ruta_archivo, nombre_dataset, separador="\t"):
         "% Fechas Válidas": pct_fechas,
         "% Completitud Promedio": pct_completitud
     }
-
 
 def determinar_columna_agrupacion(df_actual):
     """
