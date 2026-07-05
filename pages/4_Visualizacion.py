@@ -47,14 +47,6 @@ def generar_grafico_generico(datos_x, datos_y, tipo_grafico="bar", titulo="", x_
     fig.tight_layout()
     st.pyplot(fig)
 
-if "dataset_actual" not in st.session_state or st.session_state["dataset_actual"] is None:
-    st.warning("Selecciona un dataset desde la barra lateral para visualizar los datos.")
-    st.stop()
-df_actual = st.session_state["dataset_actual"]
-
-st.title("Visualización de Datos de Biodiversidad")
-
-
 #--------------------------------Control: se verifica que haya un dataset cargado en la sesión--------------------------------#
 
 if "dataset_actual" not in st.session_state or st.session_state["dataset_actual"] is None:
