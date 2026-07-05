@@ -128,6 +128,8 @@ def mostrar_distribucion_taxonomia(df_actual):
 
     conteo_taxonomia = calcular_distribucion_taxonomia(df_actual, columna_seleccionada)
 
+    st.info(f"Se muestran los 10 valores más frecuentes de {eleccion_usuario}.")
+
     generar_grafico_generico(
         conteo_taxonomia.index,
         conteo_taxonomia.values,
