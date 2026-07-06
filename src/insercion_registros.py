@@ -411,17 +411,18 @@ def insertar_registro(ruta_origen, ruta_destino, registro, nombre_dataset, prepa
     with open(ruta_origen, "r", encoding="utf-8", newline="") as f_in:
         reader = csv.DictReader(f_in, delimiter=separador)
         columnas = reader.fieldnames
+        filas = list(reader)          # ← se lee TODO acá, con el archivo aún sin tocar
 
-        registro_completo = preparar_fn(registro, ruta_origen, columnas)
+    registro_completo = preparar_fn(registro, ruta_origen, columnas)
 
-        with open(ruta_destino, "w", encoding="utf-8", newline="") as f_out:
-            writer = csv.DictWriter(f_out, fieldnames=columnas, delimiter=separador, extrasaction='ignore')
-            writer.writeheader()
+    with open(ruta_destino, "w", encoding="utf-8", newline="") as f_out:   # ← recién ahora se abre para escribir
+        writer = csv.DictWriter(f_out, fieldnames=columnas, delimiter=separador, extrasaction='ignore')
+        writer.writeheader()
 
-            for fila in reader:
-                writer.writerow(fila)
+        for fila in filas:
+            writer.writerow(fila)
 
-            writer.writerow(registro_completo)
+        writer.writerow(registro_completo)
 
     registrar_operacion(nombre_dataset, "INSERT", 1)
 
