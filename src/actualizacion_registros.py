@@ -39,9 +39,6 @@ def actualizar_un_campo_generica(ruta_original, ruta_nueva, id_registro, columna
     """
         Actualiza un campo especifico de un registro basado en su ID y genera un nuevo archivo con la actualización
     """
-
-    if Path(ruta_original) == Path(ruta_nueva):
-        raise ValueError("La ruta de origen y destino no pueden ser la misma.")
     registros_actualizados = 0
     #Contador en lugar de booleano para poder registrar cantidad de registros actualizados
 
@@ -97,21 +94,22 @@ def actualizar_multiples_campos(ruta_original, ruta_nueva, id_registro, modifica
     registros_actualizados = 0
     #Contador en lugar de booleano para poder registrar cantidad de registros actualizados
 
-    with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
-        open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
-
+    with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original:
         lector = csv.DictReader(archivo_original, delimiter=separador)
-        escritor = csv.DictWriter(archivo_nuevo, fieldnames=lector.fieldnames, delimiter=separador)
+        columnas = lector.fieldnames
+        filas = list(lector)
 
+    for fila in filas:
+        if fila.get(columna_id, "").strip() == str(id_registro).strip():
+            for columna, nuevo_valor in modificaciones.items():
+                if columna in fila:
+                    fila[columna] = nuevo_valor
+            registros_actualizados += 1
+
+    with open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
+        escritor = csv.DictWriter(archivo_nuevo, fieldnames=columnas, delimiter=separador)
         escritor.writeheader()
-
-        for fila in lector:
-            if fila.get(columna_id, "").strip() == str(id_registro).strip():
-                for columna, nuevo_valor in modificaciones.items():
-
-                    if columna in fila:
-                        fila[columna] = nuevo_valor
-                registros_actualizados += 1
+        for fila in filas:
             escritor.writerow(fila)
 
         if registros_actualizados > 0:
@@ -170,24 +168,24 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
         registrar_operacion(nombre_dataset, "UPDATE", 0, error=True)
         return False
     
-    # Abrimos archivo original(lectura) y nuevo(escritura)
-    with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
-        open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
-
-        # Leemos el CSV como diccionarios
+    with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original:
         lector = csv.DictReader(archivo_original, delimiter=separador)
+        columnas = lector.fieldnames
+        filas = list(lector)
+
+    # Recorremos todos los registros
+    for fila in filas:
+        if str(fila.get(columna_id, "")).strip() == str(id_registro).strip():
+            for columna, nuevo_valor in modificaciones.items():
+                if columna in fila:
+                    fila[columna] = nuevo_valor
+            registros_actualizados += 1
+
+    with open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
         #Preparamos el archivo de salida con las mismas columnas
-        escritor = csv.DictWriter(archivo_nuevo, fieldnames=lector.fieldnames, delimiter=separador)
-
+        escritor = csv.DictWriter(archivo_nuevo, fieldnames=columnas, delimiter=separador)
         escritor.writeheader() #Escribimos encabezado
-
-        # Recorremos todos los registros
-        for fila in lector:
-            if str(fila.get(columna_id, "")).strip() == str(id_registro).strip():
-                for columna, nuevo_valor in modificaciones.items():
-                    if columna in fila:
-                        fila[columna] = nuevo_valor
-                registros_actualizados += 1
+        for fila in filas:
             escritor.writerow(fila)
 
     if registros_actualizados > 0:

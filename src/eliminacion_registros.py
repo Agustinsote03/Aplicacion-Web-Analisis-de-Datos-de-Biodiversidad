@@ -14,23 +14,24 @@ def eliminar_por_id_generica(ruta_original, ruta_nueva, columna, valor, nombre_d
     #Contador en lugar de booleano para poder registrar cantidad de registros eliminados
 
 
-    with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
-         open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
-
-        # Lee el dataset
+    with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original:
         lector = csv.DictReader(archivo_original, delimiter=separador)
-        escritor = csv.DictWriter(archivo_nuevo, fieldnames=lector.fieldnames, delimiter=separador)
+        columnas = lector.fieldnames
+        filas = list(lector)
 
+    filas_a_conservar = []
+    for fila in filas:
+        # Busca el occurrenceID
+        if str(fila.get(columna, "")).strip() == str(valor).strip():
+            eliminados += 1
+            # Elimina la fila correctamente
+            continue
+        filas_a_conservar.append(fila)
+
+    with open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
+        escritor = csv.DictWriter(archivo_nuevo, fieldnames=columnas, delimiter=separador)
         escritor.writeheader()
-
-        for fila in lector:
-
-            # Busca el occurrenceID
-            if str(fila.get(columna, "")).strip() == str(valor).strip():
-                eliminados += 1
-                # Elimina la fila correctamente
-                continue  
-
+        for fila in filas_a_conservar:
             escritor.writerow(fila)
 
     if eliminados:
@@ -69,23 +70,26 @@ def eliminar_por_lista_generica(ruta_original, ruta_nueva, columna, valores_a_el
     # normalizo la lista (por si viene con espacios)
     valores_a_eliminar = [str(v).strip() for v in valores_a_eliminar]
 
-    with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
-         open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
-
+    with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original:
         lector = csv.DictReader(archivo_original, delimiter=separador)
-        escritor = csv.DictWriter(archivo_nuevo, fieldnames=lector.fieldnames, delimiter=separador)
+        columnas = lector.fieldnames
+        filas = list(lector)
 
+    filas_a_conservar = []
+    for fila in filas:
+        valor = str(fila.get(columna, "")).strip()
+
+        # si está en la lista lo elimino (no escribo)
+        if valor in valores_a_eliminar:
+            eliminados += 1
+            continue
+
+        filas_a_conservar.append(fila)
+
+    with open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
+        escritor = csv.DictWriter(archivo_nuevo, fieldnames=columnas, delimiter=separador)
         escritor.writeheader()
-
-        for fila in lector:
-
-            valor = str(fila.get(columna, "")).strip()
-
-            # si está en la lista lo elimino (no escribo)
-            if valor in valores_a_eliminar:
-                eliminados += 1
-                continue
-
+        for fila in filas_a_conservar:
             escritor.writerow(fila)
 
     if eliminados == 0:
@@ -130,51 +134,55 @@ def eliminar_por_condicion_generica(ruta_original, ruta_nueva, columna, operador
         valor_val = valor
         valor_es_numero = False
 
-    # Abrimos archivo original (lectura) y nuevo (escritura)
-    with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original, \
-         open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
-
+   # Abrimos archivo original (lectura), leemos todo antes de escribir
+    with open(ruta_original, "r", encoding="utf-8", newline="") as archivo_original:
         lector = csv.DictReader(archivo_original, delimiter=separador)
-        escritor = csv.DictWriter(archivo_nuevo, fieldnames=lector.fieldnames, delimiter=separador)
+        columnas = lector.fieldnames
+        filas = list(lector)
 
-        escritor.writeheader()
+    filas_a_conservar = []
+    # Recorremos todas las filas del dataset
+    for fila in filas:
+        # Obtenemos el valor de la columna indicada
+        dato = fila.get(columna, "").strip()
 
-        # Recorremos todas las filas del dataset
-        for fila in lector:
-            # Obtenemos el valor de la columna indicada
-            dato = fila.get(columna, "").strip()
-
-            # Solo casteamos el dato de la fila (cambia en cada iteración)
-            if valor_es_numero:
-                try:
-                    dato_val = float(dato)
-                except (ValueError, TypeError):
-                    dato_val = dato
-            else:
+        # Solo casteamos el dato de la fila (cambia en cada iteración)
+        if valor_es_numero:
+            try:
+                dato_val = float(dato)
+            except (ValueError, TypeError):
                 dato_val = dato
+        else:
+            dato_val = dato
 
-            cumple = False # Asumimos que NO cumple la condicion
+        cumple = False # Asumimos que NO cumple la condicion
 
-            # Evaluamos la condicion segun el operador
-            if operador == "==":
-                cumple = dato_val == valor_val
-            elif operador == "!=":
-                cumple = dato_val != valor_val
-            elif operador == ">":
-                cumple = dato_val > valor_val
-            elif operador == ">=":
-                cumple = dato_val >= valor_val
-            elif operador == "<":
-                cumple = dato_val < valor_val
-            elif operador == "<=":
-                cumple = dato_val <= valor_val
+        # Evaluamos la condicion segun el operador
+        if operador == "==":
+            cumple = dato_val == valor_val
+        elif operador == "!=":
+            cumple = dato_val != valor_val
+        elif operador == ">":
+            cumple = dato_val > valor_val
+        elif operador == ">=":
+            cumple = dato_val >= valor_val
+        elif operador == "<":
+            cumple = dato_val < valor_val
+        elif operador == "<=":
+            cumple = dato_val <= valor_val
 
-            # Si cumple eliminamos la fila 
-            if cumple:
-                eliminados += 1
-                continue
+        # Si cumple eliminamos la fila 
+        if cumple:
+            eliminados += 1
+            continue
             
-            # Si no cumple la condicion, conservamos la fila
+        # Si no cumple la condicion, conservamos la fila
+        filas_a_conservar.append(fila)
+        
+    with open(ruta_nueva, "w", encoding="utf-8", newline="") as archivo_nuevo:
+        escritor = csv.DictWriter(archivo_nuevo, fieldnames=columnas, delimiter=separador)
+        escritor.writeheader()
+        for fila in filas_a_conservar:
             escritor.writerow(fila)
 
     if eliminados == 0:
