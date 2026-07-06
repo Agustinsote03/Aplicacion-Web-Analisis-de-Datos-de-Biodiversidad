@@ -65,7 +65,7 @@ elif modo == "Filtros avanzados":
         paises = sorted(df[col_pais].dropna().unique().tolist())
         paises_sel = st.multiselect("País", paises)
 
-    if "stateProvince" in df.columns:
+    if "stateProvince" in columnas:
         col_provincia = "stateProvince"
         provincias = sorted(df[col_provincia].dropna().unique().tolist())
         provincias_sel = st.multiselect("Provincia", provincias)
