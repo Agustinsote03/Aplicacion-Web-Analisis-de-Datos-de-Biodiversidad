@@ -131,7 +131,7 @@ if "nombre_dataset" not in st.session_state:
 df = st.session_state["dataset_actual"]
 nombre_dataset = st.session_state["nombre_dataset"]
 cfg = CONFIGURACION_DATASETS[nombre_dataset]
-ruta_origen = cfg["ruta"]
+ruta_origen = cfg["ruta_procesado"]
 ruta_destino = cfg["ruta_procesado"]
  
 # Pestañas
