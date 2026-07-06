@@ -1,7 +1,7 @@
 import csv
 from pathlib import Path
 from logger import registrar_operacion
-from validador import es_coordenada_valida, validar_y_convertir_fecha, es_incertidumbre_valida, codigos_validos
+from validador import es_coordenada_valida, validar_y_convertir_fecha, es_incertidumbre_valida, codigos_validos, es_country_code_valido
 from datetime import datetime
 from utils import buscar_registros_logica, manejar_archivo_no_encontrado
 FORMATO_FECHA = "%Y-%m-%d"
@@ -136,7 +136,7 @@ def actualizar_multiples_campos_validando(ruta_original, ruta_nueva, id_registro
             # Antes solo chequeaba que no estuviera vacío; ahora valida contra los códigos
             # de país permitidos, igual que al insertar
             codigo = str(nuevo_valor).strip().upper()
-            if codigo != "" and codigo not in codigos_validos:
+            if codigo != "" and not es_country_code_valido(codigo):
                 errores.append(f"countryCode inválido: '{nuevo_valor}'")
         elif columna in ("decimalLatitude", "latitudeDecimal"):
             # latitudeDecimal es el nombre que usa Xeno-canto; antes no se validaba

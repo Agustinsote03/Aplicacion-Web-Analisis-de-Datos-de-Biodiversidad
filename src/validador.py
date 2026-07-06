@@ -68,6 +68,15 @@ def es_incertidumbre_valida(incertidumbre_str):
     except ValueError:
         # Si el valor no es numérico, también es inválido
         return False
+    
+def es_country_code_valido(codigo):
+    """
+    Valida si un código de país está dentro del conjunto de códigos válidos
+    para América del Sur. 
+    Centraliza esta regla para que no se repita en insercion_registros.py y
+    actualizacion_registros.py.
+    """
+    return str(codigo).strip().upper() in codigos_validos
 #------------------------------------------Funciones principales---------------------------------------#
 
 @manejar_archivo_no_encontrado
@@ -192,7 +201,7 @@ def detectar_country_codes_invalidos(ruta_archivo, separador):
             #Se normaliza el código
             codigo = fila.get("countryCode", "").strip().upper()
 
-            if codigo not in codigos_validos:
+            if not es_country_code_valido(codigo):
                 registros_invalidos.append(fila)
             
     return len(registros_invalidos), registros_invalidos
