@@ -1,6 +1,6 @@
 import csv
 from pathlib import Path
-from validador import (es_coordenada_valida,validar_y_convertir_fecha, es_incertidumbre_valida, codigos_validos)
+from validador import (es_coordenada_valida,validar_y_convertir_fecha, es_incertidumbre_valida, codigos_validos, es_country_code_valido)
 from datetime import datetime
 from logger import registrar_operacion
 from utils import manejar_archivo_no_encontrado
@@ -250,7 +250,7 @@ def _validar_campos_comunes(registro, col_lat, col_lon, validar_country=False,
     # countryCode (IADIZA e iNaturalist)
     if validar_country:
         country_code = registro.get("countryCode", "").strip().upper()
-        if country_code != "" and country_code not in codigos_validos:
+        if country_code != "" and not es_country_code_valido(country_code):
             errores.append(f"countryCode inválido: '{country_code}'. Valores permitidos: {codigos_validos}")
 
     # coordinateUncertaintyInMeters (IADIZA e iNaturalist)
